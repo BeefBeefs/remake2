@@ -666,7 +666,7 @@ export class PlayMode {
 
   /** Stairs (guess): stepping on a warp cell moves the hero to the nearest warp cell with the same value on another floor (>150 units up or down). */
   private updateWarps(): void {
-    if (!this.warpTris.length) return;
+    if (!this.warpTris.length || this.stageIndex !== 0) return; // only the inn: in the dungeons the byte takes values 1-8 at many heights (zone / arrival ids), not stairs
     const here = this.warpAt(this.pos.x, this.pos.z, this.pos.y);
     if (!here) { this.warpArmed = true; return; }
     if (!this.warpArmed) return;
