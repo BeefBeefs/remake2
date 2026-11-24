@@ -53,6 +53,34 @@ that differ by at most ±2 (100 % of sampled pairs) – a signature of deliberat
 compressed data. **No binary in the rip references `bbpool` or `.rsc`** (searched exe + all DLLs). Working
 theory: CD copy-protection / filler file. Not needed unless a loader is found.
 
+## Origin: this is the PlayStation game's data
+`Blaze.exe` references `MUSIC00.XA;1`…`MUSIC04.XA;1`, `BLAZE.ALL;1`, `SYSTEM.INI;1`, `Blaze-Saving` (memory-card
+save) and the menu text offers "Memory Card Utility" – the PC build is a port of the PS1 title. Consistent with that:
+BGR555+STP-bit palettes, 256-wide texture pages, `0x1000 = 1.0` fixed point (GTE), 4096 = 360° angles.
+`cd.idx` (empty in the rip) is a path the exe uses for a CD index/cache. No public documentation of the formats was found.
+
+## BLAZE.ALL layout (map) 🟡
+* sectors 0–~1020: UI/shared textures (palette record + pixels, back to back).
+* sectors ~1021–3368: one 2347-sector block of **packs** (non-texture): items/monsters/animations/text.
+* sectors ~3385–22563: ~10 per-level blocks (one tile-atlas texture roughly every 150–200 sectors, plus packs, text,
+  height maps). `data/packs.json` lists the 494 sector-aligned packs found.
+
+### Packs 🟡
+`u32 n; u32 offset[n]` (offset[0]=0, ascending; relative to end of table = 4+4n), then blobs.
+* **Model/animation blob** (695 found, header `0x40`): `u32 hdrsize=0x40; u32 bodysize` with `hdrsize+bodysize == blob
+  length` (576 of 580 checked). Header u16 @0x10: four counts (e.g. 61,41,20,7); u32 @0x20: offset (e.g. 0x2bc) of the
+  pose table inside the body. Body = u16 index tables (per-frame/bone mappings, start with `-1,-1,0,0,1,2,3…`) then
+  **16-byte pose records** `i16 rot[3] (4096=360°), i16 0, i16 trans[3], i16 scale (4096)` – i.e. skeletal animation
+  keyframes. ❓ Where the mesh vertices/faces/UVs live and what the 4 counts mean.
+* Other blob kinds: ASCII text blobs ('Mage…', 'Hell…'), height-map-like byte grids (32-byte rows: 24 data bytes + pad),
+  record tables of 16 bytes with `0x10000000` fixed-point fields – ❓.
+
+### Text ✅ (found, not yet structured)
+Plain ASCII, `\r` line breaks, in: main menu (Begin Game / Create Characters / Memory Card Utility / Object Utility),
+item name/description pairs (`Name/Description.\r(Effect)`, fixed 640-byte stride in some blocks), spell descriptions,
+inn/shop text, NPC dialogue (`Speaker:\rLine`), signs. `tools/extract_text.py` → `data/text_dump.tsv` (heuristic filter;
+some image-data noise remains near sector 663).
+
 ## Engine hints (wsyskern.dll)
 * Exports include `Unpack` (0x3e70) – probable decompressor for `.pic`/BLAZE.ALL data – and `decrypt` (0x77c0):
   checks magic `0x9DE29BEE`, derives a key from a 9-byte table at 0x10049B88, per-byte `ror`/xor stream. Applies to

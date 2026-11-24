@@ -3,6 +3,27 @@
 Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (Win EN). Repo will go private
 later. Newest entry first; each work session appends here.
 
+## Turn 4 – 2026-11-24
+**Done**
+- ✅ Found the file is **PlayStation game data** (PS1 strings in the exe; explains BGR555/GTE fixed point).
+- ✅ Mapped BLAZE.ALL: UI textures → big pack block (sectors 1021–3368) → ~10 per-level blocks.
+- ✅ **Pack format** (`u32 n; u32 offsets[n]`) and **0x40-header blobs** (695; size rule holds 576/580) – these hold
+  skeletal **animation pose tables** (rot/trans/scale per bone, 4096=360°). `tools/scan_packs.py` → `data/packs.json`.
+- ✅ **Game text** extracted (menus, item descriptions, NPC dialogue, signs): `tools/extract_text.py` →
+  `data/text_dump.tsv` (10.7k runs, heuristic).
+- ❌ Web search found no public docs on this game's formats – reversing it ourselves.
+
+**Not verified**
+- Meaning of the four header counts; where meshes/UVs/faces live; level tilemaps; text indexing (string tables).
+- Packs.json may include false positives (494 pack-like headers; some are not real packs).
+
+**Next**
+1. Locate mesh geometry (vertex/face lists) – look at blobs whose body is not a pose table and at the 16-byte
+   `0x10000000` records; cross-check with tile-atlas textures.
+2. Reverse the level format: height-map grids + tile index maps per level block; render a static terrain with the
+   tile atlas in three.js.
+3. Add a three.js asset viewer (textures, text, animation skeleton) to the app.
+
 ## Turn 3 – 2026-11-24
 **Done**
 - ✅ Scanned all 503 palette records; found the pixel-header layout (height field → exact row count).
