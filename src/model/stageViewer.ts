@@ -22,6 +22,7 @@ export class StageView {
   readonly material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, alphaTest: 0.5 });
   triangles = 0;
   propCount = 0;
+  markerCount = 0;
   private readonly inner = new THREE.Group();
 
   /** @param fit scale/centre the stage to ~160 units (viewer); false keeps raw PS1 units (play mode). */
@@ -70,6 +71,23 @@ export class StageView {
    * Place the stage's props (beds, tables, shelves …) from the entity table. Entities with flag −254 whose `kind` is a part index
    * of the props pack are props; other records (door, trigger) are skipped. Rotation sign/axis is unverified.
    */
+  /** Small coloured boxes at every non-prop entity cell (door/trigger/spawn-like records), colour by `kind`. */
+  addMarkers(): void {
+    const colors = [0xff5555, 0x55ff55, 0x5599ff, 0xffff55, 0xff55ff, 0x55ffff, 0xffaa33, 0xaaaaaa];
+    const geo = new THREE.BoxGeometry(36, 60, 36);
+    const mats = new Map<number, THREE.MeshBasicMaterial>();
+    for (const e of this.data.entities ?? []) {
+      if (e.flag === -254) continue;
+      const c = ((e.kind % 8) + 8) % 8;
+      let mat = mats.get(c);
+      if (!mat) mats.set(c, (mat = new THREE.MeshBasicMaterial({ color: colors[c] })));
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(e.x, -(e.y + 30), e.z);
+      this.inner.add(m);
+      this.markerCount++;
+    }
+  }
+
   async addProps(): Promise<void> {
     const { entities, propsSector } = this.data;
     if (!entities || !propsSector) return;

@@ -101,12 +101,16 @@ for i, v in enumerate(words):
     if not any(words[j] == SENT for j in range(max(0, i - 14), i)): continue
     j, mesh = i, []
     while 0 < words[j] < 22600 and 0 < words[j + 1] < 400000: mesh.append(words[j]); j += 2
-    ents, o = [], j * 4
-    while True:
-        w = struct.unpack_from('<16h', d, o)
-        if not (w[7] == 0 and w[14] == 0 and w[15] == 0 and abs(w[4]) < 20000 and abs(w[6]) < 20000 and abs(w[5]) < 4000): break
-        ents.append({'kind': w[0], 'sub': w[1], 'flag': w[2], 'x': w[4], 'y': w[5], 'z': w[6], 'rot': w[8], 'link': w[10]})
-        o += 32
+    o = j * 4
+    mm = re.search(rb"- ([A-Z][A-Za-z0-9 ,'\.:!?-]{2,40}?) -", d[o:o + 0x6000])
+    end = o + mm.start() if mm else o + 0x1000
+    # Cells are 8-byte aligned: (kind, sub, flag, 0, x, y, z, 0) inside 32-byte records (rot/link follow in the next 16 bytes).
+    # Rooms use flag -254 (props) / -126; dungeons -255 / -127 / -126 / -30 (spawn-like records).
+    ents = []
+    for a in range(o, end - 31, 8):
+        w = struct.unpack_from('<16h', d, a)
+        if -260 < w[2] < -20 and w[3] == 0 and w[7] == 0 and abs(w[4]) < 12000 and abs(w[6]) < 12000 and -100 <= w[5] <= 800:
+            ents.append({'kind': w[0], 'sub': w[1], 'flag': w[2], 'x': w[4], 'y': w[5], 'z': w[6], 'rot': w[8], 'link': w[10]})
     st['entities'] = ents
     st['propsSector'] = None
     if ents:

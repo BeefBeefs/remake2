@@ -4,6 +4,14 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step U – entity cells for all stages + markers in the viewer**
+- ✅ Entity tables are streams of **32-byte records made of 16-byte cells**; the exporter now scans the stream between the mesh pairs and the stage banner in 8-byte steps
+  for the cell `(kind, sub, flag, 0, x, y, z, 0)` with flag −260…−20, giving 11 cells in stage 1 (room), 146 in stage 20, 115 in stage 23, 89 in stage 21 (dungeons).
+  rot/link come from the next cell of the record. Dungeon records use flags −255/−127/−126/−30; the dominant `kind` per stage (stage 20: 0 ×123, stage 21: 10 ×70,
+  stage 23: 7 ×88) at y = 150/250 looks like the main enemy/spawn type, but it does not equal the model ids in the stage texture list, and no monster-name/stat table exists in the
+  file by name (searched "Goblin/Skeleton/Slime/Jackal": only dialogue text), so the id → monster mapping is open.
+- Viewer: non-prop entity cells are drawn as small coloured boxes (colour = kind mod 8) – use them to check whether the positions lie on the floor/collision of each stage.
+
 **Step T – the last byte of a room face row is the PS1 GPU command (exact triangle/quad flag)**
 - ✅ Face rows' final byte = GPU packet command: 0x24–0x27 / 0x34–0x37 = triangle, 0x2c–0x2f / 0x3c–0x3f = quad. The padded 4th vertex (index 0) of triangles matches this in
   ~98% of rows; the exporter now uses the command byte instead of the distance heuristic (Step N) and stores `cmd` and `pg` per face.
