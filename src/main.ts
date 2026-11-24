@@ -71,9 +71,23 @@ hud?.append(document.createElement('hr'), heroSel, animSel, palSel, gearSel, atl
 const play = new PlayMode(scene, camera, renderer.domElement);
 const playSel = mk(STAGE_COUNT, (i) => `stage ${i}`);
 playSel.value = '1';
+// Story-state variants: the inn and rooms exist several times (different dialogue / entities); the picker lists the extra copies.
+const variantSel = document.createElement('select');
+const refreshVariants = async () => {
+  variantSel.innerHTML = '';
+  variantSel.add(new Option('story version 1', '0'));
+  try {
+    const k = Number(playSel.value);
+    const st = (await (await fetch(`assets/stages/stage${String(k).padStart(2, '0')}.json`)).json()) as { variants?: unknown[] };
+    (st.variants ?? []).forEach((_, i) => variantSel.add(new Option(`story version ${i + 2}`, String(i + 1))));
+  } catch { /* keep the single entry */ }
+  variantSel.style.display = variantSel.options.length > 1 ? '' : 'none';
+};
+playSel.addEventListener('change', () => void refreshVariants());
+void refreshVariants();
 const playBtn = document.createElement('button');
 playBtn.textContent = '▶ Play stage';
-hud?.append(playSel, playBtn);
+hud?.append(playSel, variantSel, playBtn);
 playBtn.onclick = async () => {
   if (play.active) {
     play.exit();
@@ -91,7 +105,7 @@ playBtn.onclick = async () => {
   if (stage) { stage.dispose(); stage = undefined; }
   grid.visible = false;
   try {
-    await play.enter(stageIdx, heroIdx);
+    await play.enter(stageIdx, heroIdx, Number(variantSel.value));
     playBtn.textContent = '■ Exit play';
     pad.style.display = 'flex';
     info.textContent = play.info;

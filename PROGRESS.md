@@ -4,6 +4,13 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step AF – story-version picker**
+- ✅ `export_stages.py` collects every descriptor whose first mesh pair is the stage's collision record and keeps the ones with different entities / dialogue as `variants` (entities, texts, name, desc sector) in stageNN.json.
+  Counts: inn 10 extra, "Your Room" 38 (many near-identical), rooms 3-5 7-10, Hall of Demons 3-4, a few others. Stage 1's descriptor has one junk pair before its mesh pairs (parser now retries two words later), which also gives
+  it a real texture list (atlases 3, 4, 6) instead of the guessed atlas.
+- Play mode: a "story version N" dropdown (shown when the stage has variants) swaps entities and dialogue; door travel keeps the chosen index. Variant indices are NOT aligned across maps (identical copies were dropped per map),
+  so version 3 of the inn is not necessarily the matching version 3 of a room.
+
 **Step AE – script modules decoded as far as possible: they are data, not warp code**
 - BLAZE.ALL holds **175 "map modules"** (`u32 256, A, B, 0 …` at a sector start; A = size of the table part, B = total): header + pointer tables, then the stage descriptor (sentinel), entity records, banner and text.
   The 12 modules before the maps are **global data**, not scripts: items (4057-4073: key items, flasks – strings like "Host's Door Key"), spells/bullets (4624), character-select UI (4633), memory-card UI (4638).

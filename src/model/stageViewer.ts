@@ -14,6 +14,8 @@ export interface StageJson {
   monsters?: number[];
   /** Dialogue boxes / signs / menu strings found in the stage script stream, in file order (tools/export_stages.py). */
   texts?: string[];
+  /** Story-state variants of this map (other descriptors with the same meshes but different entities / dialogue). */
+  variants?: { desc: number; name: string | null; entities: NonNullable<StageJson['entities']>; texts: string[] }[];
   meshes: { sector: number; verts: number[][]; faces: { v: number[]; uv: number[][]; pg?: number; clut?: number }[] }[];
 }
 
@@ -292,9 +294,12 @@ export class StageView {
   }
 }
 
-export async function loadStage(k: number, fit = true): Promise<StageView> {
+export async function loadStage(k: number, fit = true, variant = 0): Promise<StageView> {
   const url = `assets/stages/stage${String(k).padStart(2, '0')}.json`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-  return new StageView((await res.json()) as StageJson, fit);
+  const data = (await res.json()) as StageJson;
+  const v = variant > 0 ? data.variants?.[variant - 1] : undefined;
+  if (v) { data.entities = v.entities; data.texts = v.texts; }
+  return new StageView(data, fit);
 }

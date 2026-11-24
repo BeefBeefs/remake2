@@ -35,6 +35,7 @@ export class PlayMode {
   private heroIndex = 0;
   private doorArmed = false;
   private lastRoom = 0;
+  private variant = 0;
   private travelling = false;
   private doorPos: { x: number; z: number } | null = null;
   private solids: { x: number; z: number; r: number }[] = [];
@@ -119,14 +120,15 @@ export class PlayMode {
     this.action = { anim, left: total, total, jump: name === 'jump' };
   }
 
-  async enter(stageIndex: number, heroIndex: number): Promise<void> {
+  async enter(stageIndex: number, heroIndex: number, variant = 0): Promise<void> {
     const keepHp = this.travelling ? this.hp : 100;
     this.exit();
     this.hp = keepHp;
     this.stageIndex = stageIndex;
+    this.variant = variant;
     this.heroIndex = heroIndex;
     this.doorArmed = false;
-    const st = await loadStage(stageIndex, false);
+    const st = await loadStage(stageIndex, false, variant);
     const h = await loadHero(heroIndex);
     this.stage = st;
     this.hero = h;
@@ -419,7 +421,7 @@ export class PlayMode {
         const next = i0 >= 1 && i0 <= 5 ? 0 : i0 === 0 ? ((this.lastRoom % 5) + 1) : (i0 + 1) % 78;
         if (next >= 1 && next <= 5) this.lastRoom = next;
         this.hud.textContent = `door → stage ${next} (guess)…`;
-        void this.enter(next, this.heroIndex)
+        void this.enter(next, this.heroIndex, this.variant)
           .then(() => { this.info = `stage ${next} (via door)`; })
           .catch((e) => console.warn('door travel failed', e))
           .finally(() => { this.travelling = false; });

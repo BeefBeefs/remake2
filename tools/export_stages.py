@@ -101,8 +101,10 @@ for i, v in enumerate(words):
     if v != SENT: continue
     p, tl = i - 1, []
     while p >= 1 and 0 < words[p - 1] < 22600 and 1000 < words[p] < 100000: tl.append([words[p - 1], words[p]]); p -= 2
-    j, ms = i + 2, []
-    while 0 < words[j] < 22600 and 0 < words[j + 1] < 400000: ms.append([words[j], words[j + 1]]); j += 2
+    ms = []
+    for j in (i + 2, i + 4):      # stage 1's descriptor has one junk pair (404226048, 4129024) before the mesh pairs
+        while 0 < words[j] < 22600 and 0 < words[j + 1] < 400000: ms.append([words[j], words[j + 1]]); j += 2
+        if ms: break
     descs.append((i, tl[::-1], ms))
 # 17 "stages" (17-19, 30, 34, 36, 42-45, 48, 49, 66, 77, 79, 81, 82 in the old numbering) are headerless textured records that sit inside
 # the mesh list of the PREVIOUS stage's descriptor (same coordinate space): they are extra meshes of that stage, not stages.
@@ -192,6 +194,42 @@ for i, v in enumerate(words):
         t = re.sub(r'^\S(?=[A-Z][A-Za-z ]{2,20}:\n)', '', t)
         if len(re.findall(r'[A-Za-z]', t)) >= 8 and t not in texts: texts.append(t)
     st['texts'] = texts
+# Story-state variants: the inn / rooms (and some other maps) exist several times in the file (descriptors with the same first mesh pair but
+# different entity tables / dialogue). Stage JSON keeps the first as the main data and the different ones as `variants` (entities, texts, name, desc).
+def parse_variant(i):
+    j, mesh = i, []
+    while 0 < words[j] < 22600 and 0 < words[j + 1] < 400000: mesh.append(words[j]); j += 2
+    o = j * 4
+    mm = re.search(rb"- ([A-Z][A-Za-z0-9 ,'\.:!?-]{2,40}?) -", d[o:o + 0x6000])
+    end = o + mm.start() if mm else o + 0x1000
+    ents = []
+    for a in range(o, end - 31, 8):
+        w = struct.unpack_from('<16h', d, a)
+        if -260 < w[2] < -20 and w[3] == 0 and w[7] == 0 and abs(w[4]) < 12000 and abs(w[6]) < 12000 and -100 <= w[5] <= 800:
+            ents.append({'kind': w[0], 'sub': w[1], 'flag': w[2], 'x': w[4], 'y': w[5], 'z': w[6], 'rot': w[8], 'link': w[10]})
+    name = None; texts = []
+    nm = re.search(rb"- ([A-Z][A-Za-z0-9 ,'\.:!?-]{2,40}?) -", d[o:o + 0x900])
+    if nm: name = nm.group(1).decode()
+    if mm:
+        b0 = o + mm.start() + len(mm.group(0))
+        seg = d[b0:b0 + 0x2400]
+        nb = re.search(rb"- [A-Z][A-Za-z0-9 ,'\.:!?-]{2,40}? -", seg)
+        if nb: seg = seg[:nb.start()]
+        for chunk in seg.split(b'\x0f'):
+            t = clean_text(re.sub(rb'^.*?\x0c', b'', chunk, count=1, flags=re.S) if b'\x1f\xd0' in chunk else chunk)
+            t = re.sub(r'^\S(?=[A-Z][A-Za-z ]{2,20}:\n)', '', t)
+            if len(re.findall(r'[A-Za-z]', t)) >= 8 and t not in texts: texts.append(t)
+    return {'desc': i * 4 // S, 'name': name, 'entities': ents, 'texts': texts}
+for st in stages:
+    sec = st['collision']['sector']
+    seen = [(json.dumps(st.get('entities')), json.dumps(st.get('texts')))]
+    st['variants'] = []
+    for i, tl, ms in descs:
+        if not ms or ms[0][0] != sec: continue
+        v = parse_variant(i + 2 - 0 if False else i)
+        key = (json.dumps(v['entities']), json.dumps(v['texts']))
+        if key in seen: continue
+        seen.append(key); st['variants'].append(v)
 # monsters a stage streams in = monster textures in its texture list (model table entries 16..112 -> monster 0..96)
 mtab = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'model_table.json')))
 mon_by_tex = {sec: k - 16 for k, (sec, _) in enumerate(mtab['textures']) if k >= 16}
