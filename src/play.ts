@@ -474,7 +474,9 @@ export class PlayMode {
   private updateHero(dt: number): void {
     const h = this.hero;
     if (!h) return;
-    const want = this.action ? this.action.anim : this.moving && h.animCount > 1 ? 1 : 0;
+    // standing still with no hostile within 700 units: the hero's extra pack animation (arms down, weapon not in hand; role guessed) as a relaxed idle
+    const calm = !this.moving && h.totalAnimCount > h.animCount && !this.enemies.some((e) => !e.npc && !e.dying && e.hp > 0 && e.model.root.position.distanceTo(this.pos) < 700);
+    const want = this.action ? this.action.anim : this.moving && h.animCount > 1 ? 1 : calm ? h.animCount : 0;
     if (want !== this.curAnim) {
       h.setAnim(want);
       this.curAnim = want;
