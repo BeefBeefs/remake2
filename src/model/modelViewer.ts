@@ -1,68 +1,58 @@
 import * as THREE from 'three';
 
-/** JSON written by tools/export_model.py (formats: docs/FORMATS.md). */
-export interface ModelJson {
-  meshSector: number;
-  animSector: number;
+/** JSON written by tools/export_heroes.py (formats: docs/FORMATS.md). */
+export interface HeroJson {
+  hero: number;
+  textureSector: number;
   parts: {
     index: number;
-    bone: number;
     verts: [number, number, number][];
-    normals: [number, number, number][];
-    faces: { id: number; uv: [number, number][]; v: [number, number, number, number] }[];
+    faces: { uv: [number, number][]; v: [number, number, number, number] }[];
   }[];
-  parent: number[]; // per bone; bone 0 and 1 point to themselves/0 (roots)
-  poses: number[][]; // i16 rot[3] (4096 = 360deg), 0, trans[3], scale
-  frames: number[][]; // per frame: pose index per bone
+  anims: {
+    parent: number[]; // per bone; roots point at themselves / bone 0
+    partBone: number[]; // mesh part index -> bone
+    poses: number[][]; // i16 rot[3] (4096 = 360deg), 0, trans[3], scale
+    frames: number[][]; // per frame: pose index per bone
+  }[];
 }
 
 const ANGLE = (Math.PI * 2) / 4096;
 
 /**
- * Skeleton + flat-shaded mesh for one animated model. PS1 space is Y-down, so the whole model hangs
- * under a root rotated by PI around X. Pose rotation order is X*Y*Z, which is three.js Euler order 'XYZ'.
- * Textured with a hero CLUT PNG (tools/export_hero_tex.py). Faces whose vertex indices fall outside the part's own vertex list are skipped for now
- * (open problem in PROGRESS.md: the first 7 face rows of every part).
+ * One hero: skeleton + textured mesh, playing one of the hero's animations.
+ * PS1 space is Y-down, so the model hangs under a root rotated by PI around X. Pose rotation order is X*Y*Z,
+ * which is three.js Euler order 'XYZ'. Faces whose vertex indices fall outside the part's own vertex list, or whose
+ * UVs leave the 64-row texture page, are skipped (open problem in PROGRESS.md: "R1" face rows).
  */
 export class AnimatedModel {
   readonly root = new THREE.Group();
-  private readonly bones: THREE.Object3D[] = [];
+  private readonly inner = new THREE.Group();
+  private bones: THREE.Object3D[] = [];
+  private readonly meshes: { mesh: THREE.Mesh; index: number }[] = [];
+  private anim = 0;
   private frame = 0;
   private acc = 0;
   fps = 8;
   skippedFaces = 0;
   totalFaces = 0;
   /** Shared by every part; swap `material.map` to change the CLUT (colour scheme). */
-  readonly material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, alphaTest: 0.5, color: 0xffffff });
+  readonly material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, alphaTest: 0.5 });
   /** Texture page size in pixels (hero textures are 256 x 64). */
-  texW = 256;
-  texH = 64;
+  readonly texW = 256;
+  readonly texH = 64;
 
-  constructor(readonly data: ModelJson) {
-    const inner = new THREE.Group();
-    inner.rotation.x = Math.PI;
-    this.root.add(inner);
+  constructor(readonly data: HeroJson) {
+    this.inner.rotation.x = Math.PI;
+    this.root.add(this.inner);
 
-    const nb = data.parent.length;
-    for (let b = 0; b < nb; b++) this.bones.push(new THREE.Object3D());
-    for (let b = 0; b < nb; b++) {
-      const p = data.parent[b];
-      if (p === b || p < 0 || p >= nb) inner.add(this.bones[b]);
-      else this.bones[p].add(this.bones[b]);
-    }
-
-    data.parts.forEach((part) => {
+    for (const part of data.parts) {
       const pos: number[] = [];
       const uvs: number[] = [];
       for (const f of part.faces) {
         this.totalFaces++;
         const idx = f.v;
-        if (idx.some((k) => k >= part.verts.length)) {
-          this.skippedFaces++;
-          continue;
-        }
-        // UVs beyond the 64-row page belong to the unresolved "R1" rows; treat them as bad faces.
-        if (f.uv.some((c) => c[1] >= this.texH)) {
+        if (idx.some((k) => k >= part.verts.length) || f.uv.some((c) => c[1] >= this.texH)) {
           this.skippedFaces++;
           continue;
         }
@@ -75,14 +65,46 @@ export class AnimatedModel {
           }
         }
       }
-      if (!pos.length) return;
+      if (!pos.length) continue;
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
       g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-      const mesh = new THREE.Mesh(g, this.material);
-      this.bones[part.bone]?.add(mesh);
-    });
+      this.meshes.push({ mesh: new THREE.Mesh(g, this.material), index: part.index });
+    }
+    this.setAnim(0);
+  }
+
+  get animCount(): number {
+    return this.data.anims.length;
+  }
+
+  get frameCount(): number {
+    return this.data.anims[this.anim].frames.length;
+  }
+
+  /** Switch animation: animations may have a different bone count, so the bone tree is rebuilt. */
+  setAnim(a: number): void {
+    this.anim = ((a % this.animCount) + this.animCount) % this.animCount;
+    const an = this.data.anims[this.anim];
+    for (const b of this.bones) b.removeFromParent();
+    for (const m of this.meshes) m.mesh.removeFromParent();
+    const nb = an.parent.length;
+    this.bones = Array.from({ length: nb }, () => new THREE.Object3D());
+    for (let b = 0; b < nb; b++) {
+      const p = an.parent[b];
+      if (p === b || p < 0 || p >= nb) this.inner.add(this.bones[b]);
+      else this.bones[p].add(this.bones[b]);
+    }
+    for (const m of this.meshes) {
+      const bone = this.bones[an.partBone[m.index]];
+      if (bone) bone.add(m.mesh);
+    }
+    this.acc = 0;
     this.setFrame(0);
+  }
+
+  get currentAnim(): number {
+    return this.anim;
   }
 
   /** Load one CLUT image (PNG, 256 x 64, colour 0 transparent) and apply it to the whole model. */
@@ -97,15 +119,12 @@ export class AnimatedModel {
     this.material.needsUpdate = true;
   }
 
-  get frameCount(): number {
-    return this.data.frames.length;
-  }
-
   setFrame(f: number): void {
+    const an = this.data.anims[this.anim];
     this.frame = ((f % this.frameCount) + this.frameCount) % this.frameCount;
-    const list = this.data.frames[this.frame];
+    const list = an.frames[this.frame];
     for (let b = 0; b < this.bones.length; b++) {
-      const p = this.data.poses[list[b]];
+      const p = an.poses[list[b]];
       if (!p) continue;
       this.bones[b].rotation.set(p[0] * ANGLE, p[1] * ANGLE, p[2] * ANGLE, 'XYZ');
       this.bones[b].position.set(p[4], p[5], p[6]);
@@ -124,10 +143,18 @@ export class AnimatedModel {
       this.setFrame(this.frame + 1);
     }
   }
+
+  dispose(): void {
+    this.root.removeFromParent();
+    this.material.map?.dispose();
+    this.material.dispose();
+    for (const m of this.meshes) m.mesh.geometry.dispose();
+  }
 }
 
-export async function loadModel(url: string): Promise<AnimatedModel> {
+export async function loadHero(hero: number): Promise<AnimatedModel> {
+  const url = `assets/heroes/hero${String(hero).padStart(2, '0')}.json`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-  return new AnimatedModel((await res.json()) as ModelJson);
+  return new AnimatedModel((await res.json()) as HeroJson);
 }

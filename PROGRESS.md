@@ -18,6 +18,23 @@ later. Newest entry first; each work session appends here.
   other 15 heroes not yet checked.
 
 
+**Step D – all 16 heroes + all animations (software-verified, browser run pending)**
+- ✅ **Blob alignment fix**: face rows (16 B) straddle the pack's blob boundaries for most heroes. The subheader sits at
+  `h = 112` (heroes 0, 2), `84` (hero 1) or `132` (hero 3, 15) – not 16-aligned in the latter cases. Shifting the window back by
+  `(-h) % 16` realigns it (`meshparse.parse_part_at`; subheader found at any 4-byte phase, validated by `w1 = V | N<<16`).
+  Hero 0's earlier "R1" rows were fine geometrically; the garbage was mostly my own window, though ~20 % of faces still
+  reference vertices ≥ V in every hero (open).
+- ✅ Table check: each hero's animation blob has C = number of mesh-pack parts (27/27, 20/20, 32/32 …) for all 16.
+- ✅ Each hero has 8–9 animation blobs (frame counts such as 14/10/7/5/15/…, last one 1 frame = pose). Geometry is exported once per hero with
+  an `anims` list (`tools/export_heroes.py` → `public/assets/heroes/hero00..15.json`, 1.4 MB total). Old `export_model.py` /
+  `export_parts.py` / `pack_3521.json` removed.
+- ✅ Viewer: hero (0–15), animation and palette dropdowns (`src/main.ts`, `src/model/modelViewer.ts`).
+- ✅ `docs/heroes_sample.png`: textured software renders of heroes 0, 1, 3, 8 (frame 0, front): faces, hair, robes, staff/spear land
+  on the right places, so the table + texture link + realignment hold for other heroes.
+- Not verified: browser run; parts that still fail to parse (e.g. hero 3: 17/32, hero 15: 19/32 – their subheader doesn't match
+  the strict check, so those limbs/props are missing); animation meanings (which blob is idle/walk/attack – guesses only);
+  non-hero models (monsters, NPCs, items) not exported yet.
+
 **Step C – textured knight (software-verified, browser run pending)**
 - ✅ `tools/export_hero_tex.py` → `public/assets/hero/h<k>_c<j>.png` (16 heroes × 4 CLUTs; the 4 CLUTs are colour schemes:
   red, green, grey-blue, gold). PS1 colour 0 = transparent.
@@ -81,7 +98,7 @@ One-time manual step: repo Settings → Pages → Source = "GitHub Actions". Not
   out-of-range indices; R1 is probably seam/joint geometry referencing neighbouring parts' vertices (unresolved).
 - ✅ **Hierarchy table decoded**: `[-1,-1] + 59 bone parents + 27 part→bone indices` (2+59+27 = 88 = A+2).
 
-**Next**: resolve the R1 rows (front/face pieces), export all 16 heroes with a selector, other animation blobs (walk/attack).
+**Next**: find why ~1/3 of parts fail the subheader check (heroes 3, 8, 13, 15), the remaining out-of-range faces, name the animations, then monsters/NPCs and level data.
 
 ## Turn 5 – 2026-11-24
 **Done**

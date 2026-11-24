@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { SndBanks } from './audio/sndBank';
-import { AnimatedModel, loadModel } from './model/modelViewer';
+import { AnimatedModel, loadHero } from './model/modelViewer';
 
 // Placeholder scene: proves the build/asset pipeline. Real game systems land in later milestones
 // (see PROGRESS.md).
@@ -23,21 +23,45 @@ scene.add(sun);
 camera.position.set(0, 70, 260);
 camera.lookAt(0, 55, 0);
 
-// Animated model viewer (pack 3521 = knight; textured with hero texture 120, 4 palettes).
+// Hero model viewer: 16 heroes (mesh + skeleton + 8-9 animations each), 4 palettes per hero texture.
 let model: AnimatedModel | undefined;
-loadModel('assets/models/pack_3521.json')
-  .then((m) => {
-    model = m;
-    scene.add(m.root);
-    const sel = document.createElement('select');
-    for (let c = 0; c < 4; c++) sel.add(new Option(`palette ${c}`, String(c)));
-    sel.onchange = () => void m.setTexture(`assets/hero/h00_c${sel.value}.png`);
-    document.getElementById('hud')?.append(document.createElement('br'), sel);
-    void m.setTexture('assets/hero/h00_c0.png');
-    const st = document.getElementById('status');
-    if (st) st.textContent += ` | model: ${m.data.parts.length} parts, ${m.frameCount} frames, ${m.skippedFaces}/${m.totalFaces} faces skipped`;
-  })
-  .catch((e) => console.error(e));
+const hud = document.getElementById('hud');
+const mk = (n: number, label: (i: number) => string) => {
+  const sel = document.createElement('select');
+  for (let i = 0; i < n; i++) sel.add(new Option(label(i), String(i)));
+  return sel;
+};
+const heroSel = mk(16, (i) => `hero ${i}`);
+const animSel = document.createElement('select');
+const palSel = mk(4, (i) => `palette ${i}`);
+const info = document.createElement('div');
+hud?.append(document.createElement('hr'), heroSel, animSel, palSel, info);
+
+async function showHero(h: number): Promise<void> {
+  info.textContent = 'loading…';
+  const m = await loadHero(h);
+  if (model) {
+    scene.remove(model.root);
+    model.dispose();
+  }
+  model = m;
+  scene.add(m.root);
+  animSel.replaceChildren(...Array.from({ length: m.animCount }, (_, i) => new Option(`anim ${i}`, String(i))));
+  palSel.value = '0';
+  await m.setTexture(`assets/hero/h${String(h).padStart(2, '0')}_c0.png`);
+  info.textContent = `${m.data.parts.length} parts, ${m.frameCount} frames, ${m.skippedFaces}/${m.totalFaces} faces skipped`;
+}
+heroSel.onchange = () => void showHero(Number(heroSel.value));
+animSel.onchange = () => {
+  model?.setAnim(Number(animSel.value));
+  if (model) info.textContent = `${model.data.parts.length} parts, ${model.frameCount} frames, ${model.skippedFaces}/${model.totalFaces} faces skipped`;
+};
+palSel.onchange = () =>
+  void model?.setTexture(`assets/hero/h${String(heroSel.value).padStart(2, '0')}_c${palSel.value}.png`);
+showHero(0).catch((e) => {
+  info.textContent = `model load failed: ${e}`;
+  console.error(e);
+});
 
 addEventListener('resize', () => {
   renderer.setSize(innerWidth, innerHeight);

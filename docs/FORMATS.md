@@ -107,3 +107,8 @@ BLAZE.ALL holds `(u32 sector, u32 size)` pairs at file offset 0x906b88 (copies a
 5 misc textures, then 16 hero textures (sectors 120..270), 16×2592 B blobs, 8×6400 B blobs, 16 animation packs, 16 mesh packs.
 Entry *k* of each list belongs to hero *k* (hero 0 = knight: texture 120, anim pack 3501, mesh pack 3521).
 Hero texture records have 4 CLUTs of 256 colours (palette block 2048 B at +0x14, psize 2060) and a 256x64 image; model UVs index that image directly.
+
+## Mesh blob alignment (fix)
+The pack's blob offsets cut through 16-byte face rows for most heroes. Find the subheader at any 4-byte phase (h = 112, 84, 132, …),
+then shift the window back by `(-h) % 16` bytes (start and end) so the subheader is 16-aligned; rows before it are the first
+face list, rows after `h+w9` the second. Hero 0/2 need no shift.

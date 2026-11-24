@@ -10,11 +10,24 @@ Blob layout (all little-endian):
 import struct
 
 def find_subheader(blob):
-    for h in range(0, min(len(blob) - 0x28, 0x400), 16):
+    """Subheader start h (any 4-byte phase) plus its words; validated against w1 = V | N << 16."""
+    for h in range(0, min(len(blob) - 0x28, 0x400), 4):
         w = struct.unpack_from('<10I', blob, h)
         if w[7] == 0x40 and w[8] > w[7] and w[9] > w[8] and (w[8] - w[7]) % 8 == 0 and (w[9] - w[8]) % 8 == 0:
-            return h, w
+            if (w[1] & 0xffff) == (w[8] - w[7]) // 8 and (w[1] >> 16) == (w[9] - w[8]) // 8:
+                return h, w
     return None
+
+def parse_part_at(d, start, end):
+    """Parse the part whose pack-table slice is d[start:end].
+
+    Face rows are 16 B and run through the blob boundaries: for some heroes the slice starts mid-row. The window is
+    shifted back by (-h) % 16 so that the subheader lands 16-byte aligned (the shift is 0 for hero 0 / hero 2)."""
+    r = find_subheader(d[start:end])
+    if not r:
+        return None
+    sh = (-r[0]) % 16
+    return parse_part(d[start - sh:end - sh])
 
 def parse_part(blob):
     r = find_subheader(blob)
