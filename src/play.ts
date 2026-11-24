@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 import { loadStage, StageView } from './model/stageViewer';
 import type { Sfx } from './audio/sfx';
-import { buildWorld, cfg as moveCfg, fallStep, settle, tryMove as bodyMove, type Body, type Tri, type World } from './collision';
+import { buildWorld, cfg as moveCfg, fallStep, groundBelow, settle, wallDepth, tryMove as bodyMove, type Body, type Tri, type World } from './collision';
 
 /**
  * First playable slice: walk a hero around one stage. Gameplay runs in three.js world space, where a PS1 point
@@ -482,8 +482,11 @@ export class PlayMode {
       let moving = false;
       if (!en.npc && dist < 700 && dist > 70) {
         const nx = en.x + (dx / dist) * 90 * dt, nz = en.z + (dz / dist) * 90 * dt;
-        const fy = this.floorAt(nx, nz, en.y);
-        if (fy !== null && Math.abs(fy - en.y) < 80 && !this.blocked(nx, nz, en)) {
+        // same rules as the hero: step up at most moveCfg.stepUp, never walk off a ledge, and do not push deeper into a wall
+        const w = this.world;
+        const fy = w ? groundBelow(w, nx, nz, en.y, moveCfg.stepUp) : this.floorAt(nx, nz, en.y);
+        const wallOk = !w || wallDepth(w, nx, nz, en.y) <= wallDepth(w, en.x, en.z, en.y);
+        if (fy !== null && Math.abs(fy - en.y) < 80 && wallOk && !this.blocked(nx, nz, en)) {
           en.x = nx; en.z = nz; en.y = fy; moving = true;
         }
       }
