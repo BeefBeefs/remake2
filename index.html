@@ -21,6 +21,21 @@
       <select id="bank"></select> <select id="clip"></select> <button id="play">▶ play</button><br />
       <small>play-mode sound slots (guessed defaults): </small><select id="slot"></select> <button id="assign">assign current clip</button> <label><input type="checkbox" id="mute" /> mute</label> <small id="slotinfo"></small>
     </div>
+    <script>
+      // robust start: the title must go away even if the app script fails, and errors are shown on screen (they are otherwise only in the console)
+      (function () {
+        var t = document.getElementById('title');
+        var hide = function () { if (t) t.remove(); t = null; window.removeEventListener('keydown', hide); };
+        t.addEventListener('click', hide);
+        window.addEventListener('keydown', hide);
+        var box = document.createElement('pre');
+        box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;max-height:40%;overflow:auto;margin:0;padding:6px 10px;background:#400d;color:#fcc;font:12px monospace;z-index:20;display:none;white-space:pre-wrap';
+        document.body.appendChild(box);
+        var show = function (m) { box.style.display = 'block'; box.textContent += m + '\n'; };
+        window.addEventListener('error', function (e) { show('error: ' + e.message + ' (' + (e.filename || '').split('/').pop() + ':' + e.lineno + ')'); });
+        window.addEventListener('unhandledrejection', function (e) { show('rejected: ' + (e.reason && (e.reason.stack || e.reason.message) || e.reason)); });
+      })();
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
