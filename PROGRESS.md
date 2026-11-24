@@ -4,6 +4,17 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step AH – deeper pass through Blaze.exe (negative results, method notes)**
+- Method: `.text` (file 0x400, VA 0x401000, 1.3 MB) dumped with `objdump -D -b binary -mi386 -M intel --adjust-vma=0x401000`; address of a pattern hit in the slice = 0x401000 + slice offset (the earlier "0x5299ce"-style numbers
+  I printed first were 0x400 too low). `.data` file offset -> VA = 0x400000 + 0x14f000 + (off - 0x14d600).
+- The game code is recompiled PS1 code on PcEmu2 shims: file open goes through the name table at VA 0x566ba8 (`SYSTEM.INI;1`, `BLAZE.ALL;1`, `Blaze-Saving`) and PsyQ-style CD calls (sector << 11 before the read call, near 0x529b99).
+  No u32 table of sector numbers exists anywhere in the exe (scanned all 1.5 MB for ascending runs in 4000..22600), so maps are not located by a static list; module sectors must come from BLAZE.ALL itself (or `cd.idx`, empty here).
+- Looked for the script/text interpreter (control codes 0x1f 0xd0, 0x0c, 0x0f, 0x0b, 0x0a) by switch/compare patterns: nothing that matches; the only 0x1f jump-table switch (VA 0x5050f8) belongs to a menu state machine.
+  Searching for `[reg+0x14]` / flag 0x82 compares only finds generic actor-struct code (hundreds of hits), no isolated door handler.
+- Door link == arrival id test (arrival records from module headers + spawn entities with flag -255/-127 vs door entities with flag -126): 12 of 183 doors have a same-id arrival in some stage, which is at chance level for ids in 0..1400
+  (so no evidence that `link` is a destination arrival id). Quest-chain door model from Step AG stays the working guess.
+- To go further someone has to trace the executable at run time (breakpoint on the entity loader / door trigger in a debugger or an emulator of the x86 build) or reverse the actor structs by hand; static grepping is exhausted.
+
 **Step AG – Blaze.exe look, arrival points, quest chains (door model v2)**
 - `Blaze.exe` is a PC recompile of the PS1 game on a PlayStation-emulation layer (`playst.dll`, debug path `Playstation\PcEmu2`; exports `CdReadExec`, `LoadExec`, GTE helpers): game logic is native x86 using PS1-style APIs.
   It contains no map strings, no sentinel word 0x5F6F0000, no descriptor sector numbers and no cluster of door-link constants (searched as 32-bit values), i.e. maps are walked purely through the module pointer tables.
