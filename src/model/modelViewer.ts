@@ -64,21 +64,29 @@ export class AnimatedModel {
         // (2,123), so use the first slot of every distinct index: (a,b,b,c) -> slots 0,1,3.
         // UV (2,123) is the dummy written into an unused corner (triangle rows); never use such a corner, even when its
         // vertex index differs from the others (e.g. a (a,b,c,d) row whose third UV is the dummy = triangle a,b,d).
+        // A row with four distinct vertices whose third UV slot holds a texture-page word is a quad (98 % planar, like the normal quads),
+        // not a triangle: rebuild the lost third UV as the parallelogram corner UV1 + UV3 - UV0.
+        let uv = f.uv;
+        const isPage = (k: number): boolean => f.uv[k][1] >= this.texH && !(f.uv[k][0] === 2 && f.uv[k][1] === 123);
+        if (isPage(2) && !isPage(0) && !isPage(1) && !isPage(3) && new Set(idx).size === 4 && f.uv[3][1] < this.texH && !(f.uv[3][0] === 2 && f.uv[3][1] === 123)) {
+          const cl = (n: number, hi: number): number => Math.max(0, Math.min(hi, n));
+          uv = [f.uv[0], f.uv[1], [cl(f.uv[1][0] + f.uv[3][0] - f.uv[0][0], 255), cl(f.uv[1][1] + f.uv[3][1] - f.uv[0][1], this.texH - 1)], f.uv[3]];
+        }
         const slots: number[] = [];
         for (let k = 0; k < 4; k++) {
           // a UV row beyond the 64-row page is the texture-page word the game stores in an unused corner, e.g. (3,81), (0,87): not a real coordinate
-          if ((f.uv[k][0] === 2 && f.uv[k][1] === 123) || f.uv[k][1] >= this.texH) continue;
+          if ((uv[k][0] === 2 && uv[k][1] === 123) || uv[k][1] >= this.texH) continue;
           if (!slots.some((q) => idx[q] === idx[k])) slots.push(k);
         }
         const tris = slots.length === 4 ? [[0, 1, 2], [0, 2, 3]] : slots.length === 3 ? [slots] : [];
         for (const t of tris) {
-          if (t.some((k) => f.uv[k][1] >= this.texH)) {
+          if (t.some((k) => uv[k][1] >= this.texH)) {
             this.skippedFaces++;
             continue;
           }
           for (const k of t) {
             pos.push(...part.verts[idx[k]]);
-            uvs.push((f.uv[k][0] + 0.5) / this.texW, (f.uv[k][1] + 0.5) / this.texH);
+            uvs.push((uv[k][0] + 0.5) / this.texW, (uv[k][1] + 0.5) / this.texH);
           }
         }
       }

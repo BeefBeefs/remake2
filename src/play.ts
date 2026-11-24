@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 import { loadStage, StageView } from './model/stageViewer';
 import type { Sfx } from './audio/sfx';
+import { buildWorld, cfg as moveCfg, fallStep, settle, tryMove as bodyMove, type Body, type Tri, type World } from './collision';
 
 /**
  * First playable slice: walk a hero around one stage. Gameplay runs in three.js world space, where a PS1 point
@@ -10,20 +11,7 @@ import type { Sfx } from './audio/sfx';
  * collision mesh (up-facing triangles); keyboard (WASD / arrows, Q/E turn camera) or touch (left half = move stick,
  * right half = turn camera).
  */
-interface Tri {
-  ax: number; ay: number; az: number;
-  bx: number; by: number; bz: number;
-  cx: number; cy: number; cz: number;
-}
-
-/** A steep collision triangle seen from above: its longest edge in the xz plane plus the height range it covers. */
-interface Wall { ax: number; az: number; bx: number; bz: number; y0: number; y1: number }
-
-/** Movement constants (world units): the original's step-up test is 0x32000 in 12-bit fixed point = 50 units; falling has no limit. */
-const STEP_UP = 60;
-const HERO_R = 26;
-const GRAVITY = 1800;
-const JUMP_V = 600;
+/** Hero collision (floors, thin walls, step-up, falling, jumping) lives in collision.ts so it can be simulated headless. */
 
 interface Enemy {
   model: AnimatedModel;
@@ -88,11 +76,11 @@ export class PlayMode {
   private stage?: StageView;
   private hero?: AnimatedModel;
   private tris: Tri[] = [];
-  private walls: Wall[] = [];
+  private world: World | null = null;
+  private body: Body = { x: 0, y: 0, z: 0, vy: 0, airborne: false };
   /** vertical speed (up positive) while airborne (jumping or falling off a ledge) */
   private vy = 0;
   private airborne = false;
-  private lowest = -1e9;
   private safe = new THREE.Vector3();
   private safeT = 0;
   private readonly pos = new THREE.Vector3();
@@ -296,28 +284,23 @@ export class PlayMode {
     const c = st.data.collision;
     const w = (i: number) => c.verts[i];
     this.tris = [];
-    this.walls = [];
+    this.world = null;
     this.vy = 0;
     this.airborne = false;
     this.warpTris = [];
     this.warpArmed = false;
+    const all: Tri[] = [];
     let best = 0;
     for (const t of c.tris) {
       if (t.slice(0, 3).some((k) => k >= c.verts.length)) continue;
       const a = w(t[0]), b = w(t[1]), d = w(t[2]);
       const tri: Tri = { ax: a[0], ay: -a[1], az: -a[2], bx: b[0], by: -b[1], bz: -b[2], cx: d[0], cy: -d[1], cz: -d[2] };
+      all.push(tri);
       const ux = tri.bx - tri.ax, uy = tri.by - tri.ay, uz = tri.bz - tri.az;
       const vx = tri.cx - tri.ax, vy = tri.cy - tri.ay, vz = tri.cz - tri.az;
       const ny = uz * vx - ux * vz; // y component of the cross product (u x v)
       const len = Math.hypot(uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx) || 1;
-      if (Math.abs(ny) / len < 0.5) {
-        // steep triangle = wall: keep its longest edge in the xz plane and its height range
-        const px = [tri.ax, tri.bx, tri.cx], pz = [tri.az, tri.bz, tri.cz], py = [tri.ay, tri.by, tri.cy];
-        let bi = 0, bl = -1;
-        for (let k = 0; k < 3; k++) { const l = Math.hypot(px[(k + 1) % 3] - px[k], pz[(k + 1) % 3] - pz[k]); if (l > bl) { bl = l; bi = k; } }
-        if (bl > 1) this.walls.push({ ax: px[bi], az: pz[bi], bx: px[(bi + 1) % 3], bz: pz[(bi + 1) % 3], y0: Math.min(...py), y1: Math.max(...py) });
-        continue;
-      }
+      if (Math.abs(ny) / len < 0.5) continue; // steep triangle: a wall (handled by the collision world)
       this.tris.push(tri);
       if (t[3]) this.warpTris.push({ tri, v: t[3] });
       const area = Math.abs(ny);
@@ -326,7 +309,7 @@ export class PlayMode {
         this.pos.set((tri.ax + tri.bx + tri.cx) / 3, (tri.ay + tri.by + tri.cy) / 3, (tri.az + tri.bz + tri.cz) / 3);
       }
     }
-    this.lowest = this.tris.length ? Math.min(...this.tris.map((t) => Math.min(t.ay, t.by, t.cy))) : -1e9;
+    this.world = buildWorld(all);
     await this.spawnEnemies(st);
     const door = st.data.entities?.[0];
     const doorList = (st.data.entities ?? []).filter((e) => e.flag === -126 && (e.kind === -1 || e === door || stageIndex === 0)).map((e) => ({ x: e.x, z: -e.z, exit: true }));
@@ -744,7 +727,7 @@ export class PlayMode {
     this.stage = undefined;
     this.hero = undefined;
     this.tris = [];
-    this.walls = [];
+    this.world = null;
     this.vy = 0;
     this.airborne = false;
     this.warpTris = [];
@@ -810,61 +793,25 @@ export class PlayMode {
     return best;
   }
 
-  /** Highest floor under (x,z) that is at most `up` above `y` (what the hero can stand on or step up to), or null. */
-  private groundBelow(x: number, z: number, y: number, up: number): number | null {
-    let best: number | null = null;
-    const lim = y + up;
-    for (const t of this.tris) {
-      const d = (t.bz - t.cz) * (t.ax - t.cx) + (t.cx - t.bx) * (t.az - t.cz);
-      if (Math.abs(d) < 1e-6) continue;
-      const l1 = ((t.bz - t.cz) * (x - t.cx) + (t.cx - t.bx) * (z - t.cz)) / d;
-      const l2 = ((t.cz - t.az) * (x - t.cx) + (t.ax - t.cx) * (z - t.cz)) / d;
-      const l3 = 1 - l1 - l2;
-      if (l1 < -0.001 || l2 < -0.001 || l3 < -0.001) continue;
-      const fy = l1 * t.ay + l2 * t.by + l3 * t.cy;
-      if (fy <= lim && (best === null || fy > best)) best = fy;
-    }
-    return best;
-  }
-
-  /** How far a hero circle at (x,z) with feet at `y` sinks into collision walls (0 = free). Walls lower than a step or above head height are ignored. */
-  private wallDepth(x: number, z: number, y: number): number {
-    let depth = 0;
-    for (const w of this.walls) {
-      if (w.y1 <= y + STEP_UP || w.y0 >= y + 110) continue;
-      const ex = w.bx - w.ax, ez = w.bz - w.az;
-      const l2 = ex * ex + ez * ez;
-      const u = Math.max(0, Math.min(1, ((x - w.ax) * ex + (z - w.az) * ez) / l2));
-      const d = Math.hypot(x - (w.ax + ex * u), z - (w.az + ez * u));
-      if (HERO_R - d > depth) depth = HERO_R - d;
-    }
-    return depth;
-  }
+  /** Hero state <-> collision body. */
+  private toBody(): Body { const b = this.body; b.x = this.pos.x; b.y = this.pos.y; b.z = this.pos.z; b.vy = this.vy; b.airborne = this.airborne; return b; }
+  private fromBody(b: Body): void { this.pos.set(b.x, b.y, b.z); this.vy = b.vy; this.airborne = b.airborne; }
 
   /** Jump (L): only from the ground; the hero keeps full air control so gaps in the floor can be crossed. */
   private jump(): void {
     if (this.airborne || this.hp <= 0 || this.action) return;
     this.airborne = true;
-    this.vy = JUMP_V;
+    this.vy = moveCfg.jumpV;
     this.sfx?.play('jump');
   }
 
   /** Gravity step while airborne: land on the highest floor the feet pass through; falling out of the map puts the hero back on the last safe ground. */
   private fall(dt: number): void {
-    const y0 = this.pos.y;
-    this.vy -= GRAVITY * dt;
-    const y1 = y0 + this.vy * dt;
-    if (this.vy <= 0) {
-      const g = this.groundBelow(this.pos.x, this.pos.z, y0, 2);
-      if (g !== null && y1 <= g) {
-        this.pos.y = g;
-        this.airborne = false;
-        this.vy = 0;
-        return;
-      }
-    }
-    this.pos.y = y1;
-    if (y1 < this.lowest - 400) {
+    if (!this.world) return;
+    const b = this.toBody();
+    const r = fallStep(this.world, b, dt);
+    this.fromBody(b);
+    if (r === 'out') {
       this.pos.copy(this.safe);
       this.airborne = false;
       this.vy = 0;
@@ -913,17 +860,11 @@ export class PlayMode {
       const dx = (ix * cos + iy * sin) * 220 * dt;
       const dz = (-ix * sin + iy * cos) * 220 * dt;
       const tryMove = (nx: number, nz: number): boolean => {
-        if (this.blocked(nx, nz)) return false;
-        const wd = this.wallDepth(nx, nz, this.pos.y);
-        if (wd > 0 && wd > this.wallDepth(this.pos.x, this.pos.z, this.pos.y) + 0.01) return false;
-        if (this.airborne) { this.pos.x = nx; this.pos.z = nz; return true; }
-        const fy = this.groundBelow(nx, nz, this.pos.y, STEP_UP);
-        if (fy === null) return false; // nothing to stand on within a step: void, or a cliff / ledge taller than a step
-        this.pos.x = nx;
-        this.pos.z = nz;
-        if (fy < this.pos.y - 12) this.airborne = true; // walked off a ledge: fall (gravity lands on the lower floor)
-        else this.pos.y = fy;
-        return true;
+        if (!this.world) return false;
+        const b = this.toBody();
+        const ok = bodyMove(this.world, b, nx, nz, (x, z) => this.blocked(x, z));
+        if (ok) this.fromBody(b);
+        return ok;
       };
       if (!tryMove(this.pos.x + dx, this.pos.z + dz)) {
         if (!tryMove(this.pos.x + dx, this.pos.z)) tryMove(this.pos.x, this.pos.z + dz);
@@ -934,11 +875,8 @@ export class PlayMode {
     else {
       this.safeT -= dt;
       if (this.safeT <= 0) { this.safe.copy(this.pos); this.safeT = 0.4; }
-      // stay glued to the ground when idle on a moving-free floor (no-op), but fall if the floor under us vanished
-      const g = this.groundBelow(this.pos.x, this.pos.z, this.pos.y, STEP_UP);
-      if (g === null) this.airborne = true;
-      else if (g < this.pos.y - 12) this.airborne = true;
-      else this.pos.y = g;
+      // stay glued to the ground when idle, or start falling if the floor under us vanished
+      if (this.world) { const b = this.toBody(); settle(this.world, b); this.fromBody(b); }
     }
     if (this.action) {
       this.action.left -= dt;

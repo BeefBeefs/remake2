@@ -18,6 +18,18 @@ def find_subheader(blob):
                 return h, w
     return None
 
+def find_subheader_spill(d, a, b):
+    """Like find_subheader on the slice d[a:b], but the 40-byte subheader may start inside the slice and run on into the next one.
+    Tiny parts (4 vertices, 2 faces: e.g. hero 0 slices 13-16, 144 bytes each) have their subheader at the very end of their slice,
+    so the per-slice search missed 38 of them over the heroes."""
+    for h in range(0, min(b - a, 0x400), 4):
+        if a + h + 40 > len(d): break
+        w = struct.unpack_from('<10I', d, a + h)
+        if w[7] == 0x40 and w[8] > w[7] and w[9] > w[8] and (w[8] - w[7]) % 8 == 0 and (w[9] - w[8]) % 8 == 0:
+            if (w[1] & 0xffff) == (w[8] - w[7]) // 8 and (w[1] >> 16) == (w[9] - w[8]) // 8:
+                return h, w
+    return None
+
 def parse_part_at(d, start, end):
     """Parse the part whose pack-table slice is d[start:end].
 
@@ -66,7 +78,7 @@ def parse_pack(d, base, offs, ends):
     Row (16 B): u8 normal_idx[4], u8 uv[4][2], u8 vertex_idx[4]."""
     info = {}
     for i in range(len(offs)):
-        r = find_subheader(d[base + offs[i]:base + ends[i]])
+        r = find_subheader_spill(d, base + offs[i], base + ends[i])
         if r:
             info[i] = r
     ids = sorted(info)
