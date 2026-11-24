@@ -20,7 +20,11 @@ def record(s):
     o = s * S
     w = struct.unpack_from('<16I', d, o)
     V, N, F = w[0] & 0xffff, w[0] >> 16, w[1] & 0xffff
-    if not (w[8] == 64 and V > 0 and w[9] == 64 + 8 * V and w[10] == w[9] + 8 * N and (w[2] & 0xffff) == V): return None
+    if not (w[8] == 64 and V > 0 and w[9] == 64 + 8 * V and w[10] == w[9] + 8 * N): return None
+    # w[2] low half normally repeats V; 16 textured records (e.g. the inn's walls, sectors 5047/5054) have a smaller number there. Accept those only
+    # when the face rows tile the record exactly (w[13] = end of the 32-byte rows), so no collision record or junk slips in.
+    strict = (w[2] & 0xffff) == V
+    if not strict and not (w[12] == 0 and w[13] > w[10] and (w[13] - w[10]) == 32 * F): return None
     verts = [list(struct.unpack_from('<3h', d, o + 64 + 8 * i)) for i in range(V)]
     tex = w[12] == 0 and w[13] > w[10]
     # 17 stages (17-19, 30, 34, 36, 42-45, 48, 49, 66, 77, 79, 81, 82) start with a record whose w[13] is 0 but whose rows are valid 32-byte
