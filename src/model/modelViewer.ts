@@ -4,6 +4,9 @@ import * as THREE from 'three';
 export interface HeroJson {
   hero: number;
   textureSector: number;
+  /** Monsters only: stacked texture height (UVs are normalised by 256 and corrected in setTexture). */
+  texHeight?: number;
+  defaultGroup?: number;
   parts: {
     index: number;
     verts: [number, number, number][];
@@ -40,9 +43,10 @@ export class AnimatedModel {
   readonly material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, alphaTest: 0.5 });
   /** Texture page size in pixels (hero textures are 256 x 64). */
   readonly texW = 256;
-  readonly texH = 64;
+  readonly texH: number;
 
   constructor(readonly data: HeroJson) {
+    this.texH = data.texHeight === undefined ? 64 : 256;
     this.inner.rotation.x = Math.PI;
     this.root.add(this.inner);
 
@@ -121,6 +125,7 @@ export class AnimatedModel {
     tex.magFilter = THREE.NearestFilter;
     tex.minFilter = THREE.NearestFilter;
     tex.colorSpace = THREE.SRGBColorSpace;
+    tex.repeat.y = this.texH / tex.image.height; // geometry UVs assume texH rows
     this.material.map?.dispose();
     this.material.map = tex;
     this.material.needsUpdate = true;
@@ -157,6 +162,13 @@ export class AnimatedModel {
     this.material.dispose();
     for (const m of this.meshes) m.mesh.geometry.dispose();
   }
+}
+
+export async function loadMonster(k: number): Promise<AnimatedModel> {
+  const url = `assets/monsters/mon${String(k).padStart(2, '0')}.json`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+  return new AnimatedModel((await res.json()) as HeroJson);
 }
 
 export async function loadHero(hero: number): Promise<AnimatedModel> {

@@ -3,6 +3,23 @@
 Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (Win EN). Repo will go private
 later. Newest entry first; each work session appends here.
 
+### Turn 9 (continues; notes after each step)
+**Step H – monsters pair up and render; viewer now lists 78 monsters**
+- ✅ Pack 4026 / 4056 are spell/effect meshes, not characters. Monster **anim packs** (sectors 1297–2400, 81 packs) and **mesh packs**
+  (2764–3365, 94 packs) pair up by "anim part count C == mesh pack n", greedy in sector order: 78 of 81 pair
+  (`data/monster_pairs.json`); 16 mesh packs (3241–3362) are left over (NPCs / bosses / props?).
+- ✅ The tables that contain sector numbers like 1297 at 16-byte stride (file offset 0x2dd1b0) are **not** model tables
+  (they look like script/event records) – other copies of the hero resource table are just variants of the one already known.
+- ✅ Monster textures (sectors 280–1030, 97 records) are **psize 524 = 1 CLUT**, 256-px wide strips. The real strip size is
+  in the pixel header: `u16 A,B @ +8` = VRAM width in halfwords (2A px) × height B (hero tex was 128/64 → 256×64).
+  Strips are 64 rows high; **a strip shorter than 64 closes a group** → 31 groups (stacked vertically; mesh UVs reach v≈208).
+- ✅ Group *k* ↔ monster *k* gives clearly right results for monsters 0 (jackal-headed warrior) and 2; monsters 1 and 3 show wrong-looking
+  areas (green/red concentric patterns) so that mapping is **a guess only**, and 78 monsters share 31 groups, i.e. recolours/variants
+  (monsters ≥ 31 default to group 0 – use the new "tex group" selector in the viewer to try others).
+- Files: `tools/export_monsters.py` → `public/assets/monsters/mon00..77.json` (5.5 MB) + `g00..g30.png` + `groups.json`;
+  viewer selector: entries 0–15 heroes, 16+ monsters (UVs normalised by 256, `texture.repeat.y` corrects for stack height).
+- Not verified: true monster↔texture table (not found yet), monster names, which anim is idle/walk/attack, the 16 spare mesh packs.
+
 ### Turn 7 (continues from Turn 6; notes after each step)
 **Step A – model→texture link FOUND**
 - ✅ BLAZE.ALL contains a **resource table** (copies at file offsets 0x906b88, 0x907388, …; `data/resource_table.json`) of

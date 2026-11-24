@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { SndBanks } from './audio/sndBank';
-import { AnimatedModel, loadHero } from './model/modelViewer';
+import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 
 // Placeholder scene: proves the build/asset pipeline. Real game systems land in later milestones
 // (see PROGRESS.md).
@@ -31,15 +31,25 @@ const mk = (n: number, label: (i: number) => string) => {
   for (let i = 0; i < n; i++) sel.add(new Option(label(i), String(i)));
   return sel;
 };
-const heroSel = mk(16, (i) => `hero ${i}`);
+// 0-15 = heroes, 16.. = monsters (78 anim<->mesh pairs; texture group is a guess, pick another with "tex")
+const heroSel = mk(16 + 78, (i) => (i < 16 ? `hero ${i}` : `monster ${i - 16}`));
 const animSel = document.createElement('select');
 const palSel = mk(4, (i) => `palette ${i}`);
+const texSel = mk(31, (i) => `tex group ${i}`);
 const info = document.createElement('div');
-hud?.append(document.createElement('hr'), heroSel, animSel, palSel, info);
+hud?.append(document.createElement('hr'), heroSel, animSel, palSel, texSel, info);
+
+const isMonster = () => Number(heroSel.value) >= 16;
+const texUrl = () =>
+  isMonster()
+    ? `assets/monsters/g${String(texSel.value).padStart(2, '0')}.png`
+    : `assets/hero/h${String(heroSel.value).padStart(2, '0')}_c${palSel.value}.png`;
+const describe = (m: AnimatedModel) =>
+  `${m.data.parts.length} parts, ${m.frameCount} frames, ${m.skippedFaces}/${m.totalFaces} faces skipped`;
 
 async function showHero(h: number): Promise<void> {
   info.textContent = 'loading…';
-  const m = await loadHero(h);
+  const m = h < 16 ? await loadHero(h) : await loadMonster(h - 16);
   if (model) {
     scene.remove(model.root);
     model.dispose();
@@ -48,16 +58,19 @@ async function showHero(h: number): Promise<void> {
   scene.add(m.root);
   animSel.replaceChildren(...Array.from({ length: m.animCount }, (_, i) => new Option(`anim ${i}`, String(i))));
   palSel.value = '0';
-  await m.setTexture(`assets/hero/h${String(h).padStart(2, '0')}_c0.png`);
-  info.textContent = `${m.data.parts.length} parts, ${m.frameCount} frames, ${m.skippedFaces}/${m.totalFaces} faces skipped`;
+  palSel.disabled = h >= 16;
+  texSel.disabled = h < 16;
+  if (h >= 16) texSel.value = String(m.data.defaultGroup ?? 0);
+  await m.setTexture(texUrl());
+  info.textContent = describe(m);
 }
 heroSel.onchange = () => void showHero(Number(heroSel.value));
 animSel.onchange = () => {
   model?.setAnim(Number(animSel.value));
-  if (model) info.textContent = `${model.data.parts.length} parts, ${model.frameCount} frames, ${model.skippedFaces}/${model.totalFaces} faces skipped`;
+  if (model) info.textContent = describe(model);
 };
-palSel.onchange = () =>
-  void model?.setTexture(`assets/hero/h${String(heroSel.value).padStart(2, '0')}_c${palSel.value}.png`);
+palSel.onchange = () => void model?.setTexture(texUrl());
+texSel.onchange = () => void model?.setTexture(texUrl());
 showHero(0).catch((e) => {
   info.textContent = `model load failed: ${e}`;
   console.error(e);
