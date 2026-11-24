@@ -21,12 +21,10 @@ for k in range(16):
     offs = [b['off'] for b in mp['blobs']]
     nxt = min([q['sector'] for q in packs.values() if q['sector'] > mp['sector']] or [len(d) // S])
     ends = offs[1:] + [nxt * S - base]
-    parts = []
-    for i in range(mp['n']):
-        r = meshparse.parse_part_at(d, base + offs[i], base + ends[i])
-        if r and r['faces']:
-            parts.append({'index': i, 'verts': r['verts'],
-                          'faces': [{'uv': [list(c) for c in f['uv']], 'v': list(f['v'])} for f in r['faces']]})
+    pp = meshparse.parse_pack(d, base, offs, ends)
+    parts = [{'index': i, 'verts': r['verts'],
+              'faces': [{'uv': [list(c) for c in f['uv']], 'v': list(f['v'])} for f in r['faces'] + r['extra']]}
+             for i, r in sorted(pp.items()) if r['faces']]
     anims = []
     for bi in range(ap['n']):
         a = assemble.load_anim(d, ap, bi)

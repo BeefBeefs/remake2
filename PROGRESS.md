@@ -18,6 +18,25 @@ later. Newest entry first; each work session appends here.
   other 15 heroes not yet checked.
 
 
+### Turn 8 (continues; notes after each step)
+**Step E – face data layout SOLVED (mostly): the "R1" rows belong to the previous part**
+- ✅ Evidence chain: (1) 66 % of out-of-range faces fit entirely inside the *previous* part's vertex count and 65 % of their
+  true quads are planar there (control: own valid faces 56 %; part two back: 8 hits); (2) re-assigning rows as
+  F2(P) + R1(P+1) cut out-of-range faces from 13.7 % to 3.1 %; (3) rows between a part's F2 start and the next subheader
+  equal **F = low half of subheader word 0** in 257/351 parts (N, the normal count, may be larger: e.g. hero 0 part 0 F=14, N=18) and
+  66 of the other 94 match F too.
+- ✅ Layout (docs/FORMATS.md, `meshparse.parse_pack`): record i starts at `base+offs[i]+h0` (h0 = subheader offset inside the
+  slice: 112 / 84 / 132); `subheader | V verts @+w7-4 | N normals @+w8-4 | F face rows @+w9`, rows continue across the slice
+  boundary up to the next record's subheader. The pack's offset table points *h0 bytes before* each record, so each slice
+  starts with the tail of the previous part's face list.
+- ✅ Slices with no subheader (e.g. hero 3 parts 11-14, 19-24; hero 0 parts 13-16) are extra face rows ("joint caps")
+  that index the preceding part's vertices (part 19 max index 46 = part 18's V−1; part 11 max 21 = part 10's V−1); 61 % of them are fully
+  in range – kept only when in range, drawn in the preceding part's space (bone assumption unverified).
+- Result over all 16 heroes: **7,508 faces, 2.9 % with out-of-range vertex indices** (was ≈21 %), 22/27 → more parts per hero;
+  `docs/heroes_sample.png` shows heroes 0, 3, 8, 15 now with shoulders, boots, shields, hair.
+- Not verified: where the extra rows belong (own bone vs previous part's bone), why 94 parts still differ from F, 10 % of faces
+  have UV v ≥ 64 (second texture page? skipped by the viewer), animation meaning.
+
 **Step D – all 16 heroes + all animations (software-verified, browser run pending)**
 - ✅ **Blob alignment fix**: face rows (16 B) straddle the pack's blob boundaries for most heroes. The subheader sits at
   `h = 112` (heroes 0, 2), `84` (hero 1) or `132` (hero 3, 15) – not 16-aligned in the latter cases. Shifting the window back by
@@ -98,7 +117,7 @@ One-time manual step: repo Settings → Pages → Source = "GitHub Actions". Not
   out-of-range indices; R1 is probably seam/joint geometry referencing neighbouring parts' vertices (unresolved).
 - ✅ **Hierarchy table decoded**: `[-1,-1] + 59 bone parents + 27 part→bone indices` (2+59+27 = 88 = A+2).
 
-**Next**: find why ~1/3 of parts fail the subheader check (heroes 3, 8, 13, 15), the remaining out-of-range faces, name the animations, then monsters/NPCs and level data.
+**Next**: faces with v ≥ 64 (second texture page?), name the animations, monsters/NPCs, level data.
 
 ## Turn 5 – 2026-11-24
 **Done**

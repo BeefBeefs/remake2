@@ -51,3 +51,44 @@ def parse_part(blob):
         f2 = f2[:max(0, nn - len(f1))]
     faces = f1 + f2
     return {'subheader_at': h, 'verts': verts, 'normals': norms, 'faces': faces}
+
+
+def parse_pack(d, base, offs, ends):
+    """Parse a whole mesh pack. Returns {part index: {verts, normals, faces, extra}}.
+
+    Findings (PROGRESS.md Turn 7): the pack's blob slices are NOT part boundaries for face data. A part record starts at
+    base+offs[i]+h0 (h0 = subheader position inside the slice: 112 / 84 / 132 ...) and consists of
+      subheader | V vertices @+w7-4 | N normals @+w8-4 | F face rows @+w9 ...
+    where F = low half of subheader word 0 (N, the normal count, can be larger). Face rows run on across the slice boundary
+    up to the next record's subheader, so the "7 rows before the subheader" of a slice are the tail of the *previous* part.
+    Slices without any subheader are extra face rows ("joint caps") that index the preceding part's vertices; rows beyond
+    F are returned in 'extra' and are only kept if every vertex index is in range.
+    Row (16 B): u8 normal_idx[4], u8 uv[4][2], u8 vertex_idx[4]."""
+    info = {}
+    for i in range(len(offs)):
+        r = find_subheader(d[base + offs[i]:base + ends[i]])
+        if r:
+            info[i] = r
+    ids = sorted(info)
+    def row(o):
+        r_ = d[o:o + 16]
+        return {'id': tuple(r_[0:4]), 'uv': [(r_[4 + 2 * k], r_[5 + 2 * k]) for k in range(4)], 'v': tuple(r_[12:16])}
+    parts = {}
+    for n, i in enumerate(ids):
+        h0, w = info[i]
+        start = base + offs[i] + h0
+        nv, nn, nf = (w[8] - w[7]) // 8, (w[9] - w[8]) // 8, w[0] & 0xffff
+        if nv > 4096 or nn > 4096 or nf > 4096:
+            continue
+        verts = [struct.unpack_from('<3h', d, start + w[7] - 4 + 8 * k) for k in range(nv)]
+        norms = [struct.unpack_from('<3h', d, start + w[8] - 4 + 8 * k) for k in range(nn)]
+        f0 = start + w[9]
+        if n + 1 < len(ids):
+            end = base + offs[ids[n + 1]] + info[ids[n + 1]][0]
+        else:   # last real part: only trailing blobs inside the offset table count (ends[-1] runs on into padding)
+            end = base + offs[-1] if i + 1 < len(offs) else f0 + 16 * nf
+        faces = [row(f0 + 16 * k) for k in range(nf) if f0 + 16 * k + 16 <= end]
+        extra = [row(o) for o in range(f0 + 16 * nf, end - 15, 16)]
+        extra = [f for f in extra if all(j < nv for j in f['v'])]
+        parts[i] = {'verts': verts, 'normals': norms, 'faces': faces, 'extra': extra}
+    return parts

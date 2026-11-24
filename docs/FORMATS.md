@@ -108,7 +108,10 @@ BLAZE.ALL holds `(u32 sector, u32 size)` pairs at file offset 0x906b88 (copies a
 Entry *k* of each list belongs to hero *k* (hero 0 = knight: texture 120, anim pack 3501, mesh pack 3521).
 Hero texture records have 4 CLUTs of 256 colours (palette block 2048 B at +0x14, psize 2060) and a 256x64 image; model UVs index that image directly.
 
-## Mesh blob alignment (fix)
-The pack's blob offsets cut through 16-byte face rows for most heroes. Find the subheader at any 4-byte phase (h = 112, 84, 132, …),
-then shift the window back by `(-h) % 16` bytes (start and end) so the subheader is 16-aligned; rows before it are the first
-face list, rows after `h+w9` the second. Hero 0/2 need no shift.
+## Mesh pack layout (final, supersedes the "blob" descriptions above)
+Offsets in the pack table point `h0` bytes before each part record (h0 = 112 / 84 / 132 depending on the pack, the position of the
+subheader inside the slice). Record i, starting at `base+offs[i]+h0`:
+`subheader (u32 words: w0 = F | F<<16, w1 = V | N<<16, w7 = 0x40, w8 = 0x40+8V, w9 = w8+8N) | V vertices @+w7-4 (i16 x,y,z,0) |
+N normals @+w8-4 | F face rows @+w9`. Rows run on across the slice boundary until the next record's subheader (the rows at the start of
+a slice are the tail of the previous part). Row (16 B): `u8 normal_idx[4]` (same value x4 = flat normal), `u8 uv[4][2]`, `u8 vertex_idx[4]`
+(repeated index = triangle). Slices without a subheader hold extra rows that index the previous part's vertices.
