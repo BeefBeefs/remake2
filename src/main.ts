@@ -5,6 +5,7 @@ import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 import { loadStage, StageView } from './model/stageViewer';
 import { PlayMode } from './play';
 import { questOf } from './quests';
+import { initMenu } from './menu';
 
 // Placeholder scene: proves the build/asset pipeline. Real game systems land in later milestones
 // (see PROGRESS.md).
@@ -300,3 +301,16 @@ SndBanks.load()
   t?.addEventListener('click', hide);
   window.addEventListener('keydown', hide);
 }
+
+// Main menu (shown once the title splash is dismissed); the viewer panel (#hud) is hidden until "Model / stage viewer" is chosen.
+initMenu({
+  start: (stageIdx, heroIdx) => {
+    heroSel.value = String(heroIdx);
+    playSel.value = String(stageIdx);
+    variantSel.value = '0';
+    playBtn.click();
+  },
+  stop: () => { if (play.active) playBtn.click(); },
+  isPlaying: () => play.active,
+  viewer: (show) => { if (hud) hud.style.display = show ? '' : 'none'; },
+});
