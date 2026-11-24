@@ -64,6 +64,9 @@ export class PlayMode {
   private heroDamage = 34;
   private heroGuardDef = 0;
   private className = '';
+  /** Ranged classes (Sorcerer, Hunter, Fairy; kit 3, 4, 7) shoot with Attack and melee with Attack 2. Colour per class. */
+  private ranged: number | null = null;
+  private shots: { mesh: THREE.Mesh; vx: number; vz: number; life: number }[] = [];
   /** Sound effects (set by main.ts once the sound banks are loaded). */
   sfx: Sfx | null = null;
   /** One-shot action (attack/jump…): hero anim index and seconds left. */
@@ -144,7 +147,11 @@ export class PlayMode {
     const h = this.hero;
     if (!this.active || !h || this.action) return;
     if ((name === 'attack' || name === 'attack2') && this.talk()) return;
-    if (name === 'attack' || name === 'attack2') { this.sfx?.play('swing'); this.strike(); }
+    if (name === 'attack' || name === 'attack2') {
+      this.sfx?.play('swing');
+      if (name === 'attack' && this.ranged !== null) this.shoot(this.ranged);
+      else this.strike();
+    }
     if (name === 'jump') this.sfx?.play('jump');
     const anim = { attack: 3, attack2: 6, jump: 4, hurt: 2, victory: 8, die: 7, guard: 5 }[name];
     if (anim >= h.animCount) return;
@@ -171,6 +178,7 @@ export class PlayMode {
     this.heroDamage = cls ? cls.attack * 5 : 34;
     this.heroGuardDef = cls ? Math.floor(cls.defense / 2) : 0;
     this.className = cls ? `${cls.class} (${cls.weapon})` : '';
+    this.ranged = ({ 3: 0xff8a2a, 4: 0xffe45a, 7: 0x6fe8ff } as Record<number, number>)[heroIndex % 8] ?? null;
     this.curAnim = -1;
     this.scene.add(st.root);
     this.scene.add(h.root);
@@ -427,6 +435,42 @@ export class PlayMode {
     g.stroke();
   }
 
+  /** Ranged attack: a small glowing ball flying along the heading, hits the first enemy within 70 units. */
+  private shoot(color: number): void {
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(18, 10, 8), new THREE.MeshBasicMaterial({ color }));
+    const dx = Math.sin(this.heading), dz = Math.cos(this.heading);
+    mesh.position.set(this.pos.x + dx * 60, this.pos.y + 90, this.pos.z + dz * 60);
+    this.scene.add(mesh);
+    this.shots.push({ mesh, vx: dx * 900, vz: dz * 900, life: 1.0 });
+  }
+
+  private updateShots(dt: number): void {
+    for (const sh of this.shots) {
+      sh.mesh.position.x += sh.vx * dt;
+      sh.mesh.position.z += sh.vz * dt;
+      sh.life -= dt;
+      for (const en of this.enemies) {
+        if (en.npc || en.hp <= 0 || en.dying > 0) continue;
+        if (Math.hypot(en.x - sh.mesh.position.x, en.z - sh.mesh.position.z) < 70) {
+          en.hp -= Math.round(this.heroDamage * 0.8);
+          en.lock = 0.5;
+          this.sfx?.play('hit');
+          this.setEnemyAnim(en, 2);
+          sh.life = 0;
+          break;
+        }
+      }
+      if (sh.life > 0 && this.floorAt(sh.mesh.position.x, sh.mesh.position.z, this.pos.y) === null) sh.life = 0;
+    }
+    this.shots = this.shots.filter((sh) => {
+      if (sh.life > 0) return true;
+      this.scene.remove(sh.mesh);
+      sh.mesh.geometry.dispose();
+      (sh.mesh.material as THREE.Material).dispose();
+      return false;
+    });
+  }
+
   /** Hero attack: damage enemies in front within 170 units. */
   private strike(): void {
     for (const en of this.enemies) {
@@ -448,6 +492,8 @@ export class PlayMode {
     this.talkIndex = 0;
     for (const en of this.enemies) en.model.dispose();
     this.enemies = [];
+    for (const sh of this.shots) { this.scene.remove(sh.mesh); sh.mesh.geometry.dispose(); (sh.mesh.material as THREE.Material).dispose(); }
+    this.shots = [];
     this.hp = 100;
     this.deadTime = -1;
     this.active = false;
@@ -532,6 +578,7 @@ export class PlayMode {
       }
     }
     this.updateEnemies(dt);
+    this.updateShots(dt);
     this.updateHero(dt);
     this.drawMinimap();
     // door trigger (GUESS for the targets: the real destinations are not in the data we can read, see PROGRESS.md Step AE/AG).
