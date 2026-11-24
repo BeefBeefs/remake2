@@ -323,6 +323,33 @@ while changed:
         solved = {next(iter(cand[m])) for m in st['monsters'] if m in cand and len(cand[m]) == 1}
         for m in st['monsters']:
             if m in cand and len(cand[m]) > 1 and cand[m] - solved != cand[m]: cand[m] = cand[m] - solved; changed = True
+# A stage's streamed model list follows the order of its definition list (41 of 42 solved pairs agree): enumerate the in-order assignments
+# that fit every model's candidate names and keep, per model, only the names that occur in some valid assignment. Repeat to a fixpoint.
+import itertools
+def order_pass():
+    ch = False
+    for st in stages:
+        names = []
+        for m in st['monsterDefs']:
+            b = base_name(m['name'])
+            if b not in names: names.append(b)
+        mons = [m for m in st['monsters']]
+        if not names or not mons or len(mons) > len(names) or any(m not in cand for m in mons): continue
+        seen = [set() for _ in mons]
+        for combo in itertools.combinations(range(len(names)), len(mons)):
+            if all(names[c] in cand[m] for c, m in zip(combo, mons)):
+                for k, c in enumerate(combo): seen[k].add(names[c])
+        if not seen[0]: continue
+        for m, sn in zip(mons, seen):
+            if sn != cand[m] and sn <= cand[m]: cand[m] = sn; ch = True
+    return ch
+while True:
+    c1 = order_pass(); changed = False
+    for st in stages:
+        solved = {next(iter(cand[m])) for m in st['monsters'] if m in cand and len(cand[m]) == 1}
+        for m in st['monsters']:
+            if m in cand and len(cand[m]) > 1 and cand[m] - solved != cand[m]: cand[m] = cand[m] - solved; changed = True
+    if not (c1 or changed): break
 model_name = {m: next(iter(c)) for m, c in cand.items() if len(c) == 1}
 for st in stages:
     info = []
