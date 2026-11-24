@@ -67,11 +67,22 @@ BGR555+STP-bit palettes, 256-wide texture pages, `0x1000 = 1.0` fixed point (GTE
 
 ### Packs 🟡
 `u32 n; u32 offset[n]` (offset[0]=0, ascending; relative to end of table = 4+4n), then blobs.
-* **Model/animation blob** (695 found, header `0x40`): `u32 hdrsize=0x40; u32 bodysize` with `hdrsize+bodysize == blob
-  length` (576 of 580 checked). Header u16 @0x10: four counts (e.g. 61,41,20,7); u32 @0x20: offset (e.g. 0x2bc) of the
-  pose table inside the body. Body = u16 index tables (per-frame/bone mappings, start with `-1,-1,0,0,1,2,3…`) then
-  **16-byte pose records** `i16 rot[3] (4096=360°), i16 0, i16 trans[3], i16 scale (4096)` – i.e. skeletal animation
-  keyframes. ❓ Where the mesh vertices/faces/UVs live and what the 4 counts mean.
+* **Animation blob** (695 found, header `0x40`): `u32 hdrsize=0x40; u32 bodysize` with `hdrsize+bodysize == blob
+  length` (576 of 580 checked). Header u16 @0x10: four counts **(A, B, C, D)** (e.g. 61,41,20,7 or 86,59,27,14);
+  u32 @0x20: offset (e.g. 0x2bc) of the pose table inside the body. Body, ✅ decoded: `hierarchy[A+2] u16` (starts
+  `-1,-1,0,0,1,2,…`), then **D lists of B u16** (per frame: pose-record index for each of the B bones), then
+  **16-byte pose records** `i16 rot[3] (4096=360°), i16 0, i16 trans[3], i16 scale (4096)`. C = number of mesh parts
+  (blobs) in the sibling mesh pack, D = number of frames. Size check: pack 3501 blob 0 = 176 + 14·59·2 + 114·16.
+
+### Mesh part blobs ✅ (layout) / 🟡 (indexing)
+Found in 23 packs (sectors ~2764–3521; e.g. pack 3521 has 27 parts = C of its animation pack at 3501). 395 blobs
+parse so far. Layout (`tools/meshparse.py`):
+`[F1 face rows][subheader @h, 16-aligned, found by w7==0x40][V vertices @h+w7-12][N normals @h+w8-12][12 B][F2 face rows @h+w9]`
+* face row (16 B): `u8 id[4]`, `u8 uv[4][2]` (PS1 texture-page coords), `u8 vidx[4]` – textured quad (repeated index = tri).
+* vertex: `i16 x,y,z,0` (small ints, about ±60); normal: `i16 x,y,z,0`, 4096 = 1.0. `V=(w8-w7)/8`, `N=(w9-w8)/8`, and
+  **#faces == N** in every parsed blob. Visual check: part 26 of pack 3521 is a sword.
+* ❓ Face vertex indices often exceed V (up to 88 for a 59-vertex part): they index a model-wide pool (shared joints).
+  ❓ Which texture/CLUT a face uses (`id`?); how parts map onto bones.
 * Other blob kinds: ASCII text blobs ('Mage…', 'Hell…'), height-map-like byte grids (32-byte rows: 24 data bytes + pad),
   record tables of 16 bytes with `0x10000000` fixed-point fields – ❓.
 

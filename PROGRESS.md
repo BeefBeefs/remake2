@@ -3,6 +3,25 @@
 Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (Win EN). Repo will go private
 later. Newest entry first; each work session appends here.
 
+## Turn 5 – 2026-11-24
+**Done**
+- ✅ **Mesh format found**: face rows (quad + UVs + vertex idx), vertices, normals (`tools/meshparse.py`). #faces == #normals
+  in every blob; plotted parts look right (one is a sword). 395 parts parsed across 23 mesh packs (sectors 2764–3521).
+  Sample export: `public/assets/models/pack_3521.json` (`tools/export_parts.py`).
+- ✅ Fully decoded the animation blob layout (hierarchy + D×B frame index lists + pose records); header counts =
+  (nodes, bones, mesh parts, frames).
+
+**Not verified**
+- Vertex indices exceed per-part vertex counts (shared pool), so full models can't be assembled yet.
+- Face→texture mapping (meaning of `id`, CLUT/tpage), vertex scale/handedness, the 12-byte gap before the second face list.
+- Only 3 parts were inspected visually; most of the 395 parsed parts are unchecked.
+
+**Next**
+1. Solve global vertex indexing (try: pool = parts' vertices concatenated in blob order, or with each part's bone
+   transform from the pose table applied) and assemble one whole model at pose 0.
+2. Map faces to textures; locate the texture record each model uses.
+3. Add a three.js model viewer loading `public/assets/models/*.json` (needs `npm install` locally to test).
+
 ## Turn 4 – 2026-11-24
 **Done**
 - ✅ Found the file is **PlayStation game data** (PS1 strings in the exe; explains BGR555/GTE fixed point).
