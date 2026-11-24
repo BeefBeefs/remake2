@@ -4,6 +4,16 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step AE – script modules decoded as far as possible: they are data, not warp code**
+- BLAZE.ALL holds **175 "map modules"** (`u32 256, A, B, 0 …` at a sector start; A = size of the table part, B = total): header + pointer tables, then the stage descriptor (sentinel), entity records, banner and text.
+  The 12 modules before the maps are **global data**, not scripts: items (4057-4073: key items, flasks – strings like "Host's Door Key"), spells/bullets (4624), character-select UI (4633), memory-card UI (4638).
+- **The Roadside Inn and its five rooms exist ~12 times** (descriptors 5549-5830 repeat in groups: inn 5549/5571/5591/5619/5642/5662…, rooms 5555/5577/5597…): story-state variants of the same maps (e.g. "Your Room" links
+  [81,142] in most variants, [154] in two; room 4 gets an extra link 128 later). The stage list only contains the first variant of each. Same link ids in every variant => links are stable object ids, not per-copy.
+- Link ids appear **only** in their own map's entity records (no destination table in the module, none in `Blaze.exe`: searched as 32-bit constants, no clusters; no `link` pairs between maps in a strict contiguous
+  entity parse either). Door keys being data items suggests doors are gated/handled by state logic in the executable, not by a data table I can read statically. A door's real destination therefore stays unknown.
+- Play mode guess refined: stages 1-5 (rooms) -> door returns to the inn (stage 0), the inn's door -> next room (cycles 1..5), other stages -> next stage in file order.
+- Next candidates: expose the story-state variants (different dialogue per variant) in the picker; disassemble `Blaze.exe` around the entity loader (ndisasm is available) to see how `link`/flag are used.
+
 **Step AD – the 17 "headerless stages" are not stages: 78 stages, real texture lists**
 - ✅ A descriptor (`… texture pairs | sentinel | mesh pairs`) lists ALL records of a stage: first mesh pair = col16 collision record, then textured meshes, prop/monster packs. The 17 headerless textured records
   (old stages 17-19, 30, 31, 34, 36, 42-45, 48, 49, 66, 77, 79, 81, 82) all sit inside the mesh list of the PREVIOUS stage's descriptor and share its coordinate space: they are **extra meshes of that stage**.

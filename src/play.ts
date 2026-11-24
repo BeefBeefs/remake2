@@ -34,6 +34,7 @@ export class PlayMode {
   private stageIndex = 0;
   private heroIndex = 0;
   private doorArmed = false;
+  private lastRoom = 0;
   private travelling = false;
   private doorPos: { x: number; z: number } | null = null;
   private solids: { x: number; z: number; r: number }[] = [];
@@ -412,7 +413,11 @@ export class PlayMode {
       if (dd > 220) this.doorArmed = true;
       else if (dd < 90 && this.doorArmed) {
         this.travelling = true;
-        const next = (this.stageIndex + 1) % 78;
+        // GUESS: stages 0-5 are the Roadside Inn (0) and its five rooms: a room's door leads back to the inn, the inn's door to the
+        // next room; everywhere else the next stage in file order. The real targets are not in the data we can read (see PROGRESS.md).
+        const i0 = this.stageIndex;
+        const next = i0 >= 1 && i0 <= 5 ? 0 : i0 === 0 ? ((this.lastRoom % 5) + 1) : (i0 + 1) % 78;
+        if (next >= 1 && next <= 5) this.lastRoom = next;
         this.hud.textContent = `door → stage ${next} (guess)…`;
         void this.enter(next, this.heroIndex)
           .then(() => { this.info = `stage ${next} (via door)`; })
