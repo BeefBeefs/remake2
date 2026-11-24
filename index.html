@@ -9,9 +9,12 @@
       canvas { display: block; }
       #hud { position: fixed; top: 8px; left: 8px; max-width: 360px; background: #000a; padding: 8px 10px; border: 1px solid #333; }
       #hud select, #hud button { font: inherit; margin: 2px 2px 2px 0; }
+      #title { position: fixed; inset: 0; z-index: 10; background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+      #title img { width: min(100vw, 114.28vh); max-height: 100vh; image-rendering: pixelated; }
     </style>
   </head>
   <body>
+    <div id="title"><img src="assets/ui/title.png" alt="Blaze &amp; Blade: Eternal Quest – click or press a key to start" /></div>
     <div id="hud">
       <b>Blaze &amp; Blade remake</b> <span id="ver">v0.0.1 (pre-alpha)</span><br />
       <span id="status">loading sound manifest…</span><br />

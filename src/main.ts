@@ -251,3 +251,11 @@ SndBanks.load()
   .catch((e) => {
     $('status').textContent = `sound manifest failed: ${e}`;
   });
+
+// Title splash (original title screen from BLAZE.ALL); click or any key dismisses it.
+{
+  const t = document.getElementById('title');
+  const hide = () => { t?.remove(); window.removeEventListener('keydown', hide); };
+  t?.addEventListener('click', hide);
+  window.addEventListener('keydown', hide);
+}
