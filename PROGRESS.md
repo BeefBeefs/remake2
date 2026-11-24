@@ -4,6 +4,14 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step Z – the "(a,0,b,0)" rows: missing quads recovered (hero skipped faces 46 → 10)**
+- Cause found: in those rows (the last row of most parts) the vertex bytes are the **first 4 bytes of the next part's subheader** (`a` = next part's vertex count, `b` = its normal count,
+  e.g. part 0 → (13,0,15,0) = part 1 has 13 verts / 15 normals), i.e. the file overlaps the row's tail with the next record header; the real vertex indices are not stored there.
+- Recovery (`meshparse.recover_bad_rows`, used by the hero, monster and prop exporters): the row's normal id is the part's last normal (a true face normal) and the UVs are intact, so the face is
+  the set of vertices lying on one plane perpendicular to that normal (equal dot product), picked and ordered by fitting the 3-D points to the UV shape (similarity fit). Median fit error 0.01–0.1;
+  ~70 % of bad rows recovered across the 16 heroes (rest are junk rows after real faces or have no plane match: fit error > 0.25 → left skipped). Heroes, monsters and stage props re-exported.
+- Viewer message for hero 0 should now read ~10 skipped (6 junk rows of part 12 + 4 unrecovered).
+
 **Step Y – hero "faces skipped": dummy-UV corners**
 - The viewer's "N faces skipped" for hero 0 was 46: 27 were real faces recovered by one rule – **UV (2,123) marks an unused corner**, also when that corner's vertex index differs from the others
   (rows like `v=(29,30,27,28), uv3=(2,123)` are triangles (29,30,28); `v=(2,0,3,3)` with dummy in slot 2 is the triangle slots 0,1,3). Skipped faces for hero 0 are now 19.

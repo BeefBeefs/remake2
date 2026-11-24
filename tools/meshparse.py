@@ -92,3 +92,61 @@ def parse_pack(d, base, offs, ends):
         extra = [f for f in extra if all(j < nv for j in f['v'])]
         parts[i] = {'verts': verts, 'normals': norms, 'faces': faces, 'extra': extra}
     return parts
+
+
+def recover_bad_rows(parts):
+    """Repair face rows whose vertex bytes were overwritten by the next record's header (the last row of most parts reads (a,0,b,0)
+    with a,b = vertex/normal counts of the *next* part). The row's UVs and its normal id (= the part's last normal, a true face normal)
+    are intact, so the missing polygon is: vertices lying on one plane perpendicular to that normal (equal dot product), picked and
+    ordered by fitting their 3-D shape to the UV quad (similarity fit, reflection allowed). A triangle when a UV is the (2,123) dummy.
+    Operates in place on parts {index: {'verts','normals','faces','extra'}}; returns (fixed, unfixed)."""
+    import itertools
+    import numpy as np
+    fixed = bad = 0
+    for pi, r in parts.items():
+        nv = len(r['verts'])
+        V = np.array(r['verts'], float)
+        N = np.array(r['normals'], float)
+        for f in r['faces']:
+            if not any(j >= nv for j in f['v']):
+                continue
+            nid = f['id'][0]
+            real = [k for k in range(4) if tuple(f['uv'][k]) != (2, 123)]
+            m = len(real)
+            if nid >= len(N) or nv < m or not np.linalg.norm(N[nid]):
+                bad += 1
+                continue
+            n = N[nid] / np.linalg.norm(N[nid])
+            dots = V @ n
+            uv = np.array([f['uv'][k] for k in real], float)
+            U = uv - uv.mean(0)
+            best = None
+            for d0 in sorted(set(np.round(dots).astype(int))):
+                grp = [j for j in range(nv) if abs(dots[j] - d0) <= 1.01]
+                if len(grp) < m or len(grp) > 14:
+                    continue
+                for comb in itertools.combinations(grp, m):
+                    for perm in itertools.permutations(comb):
+                        P = V[list(perm)]
+                        Pc = P - P.mean(0)
+                        _, _, vt = np.linalg.svd(Pc, full_matrices=False)
+                        P2 = Pc @ vt[:2].T
+                        uu, ss, vv = np.linalg.svd(U.T @ P2)
+                        R = uu @ vv
+                        sc = ss.sum() / max((P2 ** 2).sum(), 1e-9)
+                        err = ((P2 @ R.T * sc - U) ** 2).sum() / max((U ** 2).sum(), 1e-9)
+                        if best is None or err < best[0]:
+                            best = (err, perm)
+            if best is None or best[0] > 0.25:
+                bad += 1
+                continue
+            v4 = [0, 0, 0, 0]
+            for k, j in zip(real, best[1]):
+                v4[k] = j
+            for k in range(4):
+                if k not in real:
+                    v4[k] = v4[real[-1]]
+            f['v'] = tuple(v4)
+            f['fixed'] = round(float(best[0]), 3)
+            fixed += 1
+    return fixed, bad

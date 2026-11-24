@@ -22,6 +22,7 @@ for k in range(16):
     nxt = min([q['sector'] for q in packs.values() if q['sector'] > mp['sector']] or [len(d) // S])
     ends = offs[1:] + [nxt * S - base]
     pp = meshparse.parse_pack(d, base, offs, ends)
+    print("  recovered rows (fixed, unfixed):", meshparse.recover_bad_rows(pp))
     parts = [{'index': i, 'verts': r['verts'],
               'faces': [{'uv': [list(c) for c in f['uv']], 'v': list(f['v'])} for f in r['faces'] + r['extra']]}
              for i, r in sorted(pp.items()) if r['faces']]

@@ -128,6 +128,7 @@ for i, v in enumerate(words):
             base = sec * S + 4 + 4 * pk['n']; offs = [b['off'] for b in pk['blobs']]
             nxt = min([q for q in packs if q > sec] or [len(d) // S])
             pp = meshparse.parse_pack(d, base, offs, offs[1:] + [nxt * S - base])
+            meshparse.recover_bad_rows(pp)
             props_out[sec] = {str(ix2): {'verts': r['verts'], 'faces': [{'v': list(f['v']), 'uv': [list(c) for c in f['uv']]} for f in r['faces'] + r['extra']]}
                               for ix2, r in sorted(pp.items()) if r['faces']}
 for sec, pr in props_out.items():
