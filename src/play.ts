@@ -82,6 +82,10 @@ export class PlayMode {
   private readonly pos = new THREE.Vector3();
   private heading = Math.PI; // movement direction; models face -z at rotation 0, so the visual yaw adds PI
   private camYaw = 0;
+  /** camera distance / pitch (the game's action list has Zoom in/out, Look up/down, Topview) */
+  private camDist = 380;
+  private camPitch = 0.55;
+  private topView = false;
   private moving = false;
   private curAnim = -1;
   /** Healing Potions (the starting kits contain one: 'Restores HP to single unit'; the amount healed is not in the data we read, 40 is a guess). */
@@ -137,7 +141,7 @@ export class PlayMode {
     document.body.append(this.talkBox);
     const help = document.createElement('div');
     help.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:14px 18px;background:rgba(10,10,40,.92);border:2px solid #9ab;border-radius:8px;color:#fff;font:14px monospace;white-space:pre;display:none;z-index:8';
-    help.textContent = 'Controls (press ? to close)\n\nWASD / arrows   move        Q E   turn camera\nSpace / J       attack      K     attack 2 (melee)\nL jump   G guard (half damage)   V victory   H hurt\nC cast spell   Z next spell   P potion   B buy potion (30 gold)\nR / Enter       retry after dying\nWalk into a yellow door dot to change area (targets guessed)';
+    help.textContent = 'Controls (press ? to close)\n\nWASD / arrows   move        Q E   turn camera\n+ / -  zoom   PgUp / PgDn  look up / down   T  top view\nSpace / J       attack      K     attack 2 (melee)\nL jump   G guard (half damage)   V victory   H hurt\nC cast spell   Z next spell   P potion   B buy potion (30 gold)\nR / Enter       retry after dying\nWalk into a yellow door dot to change area (destinations from the game data; which door goes where is partly guessed)';
     help.onclick = () => (help.style.display = 'none');
     document.body.append(help);
     addEventListener('keydown', (e) => {
@@ -153,6 +157,9 @@ export class PlayMode {
       if (key === 'p') this.usePotion();
       if (key === 'b') this.buyPotion();
       if (key === 'c') this.cast();
+      if (key === 't') this.topView = !this.topView;
+      if (key === '=' || key === '+') this.camDist = Math.max(160, this.camDist - 60);
+      if (key === '-') this.camDist = Math.min(1200, this.camDist + 60);
       if (key === 'z') this.spellIdx = this.spells.length ? (this.spellIdx + 1) % this.spells.length : 0;
       if (key === ' ') e.preventDefault();
     });
@@ -758,6 +765,8 @@ export class PlayMode {
     const k = this.keys;
     if (k.has('q')) this.camYaw += dt * 1.8;
     if (k.has('e')) this.camYaw -= dt * 1.8;
+    if (k.has('pageup')) this.camPitch = Math.min(1.2, this.camPitch + dt * 0.9);
+    if (k.has('pagedown')) this.camPitch = Math.max(0.15, this.camPitch - dt * 0.9);
     let ix = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0) + this.stick.x;
     let iy = (k.has('s') || k.has('arrowdown') ? 1 : 0) - (k.has('w') || k.has('arrowup') ? 1 : 0) + this.stick.y; // +y = back
     const mag = Math.hypot(ix, iy);
@@ -863,7 +872,7 @@ export class PlayMode {
     h.root.position.copy(this.pos);
     if (this.action?.jump) h.root.position.y += Math.sin(Math.PI * (1 - this.action.left / this.action.total)) * 70;
     h.root.rotation.y = this.heading + Math.PI;
-    const d = 380, pitch = 0.55;
+    const d = this.camDist, pitch = this.topView ? 1.5 : this.camPitch;
     this.camera.position.set(
       this.pos.x + Math.sin(this.camYaw) * d * Math.cos(pitch),
       this.pos.y + 90 + Math.sin(pitch) * d,
