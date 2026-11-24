@@ -1,0 +1,570 @@
+[
+ {
+  "kit": 0,
+  "sector": 3469,
+  "items": [
+   {
+    "name": "Normal Sword",
+    "text": "Normal Sword/A good sword for beginners to use.",
+    "bytes_16_20": [
+     0,
+     0,
+     1,
+     1
+    ],
+    "bytes_48_56": [
+     7,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "name": "Leather Armor",
+    "text": "Leather Armor/Armor made of thick leather.",
+    "bytes_16_20": [
+     0,
+     0,
+     117,
+     2
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     5,
+     0,
+     0,
+     0,
+     3,
+     0
+    ]
+   },
+   {
+    "name": "Leather Shield",
+    "text": "Leather Shield/A light, easily used leather shield.",
+    "bytes_16_20": [
+     0,
+     0,
+     65,
+     4
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     2,
+     0
+    ]
+   },
+   {
+    "name": "Healing Potion",
+    "text": "Healing Potion/Common potion.\r(Restores HP to single unit)",
+    "bytes_16_20": [
+     5,
+     0,
+     255,
+     144
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ]
+ },
+ {
+  "kit": 1,
+  "sector": 3473,
+  "items": [
+   {
+    "name": "Club",
+    "text": "Club/A wooden club.",
+    "bytes_16_20": [
+     0,
+     0,
+     2,
+     1
+    ],
+    "bytes_48_56": [
+     5,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "name": "Robe",
+    "text": "Robe/Robe made of heavy cloth.",
+    "bytes_16_20": [
+     0,
+     0,
+     138,
+     2
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     5,
+     0,
+     0,
+     0,
+     2,
+     0
+    ]
+   },
+   {
+    "name": "Healing Potion",
+    "text": "Healing Potion/Common potion.\r(Restores HP to single unit)",
+    "bytes_16_20": [
+     5,
+     0,
+     255,
+     144
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ]
+ },
+ {
+  "kit": 2,
+  "sector": 3477,
+  "items": [
+   {
+    "name": "Dagger",
+    "text": "Dagger/A normal, easily-to-use dagger.",
+    "bytes_16_20": [
+     0,
+     0,
+     4,
+     1
+    ],
+    "bytes_48_56": [
+     5,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "name": "Leather Armor",
+    "text": "Leather Armor/Armor made of thick leather.",
+    "bytes_16_20": [
+     0,
+     0,
+     117,
+     2
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     5,
+     0,
+     0,
+     0,
+     3,
+     0
+    ]
+   },
+   {
+    "name": "Healing Potion",
+    "text": "Healing Potion/Common potion.\r(Restores HP to single unit)",
+    "bytes_16_20": [
+     5,
+     0,
+     255,
+     144
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ]
+ },
+ {
+  "kit": 3,
+  "sector": 3481,
+  "items": [
+   {
+    "name": "Wooden Wand",
+    "text": "Wooden Wand/A solid wooden wand.",
+    "bytes_16_20": [
+     0,
+     0,
+     8,
+     1
+    ],
+    "bytes_48_56": [
+     5,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "name": "Robe",
+    "text": "Robe/Robe made of heavy cloth.",
+    "bytes_16_20": [
+     0,
+     0,
+     138,
+     2
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     5,
+     0,
+     0,
+     0,
+     2,
+     0
+    ]
+   },
+   {
+    "name": "Healing Potion",
+    "text": "Healing Potion/Common potion.\r(Restores HP to single unit)",
+    "bytes_16_20": [
+     5,
+     0,
+     255,
+     144
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ]
+ },
+ {
+  "kit": 4,
+  "sector": 3485,
+  "items": [
+   {
+    "name": "Shortbow",
+    "text": "Shortbow/A simply made bow.",
+    "bytes_16_20": [
+     0,
+     0,
+     16,
+     1
+    ],
+    "bytes_48_56": [
+     5,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "name": "Leather Armor",
+    "text": "Leather Armor/Armor made of thick leather.",
+    "bytes_16_20": [
+     0,
+     0,
+     117,
+     2
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     5,
+     0,
+     0,
+     0,
+     3,
+     0
+    ]
+   },
+   {
+    "name": "Healing Potion",
+    "text": "Healing Potion/Common potion.\r(Restores HP to single unit)",
+    "bytes_16_20": [
+     5,
+     0,
+     255,
+     144
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ]
+ },
+ {
+  "kit": 5,
+  "sector": 3489,
+  "items": [
+   {
+    "name": "Shortsword",
+    "text": "Shortsword/A normal, easy-to-wiel shortsword.",
+    "bytes_16_20": [
+     0,
+     0,
+     32,
+     1
+    ],
+    "bytes_48_56": [
+     6,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "name": "Leather Armor",
+    "text": "Leather Armor/Armor made of thick leather.",
+    "bytes_16_20": [
+     0,
+     0,
+     117,
+     2
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     5,
+     0,
+     0,
+     0,
+     3,
+     0
+    ]
+   },
+   {
+    "name": "Healing Potion",
+    "text": "Healing Potion/Common potion.\r(Restores HP to single unit)",
+    "bytes_16_20": [
+     5,
+     0,
+     255,
+     144
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ]
+ },
+ {
+  "kit": 6,
+  "sector": 3493,
+  "items": [
+   {
+    "name": "Tomahawk",
+    "text": "Tomahawk/A small, easy-to-wield axe.",
+    "bytes_16_20": [
+     0,
+     0,
+     64,
+     1
+    ],
+    "bytes_48_56": [
+     8,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "name": "Leather Armor",
+    "text": "Leather Armor/Armor made of thick leather.",
+    "bytes_16_20": [
+     0,
+     0,
+     117,
+     2
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     5,
+     0,
+     0,
+     0,
+     3,
+     0
+    ]
+   },
+   {
+    "name": "Leather Shield",
+    "text": "Leather Shield/A light, easily used leather shield.",
+    "bytes_16_20": [
+     0,
+     0,
+     65,
+     4
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     2,
+     0
+    ]
+   },
+   {
+    "name": "Healing Potion",
+    "text": "Healing Potion/Common potion.\r(Restores HP to single unit)",
+    "bytes_16_20": [
+     5,
+     0,
+     255,
+     144
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ]
+ },
+ {
+  "kit": 7,
+  "sector": 3497,
+  "items": [
+   {
+    "name": "Rod",
+    "text": "Rod/A small rod, favored by fairies.",
+    "bytes_16_20": [
+     0,
+     0,
+     128,
+     1
+    ],
+    "bytes_48_56": [
+     5,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "name": "Robe",
+    "text": "Robe/Robe made of heavy cloth.",
+    "bytes_16_20": [
+     0,
+     0,
+     138,
+     2
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     5,
+     0,
+     0,
+     0,
+     2,
+     0
+    ]
+   },
+   {
+    "name": "Healing Potion",
+    "text": "Healing Potion/Common potion.\r(Restores HP to single unit)",
+    "bytes_16_20": [
+     5,
+     0,
+     255,
+     144
+    ],
+    "bytes_48_56": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ]
+ }
+]

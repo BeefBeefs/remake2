@@ -19,6 +19,14 @@ later. Newest entry first; each work session appends here.
 
 
 ### Turn 8 (continues; notes after each step)
+**Step G – starting-kit item records decoded (text only)**
+- ✅ The 8 × 6400 B resource entries are **starting kits**: 10 records of 640 B each, `name[64] | u8 len + "Name/Description\r(Effect)" @+64 |
+  binary fields`. Kits: Normal Sword + Leather Armor + Leather Shield + Healing Potion; Club + Robe + Healing Potion; Dagger +
+  Leather Armor; Wooden Wand + Robe; Shortbow + Leather Armor; Shortsword + Leather Armor; Tomahawk + Leather Armor + Leather Shield; Rod + Robe
+  (each with a Healing Potion). `tools/extract_items.py` → `data/start_kits.json` (26 items; raw bytes at +16..19 and +48..55 kept).
+- Hypotheses, not verified: +48 = weapon attack (sword 7), +50/+54 = armour defence values (5, 3); 8 kits ↔ 16 heroes is probably 8 classes × 2 genders.
+- Not verified: the binary fields, how a hero maps to a kit, the other ~250 bytes of each record (effect scripts?).
+
 **Step F – "v ≥ 64" faces were valid triangles with a dummy UV slot (viewer fixed)**
 - ✅ 10 % of faces (722 of 7,303 main rows) had UVs outside the 64-row page and *none* of them was rectangle-like, whereas 33 % of the others
   are. Cause: **triangles are stored as quad rows with a repeated vertex index, and the repeated slot carries the dummy UV (2,123)**
@@ -129,7 +137,7 @@ One-time manual step: repo Settings → Pages → Source = "GitHub Actions". Not
   out-of-range indices; R1 is probably seam/joint geometry referencing neighbouring parts' vertices (unresolved).
 - ✅ **Hierarchy table decoded**: `[-1,-1] + 59 bone parents + 27 part→bone indices` (2+59+27 = 88 = A+2).
 
-**Next**: weapon records ("Normal Sword" blobs), animation names, monsters/NPCs, level data.
+**Next**: animation names (which blob is idle/walk/attack), item stat fields, monster/NPC models, level data.
 
 ## Turn 5 – 2026-11-24
 **Done**
