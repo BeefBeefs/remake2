@@ -4,6 +4,19 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step K – level data survey: texture atlases and prop meshes found (levels live in sectors 5072–22473)**
+- 272 packs (sectors 4026–22473) are still unclassified; 5231 (16 × 640 B, e.g. a "Genocide" record) is another item table.
+- ✅ Level resources are listed as **(sector,size) pairs inside stage/script data** (e.g. around file offset 0xad9cf0: 4987, 5004, 918, 5138,
+  5155, 5158, 5162, 5165, 5079). The size matches the resource size, so each pair is a resource reference of one stage.
+- ✅ **Tile/wall texture atlases**: 4987, 5004, 5138 = 128×256, 1 CLUT, same record layout as monster textures (`docs/level_textures.png`);
+  918 = 192×64 (portrait/UI-like). 5138 uses a cyan colour-0.
+- ✅ **Prop meshes**: packs 5072 / 5165 / 5225 start with identical offsets (19–25 blobs) = a shared **object set** (beds, tables, bookshelves,
+  chandelier, cupboards …) that `meshparse.parse_pack` reads as-is (16 of 25 blobs → parts; others are probably grids/colliders – blob 0
+  looks like a 111-cell u32 grid `00 00 00 20 …`). Rendered with atlas 4987 in `docs/level_props_5072.png` (some UV stretching remains,
+  perhaps the atlas is 128 wide, not 256). `tools/render_static.py` renders any such pack.
+- Pack 5079 (4 blobs, size 2580) is a text pack (UTF-16-ish strings), 5155/5158/5162 are non-pack blobs (6016/6316/5360 B; map/tile data?).
+- Not verified: where the map layout (floor grid, wall placement, object positions) is stored, how stages are numbered, collision data.
+
 **Step J – animation roles guessed from frame counts; README link; engine exe spotted**
 - README now links the live viewer (https://beefbeefs.github.io/remake2/). The repo's "About" website field could not be set from
   here (the proxy blocks repository-settings writes) – set it by hand: repo page → ⚙ next to About → Website.
