@@ -54,6 +54,8 @@ export class PlayMode {
   private camYaw = 0;
   private moving = false;
   private curAnim = -1;
+  /** Healing Potions (the starting kits contain one: 'Restores HP to single unit'; the amount healed is not in the data we read, 40 is a guess). */
+  potions = 3;
   /** Sound effects (set by main.ts once the sound banks are loaded). */
   sfx: Sfx | null = null;
   /** One-shot action (attack/jump…): hero anim index and seconds left. */
@@ -85,6 +87,7 @@ export class PlayMode {
       if (key === 'h') this.act('hurt');
       if (key === 'v') this.act('victory');
       if (key === 'g') this.act('guard');
+      if (key === 'p') this.usePotion();
       if (key === ' ') e.preventDefault();
     });
     addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
@@ -111,6 +114,13 @@ export class PlayMode {
     dom.addEventListener('pointercancel', up);
   }
 
+  usePotion(): void {
+    if (!this.active || this.hp <= 0 || this.potions <= 0 || this.hp >= 100) return;
+    this.potions--;
+    this.hp = Math.min(100, this.hp + 40);
+    this.sfx?.play('talk');
+  }
+
   /** Hero animation slots (confirmed by eye): 0 idle, 1 walk, 2 hurt, 3 attack, 4 jump, 6 attack 2, 7 die, 8 victory; 5 looks like a guard (sword held across the body), unconfirmed. */
   act(name: 'attack' | 'attack2' | 'jump' | 'hurt' | 'victory' | 'die' | 'guard'): void {
     const h = this.hero;
@@ -128,6 +138,7 @@ export class PlayMode {
 
   async enter(stageIndex: number, heroIndex: number, variant = 0): Promise<void> {
     const keepHp = this.travelling ? this.hp : 100;
+    if (!this.travelling) this.potions = 3;
     this.exit();
     this.hp = keepHp;
     this.stageIndex = stageIndex;
@@ -323,7 +334,7 @@ export class PlayMode {
     const defs = this.stage?.data.monsterDefs ?? [];
     const here = defs.length ? `\nhere: ${defs.map((d) => d.name).join(', ')}` : '';
     this.hud.style.whiteSpace = 'pre';
-    this.hud.textContent = `HP ${this.hp}   enemies ${alive}${here}`;
+    this.hud.textContent = `HP ${this.hp}   potions ${this.potions} (P)   enemies ${alive}${here}`;
   }
 
   /** Prop collision: props are circles (radius ~ 60) – enemies and the hero cannot walk through them. */
