@@ -1,21 +1,22 @@
 /**
- * The 11 quests, from the quest-select module of SYSTEM.INI (group 2, ENGLISH/SYSTEM.INI) in the order of the sound banks
- * Q00..Q10. The number of areas per quest comes from the bank files (Q01_00..Q01_09 = 10 areas, ...); stages are numbered
- * quest by quest, so stage = first stage of the quest + area. Confirmed by the monsters of each range (undead in quests 5/6,
- * bats/scorpions in the Mine, ...).
+ * The 11 quests, from the quest-select module of SYSTEM.INI (group 2, ENGLISH/SYSTEM.INI), quest number = sound bank Q00..Q10.
+ * `areas` = number of exported stages of the quest (stages are numbered quest by quest, stage = first stage + area). The area
+ * modules listed by the per-quest modules (sectors 4057..4073, slot +0x48) number 6, 10, 1, 10, 11, 10, 12, 3, 2, 2, 16 = 83;
+ * five tiny ones (quest 4 area 10, quest 9 area 1, quest 10 areas 13-15) have no geometry of their own and are not exported,
+ * which is why quests 4, 9 and 10 have 10, 1 and 13 stages here. Quest 0 = the inn (stage 0) plus its five rooms (stages 1-5).
  */
 export const QUESTS: { name: string; areas: number }[] = [
-  { name: 'The Roadside Inn', areas: 1 },
+  { name: 'The Roadside Inn', areas: 6 },
   { name: 'The Abandoned Mine', areas: 10 },
   { name: 'The Mountain of the Fire Dragon', areas: 1 },
   { name: 'The Wood of Ruins', areas: 10 },
-  { name: 'The Old Palace', areas: 11 },
+  { name: 'The Old Palace', areas: 10 },
   { name: 'The Labyrinth of the Dead', areas: 10 },
   { name: 'The Palace of the Immortals', areas: 12 },
   { name: 'The Ancient Ruins', areas: 3 },
   { name: 'The Valley of White Silver', areas: 2 },
-  { name: 'The Ruins in the Lake', areas: 2 },
-  { name: 'The Sealed Cave', areas: 16 },
+  { name: 'The Ruins in the Lake', areas: 1 },
+  { name: 'The Sealed Cave', areas: 13 },
 ];
 
 /** Quest number, its name and the area number of a stage (0-based), or null outside 0..77. */
