@@ -10,6 +10,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import meshparse, assemble
 
 S = 2048
+# One extra single-animation pack per hero, not listed in packs.json (found by scanning for n=1 packs whose skeleton counts
+# (A,B,C) match a hero): sectors 3826..3853, in hero order.
+EXTRA_ANIM_SECTORS = [3826, 3828, 3829, 3831, 3833, 3834, 3836, 3838, 3840, 3842, 3844, 3846, 3847, 3849, 3851, 3853]
 d = open(sys.argv[1], 'rb').read()
 packs = {p['sector']: p for p in json.load(open(sys.argv[2]))}
 rt = json.load(open(sys.argv[3]))
@@ -31,6 +34,9 @@ for k in range(16):
         a = assemble.load_anim(d, ap, bi)
         anims.append({'parent': a['parent'], 'partBone': a['part_bone'],
                       'poses': [list(p) for p in a['poses']], 'frames': a['frames']})
+    ex = {'sector': EXTRA_ANIM_SECTORS[k], 'n': 1, 'blobs': [{'off': 0}]}
+    a = assemble.load_anim(d, ex, 0)
+    anims.append({'parent': a['parent'], 'partBone': a['part_bone'], 'poses': [list(p) for p in a['poses']], 'frames': a['frames'], 'extra': True})
     out = {'hero': k, 'textureSector': rt['hero_textures'][k], 'parts': parts, 'anims': anims}
     path = os.path.join(sys.argv[4], f'hero{k:02d}.json')
     json.dump(out, open(path, 'w'), separators=(',', ':'))
