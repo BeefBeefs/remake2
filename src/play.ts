@@ -244,6 +244,7 @@ export class PlayMode {
     this.variant = variant;
     this.heroIndex = heroIndex;
     this.doorArmed = false;
+    this.doorData ??= await fetch('assets/stages/doors.json').then((r) => r.json()).catch(() => ({}));
     const st = await loadStage(stageIndex, false, variant);
     const h = await loadHero(heroIndex);
     this.stage = st;
@@ -774,9 +775,9 @@ export class PlayMode {
     this.updateHero(dt);
     this.updateWarps();
     this.drawMinimap();
-    // door trigger (GUESS for the targets: the real destinations are not in the data we can read, see PROGRESS.md Step AE/AG).
-    // Quests are chains of areas (sound banks Q00..Q10): an entrance door leads to the previous area, an exit door to the next one,
-    // the ends of a quest lead to the inn; the inn's door cycles through its five rooms and each room's door returns to the inn.
+    // door trigger: destinations come from the door scripts of the area module (assets/stages/doors.json, tools/export_doors.py);
+    // which script belongs to which door entity is not decoded yet, so an exit door takes the next area of the quest and an entrance door the previous one,
+    // the ends of a quest lead to the inn, and the inn's doors cycle through its five rooms.
     if (this.doors.length && !this.travelling) {
       let near: { x: number; z: number; exit: boolean } | null = null;
       let dmin = Infinity;
@@ -789,20 +790,42 @@ export class PlayMode {
         this.travelling = true;
         this.sfx?.play('door');
         const i0 = this.stageIndex;
-        const [q0, q1] = this.stage?.data.questRange ?? [i0, i0];
-        const quest = this.stage?.data.quest ?? -1;
-        let next: number;
-        if (quest === 0) next = i0 === 0 ? (this.lastRoom % 5) + 1 : 0;
-        else if (near.exit) next = i0 < q1 ? i0 + 1 : 0;
-        else next = i0 > q0 ? i0 - 1 : 0;
+        const next = this.doorTarget(i0, near.exit);
         if (next >= 1 && next <= 5) this.lastRoom = next;
-        this.hud.textContent = `door → stage ${next} (guess)…`;
+        this.hud.textContent = `door → stage ${next}…`;
         void this.enter(next, this.heroIndex, this.variant)
           .then(() => { this.info = `stage ${next} (via door)`; })
           .catch((e) => console.warn('door travel failed', e))
           .finally(() => { this.travelling = false; });
       }
     }
+  }
+
+  /** real door destinations per stage (door scripts `11 group area arrival`), loaded once */
+  private doorData: Record<string, { quest: number; area: number; arrival: number; stage: number | null }[]> | null = null;
+
+  private doorTarget(i0: number, exit: boolean): number {
+    const scripts = (this.doorData?.[String(i0)] ?? []).map((d) => d.stage).filter((n): n is number => n !== null && n !== i0);
+    const quest = this.stage?.data.quest ?? -1;
+    const [q0, q1] = this.stage?.data.questRange ?? [i0, i0];
+    if (!scripts.length) {
+      if (quest === 0) return i0 === 0 ? (this.lastRoom % 5) + 1 : 0;
+      return exit ? (i0 < q1 ? i0 + 1 : 0) : (i0 > q0 ? i0 - 1 : 0);
+    }
+    if (quest === 0) {
+      if (i0 !== 0) return scripts[0];
+      const rooms = [...new Set(scripts)].sort((a, b) => a - b);
+      return rooms.find((n) => n > this.lastRoom) ?? rooms[0];
+    }
+    const same = scripts.filter((n) => n >= q0 && n <= q1);
+    if (exit) {
+      const higher = same.filter((n) => n > i0);
+      return higher.length ? Math.min(...higher) : 0;
+    }
+    const lower = same.filter((n) => n < i0);
+    if (lower.length) return Math.max(...lower);
+    const other = scripts.filter((n) => n < q0 || n > q1);
+    return other.length ? other[0] : 0;
   }
 
   private updateHero(dt: number): void {
