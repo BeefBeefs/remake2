@@ -9,8 +9,10 @@ later. Newest entry first; each work session appends here.
 - ✅ **Run-time palette 0**: faces whose palette row is 0 show random colours because palette 0 of every atlas is filled by the game at run time. This hits the big ground planes of the outdoor stages
   (20–26: one mesh with a single 128 x 128 tile repeated, texpage word 0 or pg 131). GUESS: they use atlas #2 of the stage's list with palette 3 (the grass/forest tile that other faces use); exporter marks
   these faces (`groundGuess` count per stage). The fields now look like forest/grass instead of rainbow noise. Real palette is unknown (maybe set per time of day/area by the script).
-- 18 stages have collision but no textured mesh in the decoded format (17-19, 30, 34, 36, 42-45, 48, 49, 66, 75, 77, 79, 81, 82; their records after the collision header have another layout, e.g. stage 17: 8173-8178).
-  The viewer now draws their collision triangles height-shaded so play mode is not blank there.
+- ✅ 17 of the 18 "meshless" stages (17-19, 30, 34, 36, 42-45, 48, 49, 66, 77, 79, 81, 82) were a classification bug: their first record has `w[13] == 0` (the size field the textured records carry) but valid 32-byte textured
+  rows, i.e. it is the stage's visible mesh **and** its walkable floor (no separate collision record). The exporter now returns such records as mesh + collision derived from the faces (96 stages as before, all but stage 75 have meshes).
+  Their atlas lists are empty (texture-list walk-back finds no sentinel), so the default atlas is the old "page before the stage" guess and colours are wrong (flat purple/blue) – use the atlas dropdown; stage 75's
+  record has another header (w12 = 2568). The viewer also draws collision triangles height-shaded for any stage still without a mesh.
 - Door/exit `link` ids (98, 133, 109, 105 …) exceed the 96 stage count: probably ids in a larger map table (inside the executable); stage-script bytecode around the dialogue boxes shows `0a`/`07 03 xx` commands but no obvious warp opcode yet.
 
 **Step AB – duplicate equipment sets on the heroes (two swords)**

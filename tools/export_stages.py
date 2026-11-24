@@ -23,6 +23,13 @@ def record(s):
     if not (w[8] == 64 and V > 0 and w[9] == 64 + 8 * V and w[10] == w[9] + 8 * N and (w[2] & 0xffff) == V): return None
     verts = [list(struct.unpack_from('<3h', d, o + 64 + 8 * i)) for i in range(V)]
     tex = w[12] == 0 and w[13] > w[10]
+    # 17 stages (17-19, 30, 34, 36, 42-45, 48, 49, 66, 77, 79, 81, 82) start with a record whose w[13] is 0 but whose rows are valid 32-byte
+    # textured rows: that record is the stage's visible mesh AND its walkable floor (no separate collision record).
+    both = False
+    if not tex and w[12] == 0 and w[13] == 0 and F > 0:
+        both = all(d[o + w[10] + 32 * i + 31] in (0x24, 0x25, 0x26, 0x27, 0x2c, 0x2d, 0x2e, 0x2f, 0x34, 0x35, 0x36, 0x37, 0x3c, 0x3d, 0x3e, 0x3f)
+                   for i in range(min(F, 8)))
+        tex = both
     if tex:
         faces = []
         for i in range(F):
@@ -35,7 +42,7 @@ def record(s):
             attr = struct.unpack_from('<I', d, b + 28)[0]
             pg = (attr >> 16) & 0xff
             faces.append({'cmd': cmd, 'pg': pg, 'clut': (attr >> 4) & 15, 'tp': attr & 0xffff, 'v': v4, 'uv': [[d[b + 16 + 2 * k], d[b + 17 + 2 * k]] for k in range(4)]})
-        return {'sector': s, 'verts': verts, 'faces': faces}
+        return {'sector': s, 'verts': verts, 'faces': faces, 'both': both}
     tris = []
     for i in range(F):
         b = o + w[10] + 16 * i
@@ -73,6 +80,13 @@ for s in range(n):
     if r is None: continue
     if 'tris' in r:
         cur = {'collision': r, 'meshes': []}; stages.append(cur)
+    elif r.get('both'):
+        tris = []
+        for f in r['faces']:
+            v = f['v']
+            if v[2] != v[3]: tris.append([v[0], v[1], v[2], 0]); tris.append([v[0], v[2], v[3], 0])
+            else: tris.append([v[0], v[1], v[2], 0])
+        cur = {'collision': {'sector': s, 'verts': r['verts'], 'tris': tris}, 'meshes': [r]}; stages.append(cur)
     elif cur is not None:
         cur['meshes'].append(r)
 import bisect
