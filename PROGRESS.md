@@ -4,6 +4,21 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step I – REAL model table found: every model has exactly one texture (monster texture mapping solved)**
+- ✅ `original/BLAZE.ALL` is now committed (46 MB; repo to be made private).
+- ✅ Found by searching for the monster anim sectors as a stride-2 u32 sequence: a **model table at file offset 0x9119f0** of
+  `(sector,size)` pairs = three parallel lists of **113 models**: textures, animation packs, mesh packs (`data/model_table.json`).
+  Entries 0–15 are the heroes (same as the older table), entries **16–112 are 97 monsters** (monster *k* = entry 16+k).
+  Monster 0: texture 280, anim 1297, mesh 2764 – the earlier greedy pairing was right where it succeeded but missed 19 monsters.
+  A second, shorter copy of the lists follows (31 textures 759.., 80 anims 1030.. – not analysed).
+- ✅ The "stacked strip groups" idea of Step H was wrong: each monster has **its own** 256×≤64 texture (1 CLUT) – monsters 0–3 now
+  render coherently with their own record only (spiked-hair mage, purple goblin-knights, grey bat/gargoyle…).
+  The few faces with UV v ≥ 64 (≈2% of faces) are still skipped, so something (weapon/effect page?) is unresolved.
+- ✅ Four packs are single-blob (n=1) and were missing from `data/packs.json` (meshes 2874, 2892, 2933; anim 2632) – the exporter
+  now reads their header directly. `tools/export_monsters.py` → 97 × `public/assets/monsters/monNN.json` + `monNN.png` (7.4 MB).
+- Viewer: entries 16–112 = monsters; "tex group" selector removed. Superseded: `data/monster_pairs.json`.
+- Still unknown: monster names/stats/AI, which animation is idle/walk/attack, meaning of v ≥ 64 UVs, the second table copy.
+
 **Step H – monsters pair up and render; viewer now lists 78 monsters**
 - ✅ Pack 4026 / 4056 are spell/effect meshes, not characters. Monster **anim packs** (sectors 1297–2400, 81 packs) and **mesh packs**
   (2764–3365, 94 packs) pair up by "anim part count C == mesh pack n", greedy in sector order: 78 of 81 pair
@@ -16,8 +31,7 @@ later. Newest entry first; each work session appends here.
 - ✅ Group *k* ↔ monster *k* gives clearly right results for monsters 0 (jackal-headed warrior) and 2; monsters 1 and 3 show wrong-looking
   areas (green/red concentric patterns) so that mapping is **a guess only**, and 78 monsters share 31 groups, i.e. recolours/variants
   (monsters ≥ 31 default to group 0 – use the new "tex group" selector in the viewer to try others).
-- Files: `tools/export_monsters.py` → `public/assets/monsters/mon00..77.json` (5.5 MB) + `g00..g30.png` + `groups.json`;
-  viewer selector: entries 0–15 heroes, 16+ monsters (UVs normalised by 256, `texture.repeat.y` corrects for stack height).
+- (Step H's group/texture hypothesis and exports were superseded by Step I.)
 - Not verified: true monster↔texture table (not found yet), monster names, which anim is idle/walk/attack, the 16 spare mesh packs.
 
 ### Turn 7 (continues from Turn 6; notes after each step)

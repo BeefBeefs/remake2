@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Export monster models: anim pack <-> mesh pack pairs (data/monster_pairs.json), textures grouped as stacked strips.
+"""Export the 97 monsters listed in data/model_table.json (entries 16..112: texture, anim pack, mesh pack in parallel).
 
-Monster textures are 256-wide strips of 64 rows (the last strip of a group is shorter, which ends the group); a group is
-stacked vertically into one image, because mesh UVs run past v=64 (up to ~208). Group k <-> monster k is a HYPOTHESIS
-(works well for monsters 0, 2; 1 and 3 still show wrong areas). One CLUT only (psize 524).
-usage: export_monsters.py <BLAZE.ALL> <packs.json> <pairs.json> <out json dir> <out png dir>
+The table (file offset 0x9119f0, (sector,size) u32 pairs) holds three parallel lists of 113 models: textures, animation packs,
+mesh packs; entries 0..15 are the heroes, 16.. the monsters. Each monster has ONE texture record (psize 524 = 1 CLUT, 256 px wide,
+<= 64 rows; shorter ones are padded to 64 rows). Faces whose UVs lie below row 63 stay unresolved (viewer skips them).
+usage: export_monsters.py <BLAZE.ALL> <packs.json> <model_table.json> <out dir>
 """
 import json, os, struct, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -14,10 +14,20 @@ from PIL import Image
 S = 2048
 d = open(sys.argv[1], 'rb').read()
 packs = {p['sector']: p for p in json.load(open(sys.argv[2]))}
-pairs = json.load(open(sys.argv[3]))
-os.makedirs(sys.argv[4], exist_ok=True); os.makedirs(sys.argv[5], exist_ok=True)
 
-def strip(sec):
+def pack(sec):
+    """packs.json misses single-blob packs (n == 1); read those header-directly."""
+    if sec in packs: return packs[sec]
+    n = struct.unpack_from('<I', d, sec * S)[0]
+    offs = struct.unpack_from('<%dI' % n, d, sec * S + 4)
+    return {'sector': sec, 'n': n, 'blobs': [{'off': o} for o in offs]}
+T = json.load(open(sys.argv[3]))
+out_dir = sys.argv[4]
+for f in os.listdir(out_dir) if os.path.isdir(out_dir) else []:
+    os.remove(os.path.join(out_dir, f))
+os.makedirs(out_dir, exist_ok=True)
+
+def tex_png(sec, path):
     o = sec * S
     psize = struct.unpack_from('<I', d, o + 8)[0]
     P = o + psize + 8
@@ -25,41 +35,18 @@ def strip(sec):
     W, H = 2 * A, B
     pix = d[P + 12:P + 12 + W * H]
     pal = [struct.unpack_from('<H', d, o + 0x14 + 2 * i)[0] for i in range(256)]
-    im = Image.new('RGBA', (256, H)); px = im.load()
-    for y in range(H):
-        for x in range(W):
-            k = y * W + x
-            v = pal[pix[k]] if k < len(pix) else 0
+    im = Image.new('RGBA', (256, 64)); px = im.load()
+    for y in range(min(H, 64)):
+        for x in range(min(W, 256)):
+            v = pal[pix[y * W + x]]
             px[x, y] = (0, 0, 0, 0) if v == 0 else ((v & 31) * 255 // 31, ((v >> 5) & 31) * 255 // 31, ((v >> 10) & 31) * 255 // 31, 255)
-    return im
+    im.save(path)
 
-# texture groups: consecutive 524-psize records in sectors 280..1030; a strip shorter than 64 rows closes the group
-recs = []
-for sec in sorted(packs_s for packs_s in range(280, 1031)):
-    o = sec * S
-    if struct.unpack_from('<II', d, o) != (16, 8) and struct.unpack_from('<I', d, o)[0] != 16: continue
-    if struct.unpack_from('<I', d, o + 8)[0] != 524: continue
-    recs.append(sec)
-groups, cur = [], []
-for sec in recs:
-    cur.append(sec)
-    o = sec * S; P = o + 524 + 8
-    if struct.unpack_from('<H', d, P + 10)[0] != 64:
-        groups.append(cur); cur = []
-if cur: groups.append(cur)
-print(len(recs), 'texture records,', len(groups), 'groups')
-
-strip_h = {}
-for g, secs in enumerate(groups):
-    ims = [strip(x) for x in secs]
-    for x, i in zip(secs, ims): strip_h[x] = i.height
-    sheet = Image.new('RGBA', (256, sum(i.height for i in ims))); y = 0
-    for i in ims: sheet.paste(i, (0, y)); y += i.height
-    sheet.save(os.path.join(sys.argv[5], f'g{g:02d}.png'))
-json.dump([{'sectors': g, 'height': sum(strip_h[x] for x in g)} for g in groups], open(os.path.join(sys.argv[5], 'groups.json'), 'w'))
 total = 0
-for k, pr in enumerate(pairs):
-    mp, ap = packs[pr['mesh']], packs[pr['anim']]
+for k in range(97):
+    m = 16 + k
+    tsec, asec, msec = T['textures'][m][0], T['anims'][m][0], T['meshes'][m][0]
+    mp, ap = pack(msec), pack(asec)
     base = mp['sector'] * S + 4 + 4 * mp['n']
     offs = [b['off'] for b in mp['blobs']]
     nxt = min([q for q in packs if q > mp['sector']] or [len(d) // S])
@@ -73,9 +60,8 @@ for k, pr in enumerate(pairs):
         a = assemble.load_anim(d, ap, bi)
         anims.append({'parent': a['parent'], 'partBone': a['part_bone'],
                       'poses': [list(p) for p in a['poses']], 'frames': a['frames']})
-    tex = {'height': groups[k] and sum(strip_h[x] for x in groups[k])} if k < len(groups) else None
-    out = {'hero': k, 'textureSector': groups[k][0] if k < len(groups) else 0, 'texHeight': tex['height'] if tex else 64, 'defaultGroup': k if k < len(groups) else 0,
-           'meshSector': pr['mesh'], 'animSector': pr['anim'], 'parts': parts, 'anims': anims}
-    path = os.path.join(sys.argv[4], f'mon{k:02d}.json')
+    tex_png(tsec, os.path.join(out_dir, f'mon{k:02d}.png'))
+    out = {'hero': m, 'textureSector': tsec, 'meshSector': msec, 'animSector': asec, 'parts': parts, 'anims': anims}
+    path = os.path.join(out_dir, f'mon{k:02d}.json')
     json.dump(out, open(path, 'w'), separators=(',', ':')); total += os.path.getsize(path)
-print(len(pairs), 'monsters, total KB', total // 1024)
+print('97 monsters, total KB', total // 1024)
