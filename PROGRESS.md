@@ -4,6 +4,9 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ## Turn 6 – 2026-11-24 (multi-step; notes after each step)
+**Pages deploy** – `.github/workflows/pages.yml` builds with Vite and deploys `dist/` on every push to main.
+One-time manual step: repo Settings → Pages → Source = "GitHub Actions". Not verified (can't reach the Pages API from here).
+
 **Step 4 – three.js model viewer (written, NOT run)**
 - ✅ `src/model/modelViewer.ts` (`AnimatedModel`, `loadModel`): builds the bone tree from `parent[]`, attaches flat-shaded
   part meshes to their bones, plays the 14 frames at 8 fps (Euler order `XYZ`, root rotated π about X because PS1 is Y-down).
