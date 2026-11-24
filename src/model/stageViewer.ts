@@ -52,6 +52,8 @@ async function loadPixels(url: string): Promise<ImageData> {
 export class StageView {
   readonly root = new THREE.Group();
   readonly material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, alphaTest: 0.5 });
+  /** Walls are single-sided in the game (the near wall of a room vanishes when seen from outside); in play mode they are drawn front-side only. */
+  readonly wallMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, alphaTest: 0.5 });
   triangles = 0;
   propCount = 0;
   /** Collision circles of the placed props (entity x, z in PS1 space, radius from the prop mesh size; flat decals are skipped). */
@@ -68,6 +70,7 @@ export class StageView {
   /** @param fit scale/centre the stage to ~160 units (viewer); false keeps raw PS1 units (play mode). */
   constructor(readonly data: StageJson, fit = true) {
     const inner = this.inner;
+    if (!fit) this.wallMaterial.side = THREE.FrontSide;
     inner.rotation.x = Math.PI;
     this.root.add(inner);
     const min = [Infinity, Infinity, Infinity];
@@ -77,8 +80,8 @@ export class StageView {
     for (const m of data.meshes) for (const f of m.faces) if (((f.pg ?? 0) & 31) === 0) cc.set(f.clut ?? 0, (cc.get(f.clut ?? 0) ?? 0) + 1);
     this.propClut = [...cc.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 1;
     for (const m of data.meshes) {
-      const pos: number[] = [];
-      const uvs: number[] = [];
+      const pos: number[] = [], uvs: number[] = [];
+      const posW: number[] = [], uvsW: number[] = []; // vertical faces (walls)
       for (const f of m.faces) {
         const idx = f.v;
         if (idx.some((k) => k >= m.verts.length)) continue;
@@ -87,22 +90,30 @@ export class StageView {
         const tris = slots.length === 4 ? [[0, 1, 2], [0, 2, 3]] : slots.length === 3 ? [slots] : [];
         const slot = this.slotOf(f.pg ?? 0, f.clut ?? 0);
         for (const t of tris) {
+          const [a, b, c] = t.map((k) => m.verts[idx[k]]);
+          const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+          const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+          const wall = Math.abs(ny) < 0.5 * (Math.hypot(nx, ny, nz) || 1);
+          const P = wall ? posW : pos, U = wall ? uvsW : uvs;
           for (const k of t) {
             const p = m.verts[idx[k]];
-            pos.push(p[0], p[1], p[2]);
-            for (let a = 0; a < 3; a++) {
-              min[a] = Math.min(min[a], p[a]);
-              max[a] = Math.max(max[a], p[a]);
+            P.push(p[0], p[1], p[2]);
+            for (let q = 0; q < 3; q++) {
+              min[q] = Math.min(min[q], p[q]);
+              max[q] = Math.max(max[q], p[q]);
             }
-            uvs.push(f.uv[k][0], f.uv[k][1], slot);
+            U.push(f.uv[k][0], f.uv[k][1], slot);
           }
           this.triangles++;
         }
       }
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-      this.meshUv.push({ g, raw: uvs });
-      inner.add(new THREE.Mesh(g, this.material));
+      for (const [P, U, mat] of [[pos, uvs, this.material], [posW, uvsW, this.wallMaterial]] as const) {
+        if (!P.length) continue;
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+        this.meshUv.push({ g, raw: U as number[] });
+        inner.add(new THREE.Mesh(g, mat));
+      }
     }
     this.finishUvs();
     // A stage whose descriptor lists no textured room mesh we can decode (stage 75-ish in the old numbering):
@@ -318,12 +329,15 @@ export class StageView {
     this.tex = tex;
     this.material.map = tex;
     this.material.needsUpdate = true;
+    this.wallMaterial.map = tex;
+    this.wallMaterial.needsUpdate = true;
   }
 
   dispose(): void {
     this.root.removeFromParent();
     this.tex?.dispose();
     this.material.dispose();
+    this.wallMaterial.dispose();
     this.root.traverse((o: THREE.Object3D) => {
       const m = o as THREE.Mesh;
       if (m.geometry) m.geometry.dispose();
