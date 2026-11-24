@@ -32,6 +32,10 @@
         box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;max-height:40%;overflow:auto;margin:0;padding:6px 10px;background:#400d;color:#fcc;font:12px monospace;z-index:20;display:none;white-space:pre-wrap';
         document.body.appendChild(box);
         var show = function (m) { box.style.display = 'block'; box.textContent += m + '\n'; };
+        try {
+          var c = document.createElement('canvas');
+          if (!(c.getContext('webgl2') || c.getContext('webgl'))) show('WebGL is not available in this browser, so the 3D view cannot start. Enable hardware acceleration or try another browser.');
+        } catch (e) { show('WebGL check failed: ' + e); }
         window.addEventListener('error', function (e) { show('error: ' + e.message + ' (' + (e.filename || '').split('/').pop() + ':' + e.lineno + ')'); });
         window.addEventListener('unhandledrejection', function (e) { show('rejected: ' + (e.reason && (e.reason.stack || e.reason.message) || e.reason)); });
       })();
