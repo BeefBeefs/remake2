@@ -4,6 +4,16 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step O – first playable slice: walk a hero around a stage (UNTESTED in a browser)**
+- `src/play.ts` (`PlayMode`) + a "▶ Play stage" button in the viewer HUD: loads the selected stage (stage 1 if a hero/monster is selected)
+  in raw PS1 units (`loadStage(k, false)`), the selected hero (hero 0 by default), and walks the hero on the stage's **collision mesh**.
+  PS1 (x,y,z) → world (x,−y,−z); up-facing collision triangles (|ny|≥0.5) are the floor (stage 1: 78 of 143; heights 400, 432, 436 …
+  = floor, steps, furniture tops); a move is accepted if the target is inside a floor triangle within 80 units of the current height
+  (axis-sliding fallback). Controls: WASD/arrows + Q/E (turn camera) or touch: left half = stick, right half drag = turn camera.
+  Animation guess: hero anim 1 while moving, else 0 (labels still unverified).
+- Open risks to check on the phone: hero scale vs room (hero ≈ 110 units tall, stage 1 walls ≈ 200), hero feet offset, camera clipping,
+  atlas choice for the stage, collision at doors; no enemies, props, doors or stage links yet.
+
 **Step N – busy stages (caves) fixed: triangle rows are padded with vertex 0**
 - 🐞 Stages 6+ rendered as spiky fans because triangles in room meshes are stored as `(a,b,c,0)` – the 4th index is vertex **0**, not a repeat of
   an earlier index. The exporter now turns those rows into repeated-index rows (unless vertex 0 is geometrically near the others) → the cave

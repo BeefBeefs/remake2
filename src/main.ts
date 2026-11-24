@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { SndBanks } from './audio/sndBank';
 import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 import { loadStage, StageView } from './model/stageViewer';
+import { PlayMode } from './play';
 
 // Placeholder scene: proves the build/asset pipeline. Real game systems land in later milestones
 // (see PROGRESS.md).
@@ -16,7 +17,8 @@ const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 50
 camera.position.set(0, 6, 10);
 camera.lookAt(0, 0, 0);
 
-scene.add(new THREE.GridHelper(400, 40, 0x444466, 0x222233));
+const grid = new THREE.GridHelper(400, 40, 0x444466, 0x222233);
+scene.add(grid);
 scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 const sun = new THREE.DirectionalLight(0xffffff, 2);
 sun.position.set(4, 8, 6);
@@ -43,6 +45,37 @@ const animSel = document.createElement('select');
 const palSel = mk(4, (i) => `palette ${i}`);
 const info = document.createElement('div');
 hud?.append(document.createElement('hr'), heroSel, animSel, palSel, atlasSel, info);
+
+// First playable slice: walk the selected hero (or hero 0) around the selected stage (stage 1 if none is selected).
+const play = new PlayMode(scene, camera, renderer.domElement);
+const playBtn = document.createElement('button');
+playBtn.textContent = '▶ Play stage';
+hud?.append(playBtn);
+playBtn.onclick = async () => {
+  if (play.active) {
+    play.exit();
+    grid.visible = true;
+    playBtn.textContent = '▶ Play stage';
+    heroSel.onchange?.(new Event('change'));
+    return;
+  }
+  const sel = Number(heroSel.value);
+  const stageIdx = sel >= STAGE0 ? sel - STAGE0 : 1;
+  const heroIdx = sel < 16 ? sel : 0;
+  info.textContent = 'loading play mode…';
+  if (model) { scene.remove(model.root); model.dispose(); model = undefined; }
+  if (stage) { stage.dispose(); stage = undefined; }
+  grid.visible = false;
+  try {
+    await play.enter(stageIdx, heroIdx);
+    playBtn.textContent = '■ Exit play';
+    info.textContent = play.info;
+  } catch (e) {
+    info.textContent = `play failed: ${e}`;
+    play.exit();
+    grid.visible = true;
+  }
+};
 
 const HERO_ANIMS = ['idle', 'walk', 'run', 'hit', 'attack'];
 const MONSTER_ANIMS = ['idle', 'walk', 'attack', 'hit'];
@@ -130,6 +163,7 @@ renderer.setAnimationLoop((t: number) => {
     model.root.rotation.y = t / 3000;
   }
   if (stage) stage.root.rotation.y = t / 6000;
+  if (play.active) play.update(dt);
   renderer.render(scene, camera);
 });
 

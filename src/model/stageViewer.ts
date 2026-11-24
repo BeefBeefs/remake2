@@ -19,7 +19,8 @@ export class StageView {
   readonly material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, alphaTest: 0.5 });
   triangles = 0;
 
-  constructor(readonly data: StageJson) {
+  /** @param fit scale/centre the stage to ~160 units (viewer); false keeps raw PS1 units (play mode). */
+  constructor(readonly data: StageJson, fit = true) {
     const inner = new THREE.Group();
     inner.rotation.x = Math.PI;
     this.root.add(inner);
@@ -53,6 +54,7 @@ export class StageView {
       inner.add(new THREE.Mesh(g, this.material));
     }
     // centre on the bounding box and scale to fit the viewer
+    if (!fit) return;
     const size = Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2], 1);
     const s = 160 / size;
     inner.scale.setScalar(s);
@@ -81,9 +83,9 @@ export class StageView {
   }
 }
 
-export async function loadStage(k: number): Promise<StageView> {
+export async function loadStage(k: number, fit = true): Promise<StageView> {
   const url = `assets/stages/stage${String(k).padStart(2, '0')}.json`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-  return new StageView((await res.json()) as StageJson);
+  return new StageView((await res.json()) as StageJson, fit);
 }
