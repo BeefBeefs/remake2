@@ -12,6 +12,7 @@ later. Newest entry first; each work session appends here.
 - Play mode: NPC placed on the room's linked prop entity; dungeons spawn up to 10 enemies from the entity cells: cells grouped by `kind` (sub 1), most common kind → first listed
   monster, next kind → second … (**guess**: the kind↔model mapping is unknown). Enemies chase within 700 units, hit for 8 per 1.2 s when within 90 (hero plays hurt), hero attacks
   (⚔ / Space) deal 34 damage within 170 units; enemies shrink away when dead; HP/enemy counter at bottom-left; hero dies at 0 HP (anim 7, frozen).
+- A stage picker next to "▶ Play stage" chooses the stage to play (default 1); pick e.g. stage 10 (Abandoned Mine) or 20 to meet enemies.
 - Not done: monster attack/hit/die animations (monster slots unknown), collision between actors/props, loot, XP, doors/stage links.
 
 **Step U – entity cells for all stages + markers in the viewer**

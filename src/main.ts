@@ -43,7 +43,10 @@ fetch('assets/stages/index.json')
   .then((r) => r.json() as Promise<{ stages: { name?: string | null }[] }>)
   .then((ix) =>
     ix.stages.forEach((st, k) => {
-      if (st.name) heroSel.options[STAGE0 + k].text = `stage ${k} – ${st.name}`;
+      if (st.name) {
+        heroSel.options[STAGE0 + k].text = `stage ${k} – ${st.name}`;
+        playSel.options[k].text = `stage ${k} – ${st.name}`;
+      }
     }),
   )
   .catch(() => undefined);
@@ -57,9 +60,11 @@ hud?.append(document.createElement('hr'), heroSel, animSel, palSel, atlasSel, in
 
 // First playable slice: walk the selected hero (or hero 0) around the selected stage (stage 1 if none is selected).
 const play = new PlayMode(scene, camera, renderer.domElement);
+const playSel = mk(96, (i) => `stage ${i}`);
+playSel.value = '1';
 const playBtn = document.createElement('button');
 playBtn.textContent = '▶ Play stage';
-hud?.append(playBtn);
+hud?.append(playSel, playBtn);
 playBtn.onclick = async () => {
   if (play.active) {
     play.exit();
@@ -70,7 +75,7 @@ playBtn.onclick = async () => {
     return;
   }
   const sel = Number(heroSel.value);
-  const stageIdx = sel >= STAGE0 ? sel - STAGE0 : 1;
+  const stageIdx = sel >= STAGE0 ? sel - STAGE0 : Number(playSel.value);
   const heroIdx = sel < 16 ? sel : 0;
   info.textContent = 'loading play mode…';
   if (model) { scene.remove(model.root); model.dispose(); model = undefined; }
