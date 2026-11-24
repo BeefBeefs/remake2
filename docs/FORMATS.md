@@ -32,14 +32,17 @@ Table of N × `(offset:u32, size:u32)` LE pairs. Offsets chain back-to-back, rel
 Implemented in `tools/extract_snd.py`. Naming: `Base.snd` = shared SFX; `Qxx_yy.snd` = quest xx, part yy.
 
 ## English/BLAZE.ALL 🟡
-* Sector-aligned records. Many begin with a chunk header `u32 16, u32 8|9, u32 size` (524 or 2060 bytes)
-  holding a **256-colour RGB565 palette** (`u16 0, u16 480(?), u16 256, u16 1, pal[256]`) – ✅ palette decodes to
-  sensible colours (see `tools/probe_img.py`).
-* Following the palette: `u16 12, u16 1, u32 640, u32 0x01000080` then pixel data. ✅ **Pixel data is raw 8-bit
-  palette indices, 256 pixels per row** (stride found by row-difference minimisation; also matches the `0x0100`
-  header field). Record 0 (starts at byte 0x220) is the *Blaze & Blade ~Eternal Quest~* logo texture, 256 px wide.
-  🟡 The logo shows a second, vertically offset ghost copy overlapping it – either two sprites sharing a texture
-  or a per-row layout detail not yet understood. The meaning of `640` and `0x80` in the header is unknown.
+* Sector-aligned records. 503 begin with a chunk header `u32 16, u32 8|9, u32 psize` (psize 524 = 256 colours,
+  1036 = 512, 2060 = 1024, 44 = 16) holding palette data. ✅ **Palette entries are u16 BGR555**: `R=v&31, G=(v>>5)&31,
+  B=(v>>10)&31`, bit 15 = opaque flag (0 = transparent). Verified against `make_01e.bmp` (record at sector 33 is the
+  same image; 87.5 % of indices identical, colours match exactly). (An earlier RGB565 guess was wrong.)
+* Pixel header at `record + psize + 8`: `u8 12, u16 height, u8 0, u32 640|768|0, u16 A, u16 B`. ✅ `height` rows ×
+  256 bytes follows 12 bytes later (e.g. 256×128 = 32768 + 1504 pad = record size). `A,B` (64/128/16 and 256/64/224)
+  unknown – maybe tile/cell size. 10 records have a different header size (140/204) and are skipped for now.
+* ✅ `tools/dump_textures.py` extracts 493 textures (256×H RGBA) → `public/assets/tex/` + `index.json`. Contents seen:
+  character face/hair sheets, monster skins (skull, lava), 6×6 spell-icon sheet, bitmap fonts, **numbered tile
+  atlases** (level geometry is tile-based), minimaps (drawn twice side by side), sky/starfield, title logo.
+* ✅ Pixel data is raw 8-bit palette indices, 256 px per row. Record 0 = title logo texture.
 * Huge runs of `0xCC` (MSVC debug fill) and zeros appear → sparse/padded records; `cd.idx` (the index) is missing,
   so record boundaries must be recovered by scanning or from hard-coded sector numbers in `Blaze.exe`.
 * Remaining record types (models, level data, animations) ❓.

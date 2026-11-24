@@ -3,6 +3,24 @@
 Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (Win EN). Repo will go private
 later. Newest entry first; each work session appends here.
 
+## Turn 3 – 2026-11-24
+**Done**
+- ✅ Scanned all 503 palette records; found the pixel-header layout (height field → exact row count).
+- ✅ **Fixed palette format: BGR555 + opaque bit** (not RGB565) by cross-checking against the decoded `make_01e.bmp`.
+  The earlier "ghost" in the logo was just wrong colours.
+- ✅ `tools/dump_textures.py` → 493 textures in `public/assets/tex/` (+ `index.json`; 10 odd-header records skipped).
+  Contact sheet shows face/hair sheets, monster skins, spell icons, fonts, **numbered tile atlases**, minimaps, sky.
+
+**Not verified**
+- Header fields `A,B`; what the extra data after each texture is (records are far larger than the pixels in many
+  cases, e.g. sector 33: 177 KB vs 57 KB of pixels); the 10 skipped records; which texture belongs to which level.
+
+**Next**
+1. Classify the non-texture chunks that follow textures (the `(n,0)` small-typed records at sectors ~1030–3400 look like
+   tables/meshes) – find their header layout.
+2. Disassemble `Blaze.exe` CD-read path to find the sector→asset table and chunk type ids.
+3. Try to identify level/tilemap data (look for arrays referencing the numbered tile atlases) and model vertex data.
+
 ## Turn 2 – 2026-11-24
 **Done**
 - ✅ Cracked `.pic`: LHA level-1 + lh5 with method bytes `xxxxx`. `tools/lh5.py` decoder (CRC-verified on all 3 files),
