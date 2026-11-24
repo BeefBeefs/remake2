@@ -3,6 +3,21 @@
 Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (Win EN). Repo will go private
 later. Newest entry first; each work session appends here.
 
+### Turn 7 (continues from Turn 6; notes after each step)
+**Step A – model→texture link FOUND**
+- ✅ BLAZE.ALL contains a **resource table** (copies at file offsets 0x906b88, 0x907388, …; `data/resource_table.json`) of
+  `(sector, size)` u32 pairs. After 5 misc textures it lists, in parallel order: **16 hero textures** (sectors 120,130,…,270,
+  18464 B each), 16 small blobs (3437…, 2592 B), 8 blobs (3469…, 6400 B), **16 animation packs** (3501, 1030, 1046, …, 1271)
+  and **16 mesh packs** (3521, 2634, 2641, …, 2753). Entry *k* of each list belongs to hero *k*.
+  → knight (anim 3501 / mesh 3521) uses **texture 120** (256×64, 8 CLUTs of 256 colours: psize 2060 = 12 + 8·512).
+- ✅ Verified visually: the knight's UV rectangles (v<64) line up with the eye, helmet, chest, arms and legs pieces in tex 120
+  (`/tmp` overlay; recreate with tools/ once added).
+- 💡 The 48 faces with v ≥ 64 are the ones that produce long fan-shaped UV lines from one corner → the "R1" rows are
+  **not valid textured quads**. This explains their out-of-range vertex indices: they are probably a different structure.
+- Not verified: which of the 8 CLUTs is the default skin; meaning of the 16×2592 and 8×6400 blobs (maybe equipment/palettes);
+  other 15 heroes not yet checked.
+
+
 ## Turn 6 – 2026-11-24 (multi-step; notes after each step)
 **Verified in browser (user, via GitHub Pages)**: viewer runs, knight assembles from skeleton and animates. Camera was too close; framing adjusted.
 
