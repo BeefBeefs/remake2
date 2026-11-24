@@ -91,6 +91,15 @@ def main():
             if r['arrival'] < len(recs):
                 a = recs[r['arrival']]
                 d['at'] = {'x': a['x'], 'y': a['y'], 'z': a['z']}
+    # doors with no reverse script (one-way jumps): use the arrival records of S that no incoming script lands on, in order
+    for st, lst in out.items():
+        recs = arr.get(st, [])
+        used = {r['arrival'] for k, l2 in out.items() for r in l2 if r['stage'] == int(st)}
+        free = [i for i in range(len(recs)) if i not in used]
+        for d in lst:
+            if 'at' in d or d['stage'] is None or d['stage'] == int(st) or not free: continue
+            a = recs[free.pop(0)]
+            d['at'] = {'x': a['x'], 'y': a['y'], 'z': a['z'], 'guess': True}
     path = os.path.join(ROOT, 'public/assets/stages/doors.json')
     json.dump(out, open(path, 'w'), separators=(',', ':'))
     json.dump(arr, open(os.path.join(ROOT, 'public/assets/stages/arrivals.json'), 'w'), separators=(',', ':'))
