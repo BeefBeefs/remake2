@@ -4,6 +4,18 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step J – animation roles guessed from frame counts; README link; engine exe spotted**
+- README now links the live viewer (https://beefbeefs.github.io/remake2/). The repo's "About" website field could not be set from
+  here (the proxy blocks repository-settings writes) – set it by hand: repo page → ⚙ next to About → Website.
+- Frame counts per animation are very regular across models. Heroes: blob 1 always **10** frames, blob 2 always **7**, blob 3 **5–6**
+  (4 for two heroes: 20), the last blob 19–24 and, for some heroes, one extra 1-frame blob; monsters: blob 2 is **20 frames in ~all models**,
+  blob 3 mostly 15. Working labels (UNVERIFIED, shown with "?" in the viewer): heroes 0 idle, 1 walk, 2 run, 3 hit, 4 attack;
+  monsters 0 idle, 1 walk, 2 attack, 3 hit. Others stay "anim n".
+- `hero_small_2592` blobs are **not** animation data: they are 4-bit portrait images (header `16, 8, 0x20c …` + CLUT + packed nibbles).
+- The PC engine `Blaze.exe` (1.5 MB, in the original install next to BLAZE.ALL, not yet in the repo) is the real source for animation
+  indices, stats and the monster table consumer: `objdump -D -M intel` is available; looking for the code that reads
+  0x9119f0-table entries / animation indices is the next lead. `English/data/action.txt` is just the control-action names.
+
 **Step I – REAL model table found: every model has exactly one texture (monster texture mapping solved)**
 - ✅ `original/BLAZE.ALL` is now committed (46 MB; repo to be made private).
 - ✅ Found by searching for the monster anim sectors as a stride-2 u32 sequence: a **model table at file offset 0x9119f0** of

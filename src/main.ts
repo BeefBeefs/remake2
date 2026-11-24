@@ -38,6 +38,8 @@ const palSel = mk(4, (i) => `palette ${i}`);
 const info = document.createElement('div');
 hud?.append(document.createElement('hr'), heroSel, animSel, palSel, info);
 
+const HERO_ANIMS = ['idle', 'walk', 'run', 'hit', 'attack'];
+const MONSTER_ANIMS = ['idle', 'walk', 'attack', 'hit'];
 const isMonster = () => Number(heroSel.value) >= 16;
 const texUrl = () =>
   isMonster()
@@ -55,7 +57,11 @@ async function showHero(h: number): Promise<void> {
   }
   model = m;
   scene.add(m.root);
-  animSel.replaceChildren(...Array.from({ length: m.animCount }, (_, i) => new Option(`anim ${i}`, String(i))));
+  // Guessed from frame-count patterns shared by all models (see PROGRESS.md Step J); "?" = unverified.
+  const guess = h < 16 ? HERO_ANIMS : MONSTER_ANIMS;
+  animSel.replaceChildren(
+    ...Array.from({ length: m.animCount }, (_, i) => new Option(`anim ${i}${guess[i] ? ` (${guess[i]}?)` : ''}`, String(i))),
+  );
   palSel.value = '0';
   palSel.disabled = h >= 16;
   await m.setTexture(texUrl());
