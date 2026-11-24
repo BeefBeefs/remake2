@@ -132,8 +132,14 @@ export class PlayMode {
     this.talkBox.style.cssText = 'position:fixed;left:5%;right:5%;bottom:90px;padding:10px 14px;background:rgba(10,10,40,.88);border:2px solid #9ab;border-radius:8px;color:#fff;font:15px sans-serif;white-space:pre-wrap;display:none;z-index:6';
     this.talkBox.onclick = () => (this.talkBox.style.display = 'none');
     document.body.append(this.talkBox);
+    const help = document.createElement('div');
+    help.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:14px 18px;background:rgba(10,10,40,.92);border:2px solid #9ab;border-radius:8px;color:#fff;font:14px monospace;white-space:pre;display:none;z-index:8';
+    help.textContent = 'Controls (press ? to close)\n\nWASD / arrows   move        Q E   turn camera\nSpace / J       attack      K     attack 2 (melee)\nL jump   G guard (half damage)   V victory   H hurt\nC cast spell   Z next spell   P potion   B buy potion (30 gold)\nR / Enter       retry after dying\nWalk into a yellow door dot to change area (targets guessed)';
+    help.onclick = () => (help.style.display = 'none');
+    document.body.append(help);
     addEventListener('keydown', (e) => {
       const key = e.key.toLowerCase();
+      if (key === '?' && this.active) { help.style.display = help.style.display === 'none' ? 'block' : 'none'; return; }
       this.keys.add(key);
       if (key === ' ' || key === 'j') this.act('attack');
       if (key === 'k') this.act('attack2');
@@ -323,7 +329,7 @@ export class PlayMode {
     this.camera.updateProjectionMatrix();
     this.active = true;
     this.hud.style.display = 'block';
-    this.info = `stage ${stageIndex}: ${this.tris.length} floor triangles — left stick/WASD move, right drag/Q E turn`;
+    this.info = `stage ${stageIndex}: ${this.tris.length} floor triangles — left stick/WASD move, right drag/Q E turn, ? = help`;
     this.updateHero(0);
   }
 
