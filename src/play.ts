@@ -516,7 +516,14 @@ export class PlayMode {
     const here = defs.length ? `\nhere: ${defs.map((d) => d.name).join(', ')}` : '';
     this.hud.style.whiteSpace = 'pre';
     this.noticeT = Math.max(0, this.noticeT - dt);
-    this.hud.textContent = `${this.noticeT > 0 ? this.notice + '\n' : ''}${this.className ? this.className + ' ' : ''}Lv ${this.level} (xp ${this.xp}/${this.level * 40}, ${this.gold} gold)\nHP ${this.hp}/${this.maxHp}   ${this.spells.length ? `MP ${Math.floor(this.mp)} ${this.spells[this.spellIdx].name} (C cast, Z next)   ` : ''}potions ${this.potions} (P use, B buy 30g)   enemies ${alive}${here}`;
+    let doorHint = '';
+    for (const d of this.doors) {
+      if (!d.target || Math.hypot(d.x - this.pos.x, d.z - this.pos.z) > 320) continue;
+      const q = questOf(d.target.stage);
+      doorHint = `door → ${q ? `${q.name}, area ${q.area + 1}/${q.areas}` : `stage ${d.target.stage}`}\n`;
+      break;
+    }
+    this.hud.textContent = `${doorHint}${this.noticeT > 0 ? this.notice + '\n' : ''}${this.className ? this.className + ' ' : ''}Lv ${this.level} (xp ${this.xp}/${this.level * 40}, ${this.gold} gold)\nHP ${this.hp}/${this.maxHp}   ${this.spells.length ? `MP ${Math.floor(this.mp)} ${this.spells[this.spellIdx].name} (C cast, Z next)   ` : ''}potions ${this.potions} (P use, B buy 30g)   enemies ${alive}${here}`;
   }
 
   /** Prop collision: props are circles (radius ~ 60) – enemies and the hero cannot walk through them. */
