@@ -59,8 +59,13 @@ export class AnimatedModel {
         }
         // Triangles are stored as quad rows with a repeated vertex index; the repeated slot carries a dummy UV
         // (2,123), so use the first slot of every distinct index: (a,b,b,c) -> slots 0,1,3.
+        // UV (2,123) is the dummy written into an unused corner (triangle rows); never use such a corner, even when its
+        // vertex index differs from the others (e.g. a (a,b,c,d) row whose third UV is the dummy = triangle a,b,d).
         const slots: number[] = [];
-        for (let k = 0; k < 4; k++) if (!slots.some((q) => idx[q] === idx[k])) slots.push(k);
+        for (let k = 0; k < 4; k++) {
+          if (f.uv[k][0] === 2 && f.uv[k][1] === 123) continue;
+          if (!slots.some((q) => idx[q] === idx[k])) slots.push(k);
+        }
         const tris = slots.length === 4 ? [[0, 1, 2], [0, 2, 3]] : slots.length === 3 ? [slots] : [];
         for (const t of tris) {
           if (t.some((k) => f.uv[k][1] >= this.texH)) {

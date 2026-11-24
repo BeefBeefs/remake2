@@ -4,6 +4,13 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step Y – hero "faces skipped": dummy-UV corners**
+- The viewer's "N faces skipped" for hero 0 was 46: 27 were real faces recovered by one rule – **UV (2,123) marks an unused corner**, also when that corner's vertex index differs from the others
+  (rows like `v=(29,30,27,28), uv3=(2,123)` are triangles (29,30,28); `v=(2,0,3,3)` with dummy in slot 2 is the triangle slots 0,1,3). Skipped faces for hero 0 are now 19.
+- Remaining 19: **13 = the last face row of 13 parts** (`v = (a,0,b,0)`, e.g. part 0 `(13,0,15,0)`, part 1 `(12,0,9,0)`; real UVs and normal ids): its vertex bytes run into a trailing u16 table
+  `a,b,b,b,a,b,b,0…` that sits between the face rows and the next record, so the true vertex indices are not in the row – maybe that table (open); 6 = junk rows after part 12's real faces.
+- Next idea: test whether the u16 table gives the quad as (a,b,b,a…) / index pairs by matching UV shape to 3D edge ratios.
+
 **Step X – level textures fixed (4-bit, 16 palettes per atlas), hero facing, prop collision sizes** (from the user's stage-10 screen recording)
 - ✅ The noisy/missing colours were a decoding bug: atlases are **256 x 256, 4-bit, with 16 palettes** (not 128 x 256 8-bit). Each face picks its palette from `attr` bits 4-7 and
   its atlas from `pg & 31` (index into the stage's atlas list). The exporter now writes `aNNN.png` (colour indices) + `aNNN.pal.png` (16 x 16 palette) and the viewer builds one
