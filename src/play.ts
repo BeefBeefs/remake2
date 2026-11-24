@@ -65,6 +65,10 @@ export class PlayMode {
   private look = { id: -1, x0: 0 };
   active = false;
   info = '';
+  /** Minimap: floor triangles drawn once into an offscreen canvas, then hero / enemies / doors each frame (north up, +x right, +z down). */
+  private mini: HTMLCanvasElement;
+  private miniBg: HTMLCanvasElement;
+  private miniB = { x0: 0, z0: 0, k: 1 };
 
   constructor(
     private readonly scene: THREE.Scene,
@@ -74,6 +78,12 @@ export class PlayMode {
     this.hud = document.createElement('div');
     this.hud.style.cssText = 'position:fixed;left:10px;bottom:10px;color:#fff;font:14px monospace;text-shadow:0 0 3px #000;display:none;z-index:5';
     document.body.append(this.hud);
+    this.mini = document.createElement('canvas');
+    this.mini.width = this.mini.height = 140;
+    this.mini.style.cssText = 'position:fixed;right:10px;top:10px;width:140px;height:140px;border:1px solid #9ab;border-radius:6px;background:rgba(0,0,20,.55);display:none;z-index:5;pointer-events:none';
+    document.body.append(this.mini);
+    this.miniBg = document.createElement('canvas');
+    this.miniBg.width = this.miniBg.height = 140;
     this.talkBox = document.createElement('div');
     this.talkBox.style.cssText = 'position:fixed;left:5%;right:5%;bottom:90px;padding:10px 14px;background:rgba(10,10,40,.88);border:2px solid #9ab;border-radius:8px;color:#fff;font:15px sans-serif;white-space:pre-wrap;display:none;z-index:6';
     this.talkBox.onclick = () => (this.talkBox.style.display = 'none');
@@ -211,6 +221,7 @@ export class PlayMode {
       this.doors.forEach((d, i) => { const dd = Math.hypot(d.x - this.pos.x, d.z - this.pos.z); if (dd < bd) { bd = dd; bi = i; } });
       for (const d of this.doors) if (Math.hypot(d.x - this.doors[bi].x, d.z - this.doors[bi].z) < 300) d.exit = false;
     }
+    this.buildMinimap();
     this.camera.far = 30000;
     this.camera.near = 5;
     this.camera.updateProjectionMatrix();
@@ -362,6 +373,48 @@ export class PlayMode {
     return true;
   }
 
+  private buildMinimap(): void {
+    let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+    for (const t of this.tris) for (const [x, z] of [[t.ax, t.az], [t.bx, t.bz], [t.cx, t.cz]]) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+    if (!isFinite(x0)) { this.mini.style.display = 'none'; return; }
+    const k = 132 / Math.max(x1 - x0, z1 - z0, 1);
+    this.miniB = { x0: x0 - (140 / k - (x1 - x0)) / 2, z0: z0 - (140 / k - (z1 - z0)) / 2, k };
+    const g = this.miniBg.getContext('2d')!;
+    g.clearRect(0, 0, 140, 140);
+    g.fillStyle = 'rgba(150,170,200,.55)';
+    const b = this.miniB;
+    for (const t of this.tris) {
+      g.beginPath();
+      g.moveTo((t.ax - b.x0) * b.k, (t.az - b.z0) * b.k);
+      g.lineTo((t.bx - b.x0) * b.k, (t.bz - b.z0) * b.k);
+      g.lineTo((t.cx - b.x0) * b.k, (t.cz - b.z0) * b.k);
+      g.fill();
+    }
+    this.mini.style.display = 'block';
+  }
+
+  private drawMinimap(): void {
+    if (this.mini.style.display === 'none') return;
+    const g = this.mini.getContext('2d')!;
+    const b = this.miniB;
+    g.clearRect(0, 0, 140, 140);
+    g.drawImage(this.miniBg, 0, 0);
+    const dot = (x: number, z: number, col: string, r: number): void => {
+      g.fillStyle = col;
+      g.fillRect((x - b.x0) * b.k - r, (z - b.z0) * b.k - r, r * 2, r * 2);
+    };
+    for (const d of this.doors) dot(d.x, d.z, '#ffd24a', 2.5);
+    for (const e of this.enemies) if (e.hp > 0 && e.dying <= 0) dot(e.x, e.z, e.npc ? '#5fa8ff' : '#ff4d4d', 2);
+    dot(this.pos.x, this.pos.z, '#5dff7a', 3);
+    // camera direction (forward = away from the camera = (-sin, -cos) in world x, z)
+    const hx = (this.pos.x - b.x0) * b.k, hz = (this.pos.z - b.z0) * b.k;
+    g.strokeStyle = '#5dff7a';
+    g.beginPath();
+    g.moveTo(hx, hz);
+    g.lineTo(hx - Math.sin(this.camYaw) * 12, hz - Math.cos(this.camYaw) * 12);
+    g.stroke();
+  }
+
   /** Hero attack: damage enemies in front within 170 units. */
   private strike(): void {
     for (const en of this.enemies) {
@@ -378,6 +431,7 @@ export class PlayMode {
 
   exit(): void {
     this.hud.style.display = 'none';
+    this.mini.style.display = 'none';
     this.talkBox.style.display = 'none';
     this.talkIndex = 0;
     for (const en of this.enemies) en.model.dispose();
@@ -467,6 +521,7 @@ export class PlayMode {
     }
     this.updateEnemies(dt);
     this.updateHero(dt);
+    this.drawMinimap();
     // door trigger (GUESS for the targets: the real destinations are not in the data we can read, see PROGRESS.md Step AE/AG).
     // Quests are chains of areas (sound banks Q00..Q10): an entrance door leads to the previous area, an exit door to the next one,
     // the ends of a quest lead to the inn; the inn's door cycles through its five rooms and each room's door returns to the inn.
