@@ -61,8 +61,10 @@ atlasSel.style.display = 'none';
 let stage: StageView | undefined;
 const animSel = document.createElement('select');
 const palSel = mk(4, (i) => `palette ${i}`);
+const gearSel = document.createElement('select');
+for (const [v, t] of [['b', 'gear B'], ['a', 'gear A'], ['both', 'gear A+B']]) gearSel.add(new Option(t, v));
 const info = document.createElement('div');
-hud?.append(document.createElement('hr'), heroSel, animSel, palSel, atlasSel, info);
+hud?.append(document.createElement('hr'), heroSel, animSel, palSel, gearSel, atlasSel, info);
 
 // First playable slice: walk the selected hero (or hero 0) around the selected stage (stage 1 if none is selected).
 const play = new PlayMode(scene, camera, renderer.domElement);
@@ -153,6 +155,7 @@ async function showHero(h: number): Promise<void> {
   const isStage = h >= STAGE0;
   atlasSel.style.display = isStage ? '' : 'none';
   palSel.style.display = isStage ? 'none' : '';
+  gearSel.style.display = isStage || h >= 16 ? 'none' : '';
   animSel.style.display = isStage ? 'none' : '';
   if (isStage) return showStage(h - STAGE0);
   if (stage) {
@@ -174,6 +177,8 @@ async function showHero(h: number): Promise<void> {
   );
   palSel.value = '0';
   palSel.disabled = h >= 16;
+  gearSel.value = 'b';
+  gearSel.disabled = !m.gearSets;
   await m.setTexture(texUrl());
   info.textContent = describe(m);
 }
@@ -183,6 +188,7 @@ animSel.onchange = () => {
   if (model) info.textContent = describe(model);
 };
 palSel.onchange = () => void model?.setTexture(texUrl());
+gearSel.onchange = () => model?.setGear(gearSel.value as 'a' | 'b' | 'both');
 showHero(0).catch((e) => {
   info.textContent = `model load failed: ${e}`;
   console.error(e);

@@ -35,6 +35,8 @@ export class AnimatedModel {
   private acc = 0;
   fps = 8;
   skippedFaces = 0;
+  /** Two near-identical sets of equipment parts at the end of the part list (e.g. hero 0: 17-21 sheathed sword, 22-26 drawn sword); null if none found. */
+  gearSets: { a: number[]; b: number[] } | null = null;
   totalFaces = 0;
   /** Shared by every part; swap `material.map` to change the CLUT (colour scheme). */
   readonly material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, alphaTest: 0.5 });
@@ -84,7 +86,33 @@ export class AnimatedModel {
       g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
       this.meshes.push({ mesh: new THREE.Mesh(g, this.material), index: part.index });
     }
+    this.gearSets = this.detectGear();
     this.setAnim(0);
+  }
+
+  /** Parts p and p+P with equal vertex counts over a run of >= 3 parts (P = 3..8, starting at part 8 or later) = two equipment variants. */
+  private detectGear(): { a: number[]; b: number[] } | null {
+    const nv = new Map(this.data.parts.map((p) => [p.index, p.verts.length]));
+    let best: [number, number, number] | null = null;
+    for (let P = 3; P <= 8; P++) {
+      for (const s of nv.keys()) {
+        if (s < 8) continue;
+        let r = 0;
+        while (nv.has(s + r) && nv.has(s + P + r) && nv.get(s + r) === nv.get(s + P + r)) r++;
+        if (r >= 3 && (!best || r > best[0] || (r === best[0] && s > best[1]))) best = [r, s, P];
+      }
+    }
+    if (!best) return null;
+    const [, s0, P] = best;
+    const range = (from: number) => Array.from({ length: P }, (_, i) => from + i).filter((i) => nv.has(i));
+    return { a: range(s0), b: range(s0 + P) };
+  }
+
+  /** Show both equipment variants, only the first (A) or only the second (B). */
+  setGear(g: 'both' | 'a' | 'b'): void {
+    if (!this.gearSets) return;
+    const hide = g === 'a' ? this.gearSets.b : g === 'b' ? this.gearSets.a : [];
+    for (const m of this.meshes) m.mesh.visible = !hide.includes(m.index);
   }
 
   get animCount(): number {
@@ -169,7 +197,9 @@ export async function loadMonster(k: number): Promise<AnimatedModel> {
   const url = `assets/monsters/mon${String(k).padStart(2, '0')}.json`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-  return new AnimatedModel((await res.json()) as HeroJson);
+  const m = new AnimatedModel((await res.json()) as HeroJson);
+  m.setGear('b'); // both variants overlap (sword drawn + sword on the back); B = drawn weapon
+  return m;
 }
 
 export async function loadHero(hero: number): Promise<AnimatedModel> {

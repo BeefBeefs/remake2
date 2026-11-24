@@ -4,6 +4,13 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step AB – duplicate equipment sets on the heroes (two swords)**
+- The hero meshes contain **two near-identical sets of equipment parts** at the end of the part list (hero 0: parts 17-21 and 22-26 with equal vertex counts). Rendered separately: set A = sword sheathed on the back,
+  set B = drawn blade in the raised hand (+ scabbard). Drawing both gave the doubled sword/scabbard and the extra shield-like block. The viewer detects the pair (parts p and p+P with equal vertex counts over ≥ 3 parts,
+  P = 3..8; found for 12 of 16 heroes, the other four have none or no clean match), hides one by default (**B = drawn weapon**, matches the raised-fist idle pose) and has a "gear A / B / A+B" dropdown for heroes.
+  Which set the game shows when (probably A while walking, B in combat) is unknown.
+- The dark "framed block" over the hero's right face half is most likely the hair lock covering that eye (it uses the hair tile), not a bug.
+
 **Step AA – stage script texts + talking to the NPC; dungeon spawns cycle through the stage's monsters**
 - ✅ `export_stages.py` now extracts the printable strings of the script stream after the `- Name -` banner (`texts` in stageNN.json): dialogue boxes `1f d0 id 0c "Speaker:\r text" 0f`, signs, menu strings
   (item name placeholder `0b xx xx xx` → `[item]`). Stage 1: the item expert's 21 lines, stage 2: stock box text, stage 10: gate/miners' sign texts (the stage 10 banner reads "5th Underlevel").
