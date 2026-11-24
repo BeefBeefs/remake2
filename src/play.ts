@@ -249,7 +249,8 @@ export class PlayMode {
     }
     await this.spawnEnemies(st);
     const door = st.data.entities?.[0];
-    const doorList = (st.data.entities ?? []).filter((e) => e.flag === -126 && (e.kind === -1 || e === door)).map((e) => ({ x: e.x, z: -e.z, exit: true }));
+    const doorList = (st.data.entities ?? []).filter((e) => e.flag === -126 && (e.kind === -1 || e === door || stageIndex === 0)).map((e) => ({ x: e.x, z: -e.z, exit: true }));
+    // the inn (stage 0) has no (-1,-1,-126) door record; its three -126 trigger records (two at the east wall, one at the north) serve as the room doors (guess)
     this.doors = doorList;
     const hasDoor = !!(door && door.flag === -126 && door.kind === -1);
     // arrival points (first records of the map module): where the hero appears when entering; face the middle of the floor
