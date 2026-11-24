@@ -310,6 +310,9 @@ for st in stages:
     st['monsters'] = [mon_by_tex[a] for a, z in st.get('texList', []) if a in mon_by_tex]
 # Monster model id -> definition. A stage lists the monster models it streams in (`monsters`) and has a list of definitions (`monsterDefs`) but the
 # link between them is not stored (found), so it is solved: a model's name must be in every stage that lists it, and two models of one stage differ.
+# Per-stage ground choice (texture-list position, palette) where the default guess is clearly wrong. Stage 72 (volcano): the default picked the
+# metal-panel sheet; atlas 255 (position 0) with palette 12 gives a brown volcanic rock floor (checked by render).
+GROUND_OVERRIDE = {72: (0, 12)}
 def base_name(n): return n.split('.', 1)[1] if n.startswith('Lv') and '.' in n else n
 cand = {}
 for st in stages:
@@ -399,10 +402,11 @@ for k, st in enumerate(stages):
     nat = max(1, len(st['atlases']))
     pos4 = [i for i, p in enumerate(st['pages']) if isinstance(p, int)]   # texture-list positions that are 4-bit atlases
     fixed = 0
+    gpg, gcl = GROUND_OVERRIDE.get(k, (pos4[1] if len(pos4) > 1 else (pos4[0] if pos4 else 0), 3))
     for m in st['meshes']:
         for f in m['faces']:
             if f['clut'] == 0 and max(max(u, v) for u, v in f['uv']) >= 100 and (f['tp'] == 0 or (f['pg'] & 31) == 3 and f['pg'] >= 128):
-                f['pg'] = pos4[1] if len(pos4) > 1 else (pos4[0] if pos4 else 0); f['clut'] = 3; fixed += 1
+                f['pg'] = gpg; f['clut'] = gcl; fixed += 1
     st['groundGuess'] = fixed
     p = os.path.join(out, f'stage{k:02d}.json')
     json.dump(st, open(p, 'w'), separators=(',', ':')); total += os.path.getsize(p)
