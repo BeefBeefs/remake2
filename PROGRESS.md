@@ -3,6 +3,24 @@
 Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (Win EN). Repo will go private
 later. Newest entry first; each work session appends here.
 
+## Turn 2 – 2026-11-24
+**Done**
+- ✅ Cracked `.pic`: LHA level-1 + lh5 with method bytes `xxxxx`. `tools/lh5.py` decoder (CRC-verified on all 3 files),
+  `tools/decode_pics.py` → `public/assets/ui/*.png` (menu background, window frame, bitmap font).
+- ✅ `BLAZE.ALL` record 0 pixels are **raw 8-bit paletted, 256 px/row** – logo texture now readable (not compressed;
+  earlier "compressed" guess was wrong). Compression is therefore not the blocker for BLAZE.ALL.
+- ❌ Could not fetch the full ISO (sandbox network blocks myabandonware.com); proceeding with the RIP.
+
+**Not verified**
+- Ghost/overlap in the logo texture; meaning of record header fields (`640`, `0x80`); record boundaries/index.
+
+**Next**
+1. Build a record scanner that walks all palette chunks in `BLAZE.ALL` and dumps every texture as PNG (contact sheet)
+   to learn what asset types exist.
+2. Find the table in `Blaze.exe` that maps sector numbers → assets (cd.idx replacement); disassemble the CD reader.
+3. Classify non-image records (models/levels/anims), starting with the small (1..60, 0) typed records near sectors
+   1030-3400.
+
 ## Turn 1 – 2026-11-24
 **Done**
 - Unpacked the rip and inventoried it (see `docs/FORMATS.md`): music (`musik/*.wav`) and videos (`*.avi`) are

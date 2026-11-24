@@ -14,8 +14,16 @@ Publisher chain per registry key: T&E Software / Funsoft / Elo Interactive Media
 | `English/*.avi` | 2.5 KB each | **Stubs** – intro/ending/etc. videos removed. |
 | `cd.idx` | 0 B | Empty (probably the CD TOC index – lost). |
 | `English/data/*.txt` | small | ✅ UI strings (`config.txt`, `action.txt`, `keyboard.txt`, `english.txt`, `joystick.txt`). Action list: Up/Down/Left/Right, Attack/Action, Special, Jump, Icon, Turn L/R, Look up/down, Menu, Cast spell, Zoom in/out, AutoCamera, Topview. |
-| `English/data/*.pic` | small | 🟡 compressed bitmaps; header has original name (`font.bmp`, `make_01e.bmp`, `sys_wi2e.bmp`). Installer/menu UI only. |
+| `English/data/*.pic` | small | ✅ LHA lh5 (see below) → 8-bit BMPs (`font.bmp` 312×84, `make_01e.bmp` and `sys_wi2e.bmp` 256×256). Decoded to `public/assets/ui/`. |
 | `data/Starter/*.par`, `VAR.INF` | tiny | Installer scripts in the WinSys script language. Not game logic. |
+
+## .pic ✅ (LHA lh5)
+LHA **level-1** member whose 5-byte method field is overwritten with `xxxxx` (so stock `lha` refuses it).
+Header: `u8 hdrsize, u8 csum, method[5], u32 packed, u32 orig, u32 time, u8 attr, u8 level(=1), u8 namelen, name, u16 crc16`
+(+ OS byte, `u16 ext=0`); payload at `hdrsize+2`. Payload = standard **-lh5-** (8 KiB window, NC=510, NT=19, NP=14,
+min match 3) — identified from `wsyskern.dll` Unpack (0x3e70 → worker 0x3480; window 0x2000, c-table 0x1fe, length = code−253).
+CRC16 (poly 0xA001) over the output matches on all 3 files. Implemented in `tools/lh5.py`, `tools/decode_pics.py`.
+`BLAZE.ALL` does **not** use this wrapper (`xxxxx` hits there are random data).
 
 ## Snd/*.snd ✅
 Table of N × `(offset:u32, size:u32)` LE pairs. Offsets chain back-to-back, relative to end of the table.
@@ -27,8 +35,11 @@ Implemented in `tools/extract_snd.py`. Naming: `Base.snd` = shared SFX; `Qxx_yy.
 * Sector-aligned records. Many begin with a chunk header `u32 16, u32 8|9, u32 size` (524 or 2060 bytes)
   holding a **256-colour RGB565 palette** (`u16 0, u16 480(?), u16 256, u16 1, pal[256]`) – ✅ palette decodes to
   sensible colours (see `tools/probe_img.py`).
-* Following the palette: `u16 12, u16 1, u32 640, u32 0x01000080` then pixel data. Pixel data of the first
-  record (a 640×480 title graphic) is **not** plain 8-bit rows; likely RLE/LZ-compressed. ❓ algorithm.
+* Following the palette: `u16 12, u16 1, u32 640, u32 0x01000080` then pixel data. ✅ **Pixel data is raw 8-bit
+  palette indices, 256 pixels per row** (stride found by row-difference minimisation; also matches the `0x0100`
+  header field). Record 0 (starts at byte 0x220) is the *Blaze & Blade ~Eternal Quest~* logo texture, 256 px wide.
+  🟡 The logo shows a second, vertically offset ghost copy overlapping it – either two sprites sharing a texture
+  or a per-row layout detail not yet understood. The meaning of `640` and `0x80` in the header is unknown.
 * Huge runs of `0xCC` (MSVC debug fill) and zeros appear → sparse/padded records; `cd.idx` (the index) is missing,
   so record boundaries must be recovered by scanning or from hard-coded sector numbers in `Blaze.exe`.
 * Remaining record types (models, level data, animations) ❓.
