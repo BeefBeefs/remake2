@@ -76,6 +76,21 @@ def main():
             recs.append({'x': r[2], 'y': r[3], 'z': r[4], 'rot': r[6], 'id': r[8]})
             o += 32
         arr[str(st)] = recs
+    # Door positions: the arrival record of stage S that the REVERSE script (D -> S) lands on stands in front of the door of S that leads to D
+    # (e.g. the inn's arrival k is where room k's door script returns to, and the inn's door k is there). The k-th script S -> D pairs with the k-th script D -> S.
+    for st, lst in out.items():
+        seen = {}
+        for d in lst:
+            D = d['stage']
+            if D is None or D == int(st): continue
+            k = seen.get(D, 0); seen[D] = k + 1
+            rev = [r for r in out.get(str(D), []) if r['stage'] == int(st)]
+            if not rev: continue
+            r = rev[min(k, len(rev) - 1)]
+            recs = arr.get(st, [])
+            if r['arrival'] < len(recs):
+                a = recs[r['arrival']]
+                d['at'] = {'x': a['x'], 'y': a['y'], 'z': a['z']}
     path = os.path.join(ROOT, 'public/assets/stages/doors.json')
     json.dump(out, open(path, 'w'), separators=(',', ':'))
     json.dump(arr, open(os.path.join(ROOT, 'public/assets/stages/arrivals.json'), 'w'), separators=(',', ':'))

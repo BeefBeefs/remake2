@@ -61,7 +61,7 @@ export class PlayMode {
   private pendingArrival = 0;
   private variant = 0;
   private travelling = false;
-  private doors: { x: number; z: number; exit: boolean; idx?: number }[] = [];
+  private doors: { x: number; z: number; exit: boolean; idx?: number; target?: { stage: number; arrival: number } }[] = [];
   private solids: { x: number; z: number; r: number }[] = [];
   hp = 100;
   /** progression (guess: the original's formulas are not decoded): kills give xp and gold, levels raise HP / MP / damage; kept in localStorage */
@@ -304,9 +304,12 @@ export class PlayMode {
     const doorList = (st.data.entities ?? []).filter((e) => e.flag === -126 && (e.kind === -1 || e === door || stageIndex === 0)).map((e) => ({ x: e.x, z: -e.z, exit: true }));
     // the inn (stage 0) has no (-1,-1,-126) door record; its three -126 trigger records (two at the east wall, one at the north) serve as the room doors (guess)
     this.doors = doorList;
-    // the inn's six room doors stand at its arrival records 1-6 (the spots where each room's door script returns to), script k-1 leads through door k
+    // real doors: every door script with a known position (the arrival record its reverse script lands on, see tools/export_doors.py)
+    const real = (this.doorData?.[String(stageIndex)] ?? []).filter((d) => d.stage !== null && d.stage !== stageIndex && d.at);
+    if (real.length) this.doors = real.map((d, i) => ({ x: d.at!.x, z: -d.at!.z, exit: true, idx: i, target: { stage: d.stage!, arrival: d.arrival } }));
+    // (fallback) the inn's six room doors stand at its arrival records 1-6 (the spots where each room's door script returns to), script k-1 leads through door k
     const innArr = stageIndex === 0 ? this.arrData?.['0'] ?? [] : [];
-    if (innArr.length >= 7) this.doors = innArr.slice(1, 7).map((a, i) => ({ x: a.x, z: -a.z, exit: true, idx: i }));
+    if (!real.length && innArr.length >= 7) this.doors = innArr.slice(1, 7).map((a, i) => ({ x: a.x, z: -a.z, exit: true, idx: i }));
     const hasDoor = !!(door && door.flag === -126 && door.kind === -1);
     // arrival points: the area module's arrival table (tools/export_doors.py -> arrivals.json); a door script names the arrival index,
     // starting a stage from the menu uses arrival 0 (the entrance). Face the middle of the floor.
@@ -831,18 +834,18 @@ export class PlayMode {
     // which script belongs to which door entity is not decoded yet, so an exit door takes the next area of the quest and an entrance door the previous one,
     // the ends of a quest lead to the inn, and the inn's doors cycle through its five rooms.
     if (this.doors.length && !this.travelling) {
-      let near: { x: number; z: number; exit: boolean; idx?: number } | null = null;
+      let near: (typeof this.doors)[number] | null = null;
       let dmin = Infinity;
       for (const d of this.doors) {
         const dd = Math.hypot(this.pos.x - d.x, this.pos.z - d.z);
         if (dd < dmin) { dmin = dd; near = d; }
       }
       if (dmin > 220) this.doorArmed = true;
-      else if (near && dmin < 90 && this.doorArmed) {
+      else if (near && dmin < (near.target ? 120 : 90) && this.doorArmed) {
         this.travelling = true;
         this.sfx?.play('door');
         const i0 = this.stageIndex;
-        const tgt = this.doorTarget(i0, near.exit, near.idx);
+        const tgt = near.target ?? this.doorTarget(i0, near.exit, near.idx);
         const next = tgt.stage;
         this.pendingArrival = tgt.arrival;
         if (next >= 1 && next <= 5) this.lastRoom = next;
@@ -857,7 +860,7 @@ export class PlayMode {
 
   /** real door destinations per stage (door scripts `11 group area arrival`), loaded once */
   private arrData: Record<string, { x: number; y: number; z: number; rot: number; id: number }[]> | null = null;
-  private doorData: Record<string, { quest: number; area: number; arrival: number; stage: number | null }[]> | null = null;
+  private doorData: Record<string, { quest: number; area: number; arrival: number; stage: number | null; at?: { x: number; y: number; z: number } }[]> | null = null;
 
   /** destination of a door: stage and arrival index (0 = the area's entrance door, 1.. = other doors, e.g. the exit door when coming back) */
   private doorTarget(i0: number, exit: boolean, idx?: number): { stage: number; arrival: number } {
