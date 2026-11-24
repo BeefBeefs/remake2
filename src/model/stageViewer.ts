@@ -14,6 +14,8 @@ export interface StageJson {
   propsSector?: number | null;
   /** Monster/NPC model ids (0-96) whose textures the stage lists: models 16+id of data/model_table.json. */
   monsters?: number[];
+  /** Monster definitions from the map module (name, level; raw stats not decoded). */
+  monsterDefs?: { name: string; level: number; raw: number[] }[];
   /** Dialogue boxes / signs / menu strings found in the stage script stream, in file order (tools/export_stages.py). */
   texts?: string[];
   /** Quest (sound-bank group Q00..Q10) this map belongs to, its index inside the quest and the stage range of the quest. */

@@ -308,7 +308,10 @@ export class PlayMode {
       if (en.dying <= 0 && en.hp <= 0) en.dying = 99;
     }
     const alive = this.enemies.filter((e) => !e.npc && e.hp > 0).length;
-    this.hud.textContent = `HP ${this.hp}   enemies ${alive}`;
+    const defs = this.stage?.data.monsterDefs ?? [];
+    const here = defs.length ? `\nhere: ${defs.map((d) => d.name).join(', ')}` : '';
+    this.hud.style.whiteSpace = 'pre';
+    this.hud.textContent = `HP ${this.hp}   enemies ${alive}${here}`;
   }
 
   /** Prop collision: props are circles (radius ~ 60) – enemies and the hero cannot walk through them. */

@@ -260,6 +260,29 @@ def arrivals_of(desc_sector):
             if 0 < y < 1000 and rot < 4096:
                 out.append({'id': w[q] & 0xffff, 'x': x - 65536 if x >= 32768 else x, 'y': y, 'z': z - 65536 if z >= 32768 else z, 'rot': rot})
     return out
+# Monster definitions: a map module's table part holds a section of 96-byte records (char name[16] NUL padded, then 40 u16: [0] = level, ...).
+# Names such as 'Lv20.Goblin' (a stronger variant), 'Goblin-Shaman'. Stats beyond the level are not decoded yet (kept raw).
+def monster_defs(desc_sector):
+    k = bisect.bisect(mod_sectors, desc_sector) - 1
+    if k < 0: return []
+    sc, A = mods[k]
+    hdr = struct.unpack_from('<64I', d, sc * S)
+    tab = d[sc * S + 0x100:sc * S + 0x100 + A]
+    for o in sorted(set(x for x in hdr[3:] if 0 < x < A)):
+        r, p = [], o
+        while p + 96 <= A:
+            nm = tab[p:p + 16]; z = nm.split(b'\0')[0]
+            if len(z) >= 3 and all(32 <= c < 127 for c in z) and nm[len(z):] == b'\0' * (16 - len(z)) and z[:1].isalpha():
+                h = struct.unpack_from('<40H', tab, p + 16); r.append({'name': z.decode(), 'level': h[0], 'raw': list(h)}); p += 96
+            else: break
+        if len(r) >= 2: return r
+    return []
+for st in stages:
+    sec = st['collision']['sector']
+    st['monsterDefs'] = []
+    for i, tl, ms in descs:
+        if ms and ms[0][0] == sec:
+            st['monsterDefs'] = monster_defs(i * 4 // S); break
 for st in stages:
     sec = st['collision']['sector']
     st['arrivals'] = []
