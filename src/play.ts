@@ -37,7 +37,7 @@ export class PlayMode {
   private lastRoom = 0;
   private variant = 0;
   private travelling = false;
-  private doorPos: { x: number; z: number } | null = null;
+  private doors: { x: number; z: number; exit: boolean }[] = [];
   private solids: { x: number; z: number; r: number }[] = [];
   hp = 100;
   private deadTime = -1;
@@ -161,16 +161,38 @@ export class PlayMode {
     }
     await this.spawnEnemies(st);
     const door = st.data.entities?.[0];
-    this.doorPos = door && door.flag === -126 && door.kind === -1 ? { x: door.x, z: -door.z } : null;
-    if (door) {
+    const doorList = (st.data.entities ?? []).filter((e) => e.flag === -126 && (e.kind === -1 || e === door)).map((e) => ({ x: e.x, z: -e.z, exit: true }));
+    this.doors = doorList;
+    const hasDoor = !!(door && door.flag === -126 && door.kind === -1);
+    // arrival points (first records of the map module): where the hero appears when entering; face the middle of the floor
+    const arrivals = st.data.arrivals ?? [];
+    let placed = false;
+    if (arrivals.length) {
+      const dpos = door && door.flag === -126 ? door : null;
+      const a = [...arrivals].sort((p, q) => (dpos ? Math.hypot(p.x - dpos.x, p.z - dpos.z) - Math.hypot(q.x - dpos.x, q.z - dpos.z) : 0))[0];
+      const fy = this.floorAt(a.x, -a.z, a.y);
+      if (fy !== null) {
+        const cx = this.pos.x, cz = this.pos.z;
+        this.pos.set(a.x, fy, -a.z);
+        this.heading = Math.atan2(cx - a.x, cz + a.z);
+        placed = true;
+      }
+    }
+    if (door && !placed) {
       // entity (x, y up, z) in PS1 space -> world (x, y, -z); nudge towards the room centre if the door is off the floor
       // entity 0 is a door in rooms but a prop (pedestal/crystal) in some dungeons: do not spawn inside it
-      for (const step of this.doorPos ? [0, 60, 120, 200] : [160, 220, 280, 120, 0]) {
+      for (const step of hasDoor ? [0, 60, 120, 200] : [160, 220, 280, 120, 0]) {
         const dx = this.pos.x - door.x, dz = this.pos.z + door.z, len = Math.hypot(dx, dz) || 1;
         const px = door.x + (dx / len) * step, pz = -door.z + (dz / len) * step;
         const fy = this.floorAt(px, pz, door.y);
         if (fy !== null) { this.pos.set(px, fy, pz); break; }
       }
+    }
+    // the door nearest to where the hero appears is the entrance (leads back); any other door is an exit (leads on)
+    if (this.doors.length) {
+      let bi = 0, bd = Infinity;
+      this.doors.forEach((d, i) => { const dd = Math.hypot(d.x - this.pos.x, d.z - this.pos.z); if (dd < bd) { bd = dd; bi = i; } });
+      for (const d of this.doors) if (Math.hypot(d.x - this.doors[bi].x, d.z - this.doors[bi].z) < 300) d.exit = false;
     }
     this.camera.far = 30000;
     this.camera.near = 5;
@@ -409,16 +431,26 @@ export class PlayMode {
     }
     this.updateEnemies(dt);
     this.updateHero(dt);
-    // door trigger (GUESS: the door leads to the next stage in file order; the real target is in the stage script bytecode)
-    if (this.doorPos && !this.travelling) {
-      const dd = Math.hypot(this.pos.x - this.doorPos.x, this.pos.z - this.doorPos.z);
-      if (dd > 220) this.doorArmed = true;
-      else if (dd < 90 && this.doorArmed) {
+    // door trigger (GUESS for the targets: the real destinations are not in the data we can read, see PROGRESS.md Step AE/AG).
+    // Quests are chains of areas (sound banks Q00..Q10): an entrance door leads to the previous area, an exit door to the next one,
+    // the ends of a quest lead to the inn; the inn's door cycles through its five rooms and each room's door returns to the inn.
+    if (this.doors.length && !this.travelling) {
+      let near: { x: number; z: number; exit: boolean } | null = null;
+      let dmin = Infinity;
+      for (const d of this.doors) {
+        const dd = Math.hypot(this.pos.x - d.x, this.pos.z - d.z);
+        if (dd < dmin) { dmin = dd; near = d; }
+      }
+      if (dmin > 220) this.doorArmed = true;
+      else if (near && dmin < 90 && this.doorArmed) {
         this.travelling = true;
-        // GUESS: stages 0-5 are the Roadside Inn (0) and its five rooms: a room's door leads back to the inn, the inn's door to the
-        // next room; everywhere else the next stage in file order. The real targets are not in the data we can read (see PROGRESS.md).
         const i0 = this.stageIndex;
-        const next = i0 >= 1 && i0 <= 5 ? 0 : i0 === 0 ? ((this.lastRoom % 5) + 1) : (i0 + 1) % 78;
+        const [q0, q1] = this.stage?.data.questRange ?? [i0, i0];
+        const quest = this.stage?.data.quest ?? -1;
+        let next: number;
+        if (quest === 0) next = i0 === 0 ? (this.lastRoom % 5) + 1 : 0;
+        else if (near.exit) next = i0 < q1 ? i0 + 1 : 0;
+        else next = i0 > q0 ? i0 - 1 : 0;
         if (next >= 1 && next <= 5) this.lastRoom = next;
         this.hud.textContent = `door → stage ${next} (guess)…`;
         void this.enter(next, this.heroIndex, this.variant)

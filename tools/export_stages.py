@@ -230,6 +230,46 @@ for st in stages:
         key = (json.dumps(v['entities']), json.dumps(v['texts']))
         if key in seen: continue
         seen.append(key); st['variants'].append(v)
+# Arrival points: every map module starts (header 256, A, B) with a table part of A bytes that holds small 6-word records
+#   u32 type | u32 (y<<16 | x & 0xffff) | u32 z | u32 rot | u32 (0xffff0000 | id) | u32 0xffffffff
+# = where the hero appears when entering the map (stage 1: id 118 at x -620, z 500 next to the door; the inn: id 419).
+mods = []
+for sc in range(n):
+    w = struct.unpack_from('<4I', d, sc * S)
+    if w[0] == 256 and 0 < w[1] < w[2] < 200000 and w[3] == 0 and w[1] % 4 == 0 and w[2] % 4 == 0 and w[2] >= w[1] + 248: mods.append((sc, w[1]))
+mod_sectors = [m[0] for m in mods]
+def arrivals_of(desc_sector):
+    k = bisect.bisect(mod_sectors, desc_sector) - 1
+    if k < 0: return []
+    sc, A = mods[k]
+    w = struct.unpack_from('<%dI' % ((0x100 + A) // 4), d, sc * S)
+    out = []
+    for q in range(0x100 // 4 + 4, len(w) - 1):
+        if (w[q] >> 16) == 0xffff and w[q + 1] == 0xffffffff:
+            y = w[q - 3] >> 16; x = w[q - 3] & 0xffff; z = w[q - 2] & 0xffff; rot = w[q - 1]
+            if 0 < y < 1000 and rot < 4096:
+                out.append({'id': w[q] & 0xffff, 'x': x - 65536 if x >= 32768 else x, 'y': y, 'z': z - 65536 if z >= 32768 else z, 'rot': rot})
+    return out
+for st in stages:
+    sec = st['collision']['sector']
+    st['arrivals'] = []
+    for i, tl, ms in descs:
+        if ms and ms[0][0] == sec:
+            st['arrivals'] = arrivals_of(i * 4 // S); break
+# Quests: BLAZE.ALL has 11 groups of map descriptors that match the sound banks Q00 (1) Q01 (10) Q02 (1) Q03 (10) Q04 (11) Q05 (10) Q06 (12) Q07 (3) Q08 (2) Q09 (2) Q10 (16):
+# one bank per area, areas of a quest are consecutive. Descriptor sector ranges of the groups:
+QUEST_SECTORS = [0, 7900, 8200, 10500, 13000, 15200, 18400, 18900, 19300, 19700, 22400]
+for st in stages:
+    ds = next((i * 4 // S for i, tl, ms in descs if ms and ms[0][0] == st['collision']['sector']), None)
+    st['quest'] = bisect.bisect(QUEST_SECTORS, ds if ds is not None else st['collision']['sector']) - 1 if ds is not None else -1
+for a, b in zip(stages, stages[1:]):
+    if b['quest'] == -1: b['quest'] = a['quest']      # stage 25's descriptor has another layout: it sits between its neighbours
+areas = {}
+for st in stages:
+    st['area'] = areas.get(st['quest'], 0); areas[st['quest']] = st['area'] + 1
+qfirst = {}
+for k, st in enumerate(stages): qfirst.setdefault(st['quest'], [k, k]); qfirst[st['quest']][1] = k
+for st in stages: st['questRange'] = qfirst[st['quest']]
 # monsters a stage streams in = monster textures in its texture list (model table entries 16..112 -> monster 0..96)
 mtab = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'model_table.json')))
 mon_by_tex = {sec: k - 16 for k, (sec, _) in enumerate(mtab['textures']) if k >= 16}

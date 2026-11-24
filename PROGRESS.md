@@ -4,6 +4,18 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step AG – Blaze.exe look, arrival points, quest chains (door model v2)**
+- `Blaze.exe` is a PC recompile of the PS1 game on a PlayStation-emulation layer (`playst.dll`, debug path `Playstation\PcEmu2`; exports `CdReadExec`, `LoadExec`, GTE helpers): game logic is native x86 using PS1-style APIs.
+  It contains no map strings, no sentinel word 0x5F6F0000, no descriptor sector numbers and no cluster of door-link constants (searched as 32-bit values), i.e. maps are walked purely through the module pointer tables.
+  Following the x86 logic needs real tracing/disassembly of a 1.3 MB .text (only `ndisasm`/`objdump` here, no symbols) – not done; the data side gave better results (below).
+- ✅ **Arrival points**: the table part of each map module (first A bytes) contains 6-word records `type | y<<16 | x | z | rot | 0xffff0000|id | -1` = where the hero appears (stage 1: x -620, z 500 beside its door; inn: x 900, z -700).
+  Exported as `arrivals` (39 of 78 stages have them); play mode now starts the hero there, facing the floor centre, instead of the "nearest floor to the door entity" guess. Arrival ids are not door link ids (checked: door links never occur as arrival
+  ids in other maps; ids repeat between maps), so they do not give door destinations either.
+- ✅ **Quests**: the Snd folder has Q00 (1) Q01 (10) Q02 (1) Q03 (10) Q04 (11) Q05 (10) Q06 (12) Q07 (3) Q08 (2) Q09 (2) Q10 (16) sound banks; the descriptor groups in BLAZE.ALL have the same sizes (Q01 = stages 6-15, Q02 = 16,
+  Q03 = 17-26 …, Q10 = 65-77; groups with duplicate descriptors per area come out slightly smaller, e.g. Q10 13 maps for 16 banks). Stage JSON now has `quest`, `area`, `questRange`.
+- Door model v2 (still a guess, labelled in the HUD): quest 0 = inn + rooms as before; elsewhere the door nearest to the arrival point is the entrance (-> previous area), other doors are exits (-> next area); the first area's entrance
+  and the last area's exit lead to the inn (stage 0).
+
 **Step AF – story-version picker**
 - ✅ `export_stages.py` collects every descriptor whose first mesh pair is the stage's collision record and keeps the ones with different entities / dialogue as `variants` (entities, texts, name, desc sector) in stageNN.json.
   Counts: inn 10 extra, "Your Room" 38 (many near-identical), rooms 3-5 7-10, Hall of Demons 3-4, a few others. Stage 1's descriptor has one junk pair before its mesh pairs (parser now retries two words later), which also gives
