@@ -12,6 +12,8 @@ export interface StageJson {
   propsSector?: number | null;
   /** Monster/NPC model ids (0-96) whose textures the stage lists: models 16+id of data/model_table.json. */
   monsters?: number[];
+  /** Dialogue boxes / signs / menu strings found in the stage script stream, in file order (tools/export_stages.py). */
+  texts?: string[];
   meshes: { sector: number; verts: number[][]; faces: { v: number[]; uv: number[][]; pg?: number; clut?: number }[] }[];
 }
 

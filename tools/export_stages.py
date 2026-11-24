@@ -133,6 +133,32 @@ for i, v in enumerate(words):
                               for ix2, r in sorted(pp.items()) if r['faces']}
 for sec, pr in props_out.items():
     json.dump(pr, open(os.path.join(out, f'props{sec}.json'), 'w'), separators=(',', ':'))
+# Stage texts: after the ' - Name -' banner comes a byte stream with dialogue boxes (1f d0 id 0c "Speaker:\r text" 0f), signs and menu strings.
+# Printable runs between 0x0f terminators are cleaned (control codes dropped, 0b xx xx xx = item name placeholder) and kept in order.
+def clean_text(t):
+    t = re.sub(rb'\x0b[\x00-\xff]{3}', b'[item]', t)
+    t = re.sub(rb'\x04[\x20-\x7e]\x10', b'', t)
+    t = t.replace(b'\r', b'\n')
+    head, nl, body = t.partition(b'\n')
+    body = re.sub(rb'^(?:[\x00-\x09\x0b-\x1f]|[\x20-\x2f\x3c-\x3f\x5b-\x60](?=[\x00-\x1f\x3c-\x3e\x28]))+', b'', body)
+    return re.sub(rb'[^\x20-\x7e\n]', b'', head + nl + body).decode().strip()
+for i, v in enumerate(words):
+    st = want.get(v)
+    if st is None or 'texts' in st: continue
+    if not any(words[j] == SENT for j in range(max(0, i - 14), i)): continue
+    o = i * 4
+    mm = re.search(rb"- ([A-Z][A-Za-z0-9 ,'\.:!?-]{2,40}?) -", d[o:o + 0x6000])
+    if not mm: continue
+    b0 = o + mm.start() + len(mm.group(0))
+    seg = d[b0:b0 + 0x2400]
+    nb = re.search(rb"- [A-Z][A-Za-z0-9 ,'\.:!?-]{2,40}? -", seg)
+    if nb: seg = seg[:nb.start()]
+    texts = []
+    for chunk in seg.split(b'\x0f'):
+        t = clean_text(re.sub(rb'^.*?\x0c', b'', chunk, count=1, flags=re.S) if b'\x1f\xd0' in chunk else chunk)
+        t = re.sub(r'^\S(?=[A-Z][A-Za-z ]{2,20}:\n)', '', t)
+        if len(re.findall(r'[A-Za-z]', t)) >= 8 and t not in texts: texts.append(t)
+    st['texts'] = texts
 # monsters a stage streams in = monster textures in its texture list (model table entries 16..112 -> monster 0..96)
 mtab = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'model_table.json')))
 mon_by_tex = {sec: k - 16 for k, (sec, _) in enumerate(mtab['textures']) if k >= 16}

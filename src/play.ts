@@ -40,6 +40,8 @@ export class PlayMode {
   hp = 100;
   private deadTime = -1;
   private readonly hud: HTMLDivElement;
+  private readonly talkBox: HTMLDivElement;
+  private talkIndex = 0;
   private stage?: StageView;
   private hero?: AnimatedModel;
   private tris: Tri[] = [];
@@ -64,6 +66,10 @@ export class PlayMode {
     this.hud = document.createElement('div');
     this.hud.style.cssText = 'position:fixed;left:10px;bottom:10px;color:#fff;font:14px monospace;text-shadow:0 0 3px #000;display:none;z-index:5';
     document.body.append(this.hud);
+    this.talkBox = document.createElement('div');
+    this.talkBox.style.cssText = 'position:fixed;left:5%;right:5%;bottom:90px;padding:10px 14px;background:rgba(10,10,40,.88);border:2px solid #9ab;border-radius:8px;color:#fff;font:15px sans-serif;white-space:pre-wrap;display:none;z-index:6';
+    this.talkBox.onclick = () => (this.talkBox.style.display = 'none');
+    document.body.append(this.talkBox);
     addEventListener('keydown', (e) => {
       const key = e.key.toLowerCase();
       this.keys.add(key);
@@ -102,6 +108,7 @@ export class PlayMode {
   act(name: 'attack' | 'attack2' | 'jump' | 'hurt' | 'victory' | 'die'): void {
     const h = this.hero;
     if (!this.active || !h || this.action) return;
+    if ((name === 'attack' || name === 'attack2') && this.talk()) return;
     if (name === 'attack' || name === 'attack2') this.strike();
     const anim = { attack: 3, attack2: 6, jump: 4, hurt: 2, victory: 8, die: 7 }[name];
     if (anim >= h.animCount) return;
@@ -173,8 +180,8 @@ export class PlayMode {
 
   /**
    * Enemies/NPCs (heuristic!): the stage lists the monster models it streams in. Room stages: the first listed model is the NPC placed on
-   * the entity that carries a link (e.g. the item expert). Dungeons: spawn cells are grouped by `kind`, the most common kind gets the first
-   * listed monster, the next kind the second, and so on; at most 10 spawns closest to the start are used.
+   * the entity that carries a link (e.g. the item expert). Dungeons: the most common spawn kind (sub 1) marks the spawn cells; the
+   * 10 closest to the start (beyond 500 units) are filled with the stage's monsters in turn.
    */
   private async spawnEnemies(st: StageView): Promise<void> {
     const models = st.data.monsters ?? [];
@@ -197,7 +204,8 @@ export class PlayMode {
         .sort((a, b) => Math.hypot(a.x - sx, -a.z - sz) - Math.hypot(b.x - sx, -b.z - sz))
         .filter((e) => Math.hypot(e.x - sx, -e.z - sz) > 500)
         .slice(0, 10);
-      for (const e of cand) spots.push({ x: e.x, z: -e.z, y: e.y, model: models[Math.min(kinds.indexOf(e.kind), models.length - 1)], npc: false });
+      // the spawn cells of big dungeons are all kind 0 (stages 20-27), so the monster type is not in the cell: cycle through the stage's monster list
+      cand.forEach((e, i) => spots.push({ x: e.x, z: -e.z, y: e.y, model: models[i % models.length], npc: false }));
     }
     for (const sp of spots) {
       try {
@@ -287,6 +295,21 @@ export class PlayMode {
     return false;
   }
 
+  /**
+   * Talk to the NPC (the attack button when the NPC is within 200 units): shows the stage's script texts one after the other
+   * (conditions of the original script are not decoded yet, so all lines cycle in file order). Returns true when a line was shown.
+   */
+  private talk(): boolean {
+    const npc = this.enemies.find((e) => e.npc);
+    const texts = this.stage?.data.texts ?? [];
+    if (!npc || !texts.length) return false;
+    if (Math.hypot(npc.x - this.pos.x, npc.z - this.pos.z) > 200) return false;
+    this.talkBox.textContent = texts[this.talkIndex % texts.length] + `\n\n(${(this.talkIndex % texts.length) + 1}/${texts.length} — tap to close)`;
+    this.talkBox.style.display = 'block';
+    this.talkIndex++;
+    return true;
+  }
+
   /** Hero attack: damage enemies in front within 170 units. */
   private strike(): void {
     for (const en of this.enemies) {
@@ -302,6 +325,8 @@ export class PlayMode {
 
   exit(): void {
     this.hud.style.display = 'none';
+    this.talkBox.style.display = 'none';
+    this.talkIndex = 0;
     for (const en of this.enemies) en.model.dispose();
     this.enemies = [];
     this.hp = 100;

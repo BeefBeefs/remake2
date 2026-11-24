@@ -4,6 +4,14 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step AA – stage script texts + talking to the NPC; dungeon spawns cycle through the stage's monsters**
+- ✅ `export_stages.py` now extracts the printable strings of the script stream after the `- Name -` banner (`texts` in stageNN.json): dialogue boxes `1f d0 id 0c "Speaker:\r text" 0f`, signs, menu strings
+  (item name placeholder `0b xx xx xx` → `[item]`). Stage 1: the item expert's 21 lines, stage 2: stock box text, stage 10: gate/miners' sign texts (the stage 10 banner reads "5th Underlevel").
+- Play mode: the attack button within 200 units of the NPC opens a text box and cycles all lines of the stage (script conditions are not decoded, so the order is just file order); tap the box to close.
+- Entity survey of all stages: the big dungeons (20, 22, 24–27) have 75–290 spawn cells that are all `kind 0, sub 1`, stages 21 / 23 use kind 10 / 7 – so the monster type is not in the cell (probably chosen from the stage's
+  monster list at run time). Play mode now fills the spawn cells with the stage's monsters in turn instead of ranking by kind. Many other "entities" in room-type stages are noise from the 8-byte cell scan (kinds like 5376 / 257).
+- Open: real door targets (script commands), conditions that select a dialogue line, hero face quad (right eye region shows the shield tile – likely the swapped-eye UV animation).
+
 **Step Z – the "(a,0,b,0)" rows: missing quads recovered (hero skipped faces 46 → 10)**
 - Cause found: in those rows (the last row of most parts) the vertex bytes are the **first 4 bytes of the next part's subheader** (`a` = next part's vertex count, `b` = its normal count,
   e.g. part 0 → (13,0,15,0) = part 1 has 13 verts / 15 normals), i.e. the file overlaps the row's tail with the next record header; the real vertex indices are not stored there.
