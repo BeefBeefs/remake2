@@ -131,6 +131,16 @@ want = {st['collision']['sector']: st for st in stages}
 for i, tl, ms in descs:
     st = want.get(ms[0][0]) if ms else None
     if st is not None and 'texList' not in st: st['texList'] = tl
+# Shared meshes: a descriptor can list textured records that sit outside the file range of its stage (stage 61 lists three that physically
+# follow stage 60's collision record, stage 77 one before its own); they belong to every stage that lists them.
+for i, tl, ms in descs:
+    st = want.get(ms[0][0]) if ms else None
+    if st is None: continue
+    have = {m['sector'] for m in st['meshes']}
+    for a, z in ms[1:]:
+        if a in have: continue
+        r = record(a)
+        if r and 'faces' in r: st['meshes'].append(r); have.add(a); print('stage with collision', st['collision']['sector'], 'gains shared mesh', a)
 # Fallback (stage 25): the descriptor has no sentinel word; the texture pairs directly precede the first mesh (= collision) pair.
 for st in stages:
     if 'texList' in st: continue
