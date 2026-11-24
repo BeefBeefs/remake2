@@ -46,7 +46,9 @@ def record(s):
     tris = []
     for i in range(F):
         b = o + w[10] + 16 * i
-        tris.append(list(struct.unpack_from('<4H', d, b)))
+        t4 = list(struct.unpack_from('<4H', d, b))
+        t4[3] = d[b + 15]   # 4th slot (was always 0): row byte 15 = floor-warp value (the player handler re-enters the area at arrival value-1)
+        tris.append(t4)
     return {'sector': s, 'verts': verts, 'tris': tris}
 
 # atlases: TIM-style records, mode 8 = 4-bit with a 16x16 CLUT (16 palettes of 16 colours), pixel header w=64 halfwords -> 256 px wide, 256 high.

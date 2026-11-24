@@ -89,6 +89,9 @@ export class PlayMode {
   private className = '';
   /** Ranged classes (Sorcerer, Hunter, Fairy; kit 3, 4, 7) shoot with Attack and melee with Attack 2. Colour per class. */
   private ranged: number | null = null;
+  /** collision triangles that carry a floor-warp byte (stairs / door cells); destination is a guess: the nearest warp cell of the same value on another floor */
+  private warpTris: { tri: Tri; v: number }[] = [];
+  private warpArmed = true;
   private shots: { mesh: THREE.Mesh; vx: number; vz: number; life: number; dmg: number }[] = [];
   /** projectiles fired by monsters at the hero */
   private eshots: { mesh: THREE.Mesh; vx: number; vz: number; life: number; dmg: number }[] = [];
@@ -258,6 +261,8 @@ export class PlayMode {
     const c = st.data.collision;
     const w = (i: number) => c.verts[i];
     this.tris = [];
+    this.warpTris = [];
+    this.warpArmed = false;
     let best = 0;
     for (const t of c.tris) {
       if (t.slice(0, 3).some((k) => k >= c.verts.length)) continue;
@@ -269,6 +274,7 @@ export class PlayMode {
       const len = Math.hypot(uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx) || 1;
       if (Math.abs(ny) / len < 0.5) continue;
       this.tris.push(tri);
+      if (t[3]) this.warpTris.push({ tri, v: t[3] });
       const area = Math.abs(ny);
       if (area > best) {
         best = area;
@@ -637,9 +643,51 @@ export class PlayMode {
     this.stage = undefined;
     this.hero = undefined;
     this.tris = [];
+    this.warpTris = [];
     this.camera.far = 500;
     this.camera.near = 0.1;
     this.camera.updateProjectionMatrix();
+  }
+
+  /** The floor-warp triangle under (x, z) at about height y, if any. */
+  private warpAt(x: number, z: number, y: number): { tri: Tri; v: number } | null {
+    for (const w of this.warpTris) {
+      const t = w.tri;
+      const d = (t.bz - t.cz) * (t.ax - t.cx) + (t.cx - t.bx) * (t.az - t.cz);
+      if (Math.abs(d) < 1e-6) continue;
+      const l1 = ((t.bz - t.cz) * (x - t.cx) + (t.cx - t.bx) * (z - t.cz)) / d;
+      const l2 = ((t.cz - t.az) * (x - t.cx) + (t.ax - t.cx) * (z - t.cz)) / d;
+      const l3 = 1 - l1 - l2;
+      if (l1 < -0.001 || l2 < -0.001 || l3 < -0.001) continue;
+      if (Math.abs(l1 * t.ay + l2 * t.by + l3 * t.cy - y) < 60) return w;
+    }
+    return null;
+  }
+
+  /** Stairs (guess): stepping on a warp cell moves the hero to the nearest warp cell with the same value on another floor (>150 units up or down). */
+  private updateWarps(): void {
+    if (!this.warpTris.length) return;
+    const here = this.warpAt(this.pos.x, this.pos.z, this.pos.y);
+    if (!here) { this.warpArmed = true; return; }
+    if (!this.warpArmed) return;
+    const cy = (w: { tri: Tri }) => (w.tri.ay + w.tri.by + w.tri.cy) / 3;
+    const cx = (w: { tri: Tri }) => (w.tri.ax + w.tri.bx + w.tri.cx) / 3;
+    const cz = (w: { tri: Tri }) => (w.tri.az + w.tri.bz + w.tri.cz) / 3;
+    const y0 = cy(here);
+    if (y0 < 50) return; // outside cells (height 0) are door cells, not stairs
+    let best: { tri: Tri; v: number } | null = null, bd = Infinity;
+    for (const w of this.warpTris) {
+      if (w.v !== here.v || Math.abs(cy(w) - y0) < 150 || cy(w) < 50) continue;
+      const dd = Math.hypot(cx(w) - this.pos.x, cz(w) - this.pos.z);
+      if (dd < bd) { bd = dd; best = w; }
+    }
+    if (!best) return;
+    const x = cx(best), z = cz(best), fy = this.floorAt(x, z, cy(best));
+    if (fy === null) return;
+    this.pos.set(x, fy, z);
+    this.warpArmed = false;
+    this.notice = 'stairs (guess)';
+    this.noticeT = 1;
   }
 
   /** Floor height under (x,z) closest to `y`, or null when off the walkable mesh. */
@@ -716,6 +764,7 @@ export class PlayMode {
     this.updateEnemies(dt);
     this.updateShots(dt);
     this.updateHero(dt);
+    this.updateWarps();
     this.drawMinimap();
     // door trigger (GUESS for the targets: the real destinations are not in the data we can read, see PROGRESS.md Step AE/AG).
     // Quests are chains of areas (sound banks Q00..Q10): an entrance door leads to the previous area, an exit door to the next one,
