@@ -29,6 +29,7 @@ interface Enemy {
   lock: number; // seconds a one-shot animation (hit/attack) keeps playing
   vx: number;
   vz: number;
+  level: number;
   /** ranged monster attack (module 4624 monster spells: Fire Breath 20, Cold Breath 20 ...): ball colour and damage, null = melee only */
   breath?: { color: number; dmg: number } | null;
 }
@@ -60,6 +61,14 @@ export class PlayMode {
   private doors: { x: number; z: number; exit: boolean }[] = [];
   private solids: { x: number; z: number; r: number }[] = [];
   hp = 100;
+  /** progression (guess: the original's formulas are not decoded): kills give xp and gold, levels raise HP / MP / damage; kept in localStorage */
+  private level = 1;
+  private xp = 0;
+  private gold = 0;
+  private maxHp = 100;
+  private maxMp = 50;
+  private notice = '';
+  private noticeT = 0;
   private deadTime = -1;
   private readonly hud: HTMLDivElement;
   private readonly talkBox: HTMLDivElement;
@@ -85,6 +94,7 @@ export class PlayMode {
   private eshots: { mesh: THREE.Mesh; vx: number; vz: number; life: number; dmg: number }[] = [];
   /** Magic: 50 MP, regenerates 2/s. Spell lists per class are guesses (CLASS_SPELLS); MP cost / element / power come from the spell table. */
   private mp = 50;
+  private baseDamage = 34;
   private spells: Spell[] = [];
   private spellIdx = 0;
   /** Sound effects (set by main.ts once the sound banks are loaded). */
@@ -163,7 +173,7 @@ export class PlayMode {
     if (!this.active || !this.hero || this.hp <= 0 || !sp || this.action || this.mp < sp.mp) return;
     this.mp -= sp.mp;
     if (sp.element === 8) {
-      this.hp = Math.min(100, this.hp + sp.power);
+      this.hp = Math.min(this.maxHp, this.hp + sp.power);
       this.sfx?.play('talk');
     } else {
       this.shoot(ELEMENT_COLOR[sp.element] ?? 0xffffff, sp.power * 3);
@@ -177,9 +187,9 @@ export class PlayMode {
   }
 
   usePotion(): void {
-    if (!this.active || this.hp <= 0 || this.potions <= 0 || this.hp >= 100) return;
+    if (!this.active || this.hp <= 0 || this.potions <= 0 || this.hp >= this.maxHp) return;
     this.potions--;
-    this.hp = Math.min(100, this.hp + 40);
+    this.hp = Math.min(this.maxHp, this.hp + 40);
     this.sfx?.play('talk');
   }
 
@@ -203,7 +213,8 @@ export class PlayMode {
   }
 
   async enter(stageIndex: number, heroIndex: number, variant = 0): Promise<void> {
-    const keepHp = this.travelling ? this.hp : 100;
+    this.loadProgress();
+    const keepHp = this.travelling ? this.hp : this.maxHp;
     if (!this.travelling) this.potions = 3;
     this.exit();
     this.hp = keepHp;
@@ -216,13 +227,14 @@ export class PlayMode {
     this.stage = st;
     this.hero = h;
     const cls = (await heroClasses()).find((c) => c.hero === heroIndex);
-    this.heroDamage = cls ? cls.attack * 5 : 34;
+    this.baseDamage = cls ? cls.attack * 5 : 34;
+    this.heroDamage = this.baseDamage + (this.level - 1) * 3;
     this.heroGuardDef = cls ? Math.floor(cls.defense / 2) : 0;
     this.className = cls ? `${cls.class} (${cls.weapon})` : '';
     const table = await spellTable();
     this.spells = (CLASS_SPELLS[heroIndex % 8] ?? []).map((nm) => table.find((t) => t.name === nm)).filter((t): t is Spell => !!t);
     this.spellIdx = 0;
-    if (!this.travelling) this.mp = 50;
+    if (!this.travelling) this.mp = this.maxMp;
     this.ranged = ({ 3: 0xff8a2a, 4: 0xffe45a, 7: 0x6fe8ff } as Record<number, number>)[heroIndex % 8] ?? null;
     this.curAnim = -1;
     this.scene.add(st.root);
@@ -338,7 +350,7 @@ export class PlayMode {
         // ranged attackers (names guessed from the spell table's monster attacks): dragons breathe fire, frost things cold, casters throw magic
         const nm = info?.name ?? '';
         const breath = /dragon|wyvern|drake|salamander|hell ?hound|fire/i.test(nm) ? { color: 0xff6a1a, dmg: 20 } : /frost|ice|snow|yeti/i.test(nm) ? { color: 0x6ad0ff, dmg: 20 } : /shaman|wizard|mage|lich|sorcer|vampire|priest/i.test(nm) ? { color: 0xb060ff, dmg: 14 } : null;
-        this.enemies.push({ model: m, breath, hp, dmg, x: sp.x, y: sp.y, z: sp.z, cooldown: 0, dying: 0, npc: sp.npc, anim: 0, lock: 0, vx: 0, vz: 0 });
+        this.enemies.push({ model: m, level: info?.level ?? 1, breath, hp, dmg, x: sp.x, y: sp.y, z: sp.z, cooldown: 0, dying: 0, npc: sp.npc, anim: 0, lock: 0, vx: 0, vz: 0 });
       } catch (err) {
         console.warn('monster load failed', sp.model, err);
       }
@@ -417,13 +429,14 @@ export class PlayMode {
       }
     }
     for (const en of this.enemies) {
-      if (en.dying <= 0 && en.hp <= 0) { en.dying = 99; this.sfx?.play('enemyDie'); }
+      if (en.dying <= 0 && en.hp <= 0) { en.dying = 99; this.sfx?.play('enemyDie'); if (!en.npc) this.gainKill(en); }
     }
     const alive = this.enemies.filter((e) => !e.npc && e.hp > 0).length;
     const defs = this.stage?.data.monsterDefs ?? [];
     const here = defs.length ? `\nhere: ${defs.map((d) => d.name).join(', ')}` : '';
     this.hud.style.whiteSpace = 'pre';
-    this.hud.textContent = `${this.className ? this.className + '\n' : ''}HP ${this.hp}   ${this.spells.length ? `MP ${Math.floor(this.mp)} ${this.spells[this.spellIdx].name} (C cast, Z next)   ` : ''}potions ${this.potions} (P)   enemies ${alive}${here}`;
+    this.noticeT = Math.max(0, this.noticeT - dt);
+    this.hud.textContent = `${this.noticeT > 0 ? this.notice + '\n' : ''}${this.className ? this.className + ' ' : ''}Lv ${this.level} (xp ${this.xp}/${this.level * 40}, ${this.gold} gold)\nHP ${this.hp}/${this.maxHp}   ${this.spells.length ? `MP ${Math.floor(this.mp)} ${this.spells[this.spellIdx].name} (C cast, Z next)   ` : ''}potions ${this.potions} (P)   enemies ${alive}${here}`;
   }
 
   /** Prop collision: props are circles (radius ~ 60) – enemies and the hero cannot walk through them. */
@@ -502,6 +515,37 @@ export class PlayMode {
     this.shots.push({ mesh, vx: dx * 900, vz: dz * 900, life: 1.0, dmg });
   }
 
+  private loadProgress(): void {
+    try {
+      const j = JSON.parse(localStorage.getItem('bb_prog') ?? 'null') as { level: number; xp: number; gold: number } | null;
+      if (j && j.level >= 1) { this.level = j.level; this.xp = j.xp; this.gold = j.gold; }
+    } catch { /* storage unavailable */ }
+    this.maxHp = 100 + (this.level - 1) * 12;
+    this.maxMp = 50 + (this.level - 1) * 5;
+    this.heroDamage = this.baseDamage + (this.level - 1) * 3;
+  }
+
+  private gainKill(en: Enemy): void {
+    this.xp += en.level * 8 + 4;
+    this.gold += en.level * 3 + Math.floor(Math.random() * 6);
+    let up = false;
+    while (this.xp >= this.level * 40) {
+      this.xp -= this.level * 40;
+      this.level++;
+      up = true;
+    }
+    if (up) {
+      this.maxHp = 100 + (this.level - 1) * 12;
+      this.maxMp = 50 + (this.level - 1) * 5;
+      this.heroDamage = this.baseDamage + (this.level - 1) * 3;
+      this.hp = this.maxHp;
+      this.mp = this.maxMp;
+      this.notice = `LEVEL UP! Lv ${this.level}`;
+      this.noticeT = 3;
+    }
+    try { localStorage.setItem('bb_prog', JSON.stringify({ level: this.level, xp: this.xp, gold: this.gold })); } catch { /* ignore */ }
+  }
+
   private updateShots(dt: number): void {
     for (const sh of this.eshots) {
       sh.mesh.position.x += sh.vx * dt;
@@ -573,7 +617,7 @@ export class PlayMode {
     this.shots = [];
     for (const sh of this.eshots) { this.scene.remove(sh.mesh); sh.mesh.geometry.dispose(); (sh.mesh.material as THREE.Material).dispose(); }
     this.eshots = [];
-    this.hp = 100;
+    this.hp = this.maxHp;
     this.deadTime = -1;
     this.active = false;
     this.stage?.dispose();
@@ -618,14 +662,14 @@ export class PlayMode {
       this.hud.textContent = this.deadTime > 1.2 ? 'You died — press R (or tap) to retry this area, or Exit play' : 'You died';
       if (this.deadTime > 1.2 && !this.travelling && (this.keys.has('r') || this.keys.has('enter') || this.stick.id >= 0)) {
         this.travelling = true;
-        this.hp = 100; // enter() keeps the current HP while travelling
+        this.hp = this.maxHp; // enter() keeps the current HP while travelling
         void this.enter(this.stageIndex, this.heroIndex, this.variant)
           .catch((e) => console.warn('retry failed', e))
           .finally(() => { this.travelling = false; });
       }
       return;
     }
-    this.mp = Math.min(50, this.mp + 2 * dt);
+    this.mp = Math.min(this.maxMp, this.mp + 2 * dt);
     const k = this.keys;
     if (k.has('q')) this.camYaw += dt * 1.8;
     if (k.has('e')) this.camYaw -= dt * 1.8;
