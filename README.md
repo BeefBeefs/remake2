@@ -11,3 +11,5 @@ npm run dev        # placeholder scene + sound-bank browser
 npm run assets:snd # re-extract sounds from original/Snd
 ```
 Original game files live in `original/` (private repo; do not publish).
+
+https://beefbeefs.github.io/remake2/
