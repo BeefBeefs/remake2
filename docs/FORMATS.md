@@ -167,3 +167,6 @@ following pairs are the stage's textured meshes, prop/monster packs and extra me
 mesh list of the preceding stage's descriptor and share its coordinates (stage 16: lava surface at y = 800): they are additional meshes of that stage. Result: **78 stages**. Texture pairs may be 33312 B (4-bit atlas),
 16928 B (8-bit 256 x 64 monster/prop textures), 66080 B (8-bit 256 x 256, probably sky) and others; descriptors repeat in groups (variants of the same stage with the same mesh list).
 Eight script/data modules (`u32 256, A, B, 0, 4 …`, offset tables into bytecode) sit at BLAZE.ALL offsets 0x906000, 0x906800, 0x907800, 0x908000, 0x90c800, 0x90f000, 0x90f800, 0x911000; likely home of the door/warp logic.
+
+## Embedded MIPS code
+BLAZE.ALL holds PS1 R3000 machine code, not only data. Main block is sectors ~4649-5120; overlay blocks follow each quest group. Main-block load address = file offset + 0x7f7397b0 (sector 4767 at 0x80088fb0). Disassemble with `tools/mips.py`; sector classes are listed by `tools/inventory.py`.

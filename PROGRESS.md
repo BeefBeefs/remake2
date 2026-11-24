@@ -4,6 +4,13 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+
+**Step AI – BLAZE.ALL inventory and embedded MIPS code.**
+- `tools/inventory.py` classifies every sector by start signature: PACK 32.9%, MESH 28.2%, TEX8 20.2%, TEX9 11.8%, MODULE 3.3%, UNKNOWN 2.7% (620 sectors in 141 runs), ZERO 0.6%, FILL 0.2%. So about 97% of the file is accounted for.
+- BLAZE.ALL contains **PS1 MIPS R3000 machine code** (588 sectors with several `sw ra / lw ra / jr ra / addiu sp` hits). Main block: sectors ~4649-5120 (densest 4720-4815, 4973-4983, 5082-5119). Overlay code blocks follow each quest group (e.g. 6021-6065, 6678-6730, 7113-7160 ...).
+- `tools/mips.py` is an R3000 + GTE disassembler (`mips.py <file> <offset> <count> <load addr hex>`).
+- Load address of the main block: file offset + 0x7f7397b0 (sector 4767 -> 0x80088fb0). Check: in 4720-4815, 475 of 665 in-range `jal` targets land on a function prologue; the same shift is consistent from ~4675 to ~5113. Sectors that do not fit (e.g. 4649-4661, 4973-4983, 5115-5120) are probably other segments or data. Overlay load addresses are still unknown.
+- Immediate-constant search for the door `link` ids and the -126 entity flag found nothing conclusive yet. Next: follow the entity-record reader (32-byte stride, link at +0x14) and the dialogue interpreter in the code.
 **Step AH – deeper pass through Blaze.exe (negative results, method notes)**
 - Method: `.text` (file 0x400, VA 0x401000, 1.3 MB) dumped with `objdump -D -b binary -mi386 -M intel --adjust-vma=0x401000`; address of a pattern hit in the slice = 0x401000 + slice offset (the earlier "0x5299ce"-style numbers
   I printed first were 0x400 too low). `.data` file offset -> VA = 0x400000 + 0x14f000 + (off - 0x14d600).
