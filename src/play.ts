@@ -29,6 +29,8 @@ interface Enemy {
   lock: number; // seconds a one-shot animation (hit/attack) keeps playing
   vx: number;
   vz: number;
+  /** ranged monster attack (module 4624 monster spells: Fire Breath 20, Cold Breath 20 ...): ball colour and damage, null = melee only */
+  breath?: { color: number; dmg: number } | null;
 }
 
 interface HeroClass { hero: number; class: string; weapon: string; attack: number; defense: number }
@@ -79,6 +81,8 @@ export class PlayMode {
   /** Ranged classes (Sorcerer, Hunter, Fairy; kit 3, 4, 7) shoot with Attack and melee with Attack 2. Colour per class. */
   private ranged: number | null = null;
   private shots: { mesh: THREE.Mesh; vx: number; vz: number; life: number; dmg: number }[] = [];
+  /** projectiles fired by monsters at the hero */
+  private eshots: { mesh: THREE.Mesh; vx: number; vz: number; life: number; dmg: number }[] = [];
   /** Magic: 50 MP, regenerates 2/s. Spell lists per class are guesses (CLASS_SPELLS); MP cost / element / power come from the spell table. */
   private mp = 50;
   private spells: Spell[] = [];
@@ -331,7 +335,10 @@ export class PlayMode {
         // real stats from the map module when the model's name is known (HP clamped so bosses stay beatable with the 34-damage hero)
         const hp = info?.hp && info.hp > 1 ? Math.min(300, Math.max(20, info.hp)) : 60;
         const dmg = info?.attack ? Math.min(25, Math.max(3, Math.round(info.attack / 8))) : 8;
-        this.enemies.push({ model: m, hp, dmg, x: sp.x, y: sp.y, z: sp.z, cooldown: 0, dying: 0, npc: sp.npc, anim: 0, lock: 0, vx: 0, vz: 0 });
+        // ranged attackers (names guessed from the spell table's monster attacks): dragons breathe fire, frost things cold, casters throw magic
+        const nm = info?.name ?? '';
+        const breath = /dragon|wyvern|drake|salamander|hell ?hound|fire/i.test(nm) ? { color: 0xff6a1a, dmg: 20 } : /frost|ice|snow|yeti/i.test(nm) ? { color: 0x6ad0ff, dmg: 20 } : /shaman|wizard|mage|lich|sorcer|vampire|priest/i.test(nm) ? { color: 0xb060ff, dmg: 14 } : null;
+        this.enemies.push({ model: m, breath, hp, dmg, x: sp.x, y: sp.y, z: sp.z, cooldown: 0, dying: 0, npc: sp.npc, anim: 0, lock: 0, vx: 0, vz: 0 });
       } catch (err) {
         console.warn('monster load failed', sp.model, err);
       }
@@ -372,6 +379,15 @@ export class PlayMode {
         if (fy !== null && Math.abs(fy - en.y) < 80 && !this.blocked(nx, nz, en)) {
           en.x = nx; en.z = nz; en.y = fy; moving = true;
         }
+      }
+      if (!en.npc && en.breath && dist > 160 && dist < 650 && en.cooldown <= 0) {
+        en.cooldown = 2.6;
+        en.lock = 0.7;
+        this.setEnemyAnim(en, 3);
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(22, 10, 8), new THREE.MeshBasicMaterial({ color: en.breath.color }));
+        mesh.position.set(en.x, en.y + 90, en.z);
+        this.scene.add(mesh);
+        this.eshots.push({ mesh, vx: (dx / dist) * 520, vz: (dz / dist) * 520, life: 1.6, dmg: en.breath.dmg });
       }
       if (!en.npc && dist <= 90 && en.cooldown <= 0) {
         en.cooldown = 1.2;
@@ -487,6 +503,25 @@ export class PlayMode {
   }
 
   private updateShots(dt: number): void {
+    for (const sh of this.eshots) {
+      sh.mesh.position.x += sh.vx * dt;
+      sh.mesh.position.z += sh.vz * dt;
+      sh.life -= dt;
+      if (Math.hypot(this.pos.x - sh.mesh.position.x, this.pos.z - sh.mesh.position.z) < 50 && Math.abs(this.pos.y + 90 - sh.mesh.position.y) < 120) {
+        this.hp = Math.max(0, this.hp - Math.max(1, (this.action?.anim === 5 ? Math.ceil(sh.dmg / 2) : sh.dmg) - this.heroGuardDef));
+        this.sfx?.play('hurt');
+        this.act('hurt');
+        sh.life = 0;
+      }
+      if (sh.life > 0 && this.floorAt(sh.mesh.position.x, sh.mesh.position.z, this.pos.y) === null) sh.life = 0;
+    }
+    this.eshots = this.eshots.filter((sh) => {
+      if (sh.life > 0) return true;
+      this.scene.remove(sh.mesh);
+      sh.mesh.geometry.dispose();
+      (sh.mesh.material as THREE.Material).dispose();
+      return false;
+    });
     for (const sh of this.shots) {
       sh.mesh.position.x += sh.vx * dt;
       sh.mesh.position.z += sh.vz * dt;
@@ -536,6 +571,8 @@ export class PlayMode {
     this.enemies = [];
     for (const sh of this.shots) { this.scene.remove(sh.mesh); sh.mesh.geometry.dispose(); (sh.mesh.material as THREE.Material).dispose(); }
     this.shots = [];
+    for (const sh of this.eshots) { this.scene.remove(sh.mesh); sh.mesh.geometry.dispose(); (sh.mesh.material as THREE.Material).dispose(); }
+    this.eshots = [];
     this.hp = 100;
     this.deadTime = -1;
     this.active = false;
