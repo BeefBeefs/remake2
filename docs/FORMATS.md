@@ -133,3 +133,14 @@ terminated by 0xffff, role unknown). Vertices are `i16 x,y,z,pad` (8 B), normals
 - Tile atlases: 272 records of 128×256 with 1 CLUT (psize 524), e.g. sectors 3368, 3403, 3420, 4109, 4987, 5004, 5021, 5138 …
   Which atlas a stage uses is listed in the stage's (sector,size) resource block (e.g. 4987, 5004, 918, 5138 for the stage at 5155);
   the pairing is still guessed by the viewer (dropdown).
+
+### Stage descriptor and entity table
+
+Stage block (file offsets e.g. 0xad9d20 for stage 1; the same block is repeated ~12× in the file):
+`(sector,size) texture pairs` | `u32 1601110016, u32 x` | `(sector,size) mesh pairs` (collision, room meshes…, **props pack**, text pack) |
+**entity records, 32 B each** | `- Stage Name -` Pascal-style banner | script/dialogue text.
+Entity record (i16): `kind, sub, flag (-254 prop / 130 / -126), 0 | x, y (height, floor = 400 or 100), z, 0 | rot (4096 = 360°), 0, link, -1 | -1, -1, 0, 0`.
+Positions fall inside the room's bounding box in the *same* x/z as the room mesh (PS1 y = −entity y). For flag −254 records `kind` is the part index of the stage's
+**props pack** (packs 5072/5165/5225/… share the same base parts: 1 bed, 2 counter, 3 wardrobe, 5 cupboard, 7 table …; extra parts differ per stage);
+the first two records (kind −1 / 512 with flag −126 / 130) are the entrance door/trigger with `link` = destination id. Found for 38 stages (room/town type);
+dungeon stages use another table (not decoded). `tools/export_stages.py` writes `stageNN.json → entities, propsSector` and `props<sector>.json`.

@@ -6,6 +6,8 @@ the textured records that follow belong to it. See docs/FORMATS.md "Room meshes"
 usage: export_stages.py <BLAZE.ALL> <out dir>
 """
 import json, os, struct, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import meshparse
 from PIL import Image
 S = 2048
 d = open(sys.argv[1], 'rb').read()
@@ -92,6 +94,37 @@ for i, v in enumerate(words):
     if st is None or st.get('name'): continue
     m = re.search(rb"- ([A-Z][A-Za-z0-9 ,'\.:!?-]{2,40}?) -", d[i * 4:i * 4 + 0x900])
     if m: st['name'] = m.group(1).decode()
+# Entity table (room-type stages only): right after the descriptor's mesh pairs come 32-byte records
+#   i16 kind, sub, flag(-254|130|-126), 0 | x, y(up, floor=400 or 100), z, 0 | rot (4096=360deg), 0, link, -1 | -1, -1, 0, 0
+# kind = index of a prop mesh in the stage's props pack for ordinary records (the first two records are the door/trigger).
+packs = {p['sector']: p for p in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'packs.json')))}
+props_out = {}
+for i, v in enumerate(words):
+    st = want.get(v)
+    if st is None or 'entities' in st: continue
+    if not any(words[j] == SENT for j in range(max(0, i - 14), i)): continue
+    j, mesh = i, []
+    while 0 < words[j] < 22600 and 0 < words[j + 1] < 400000: mesh.append(words[j]); j += 2
+    ents, o = [], j * 4
+    while True:
+        w = struct.unpack_from('<16h', d, o)
+        if not (w[7] == 0 and w[14] == 0 and w[15] == 0 and abs(w[4]) < 20000 and abs(w[6]) < 20000 and abs(w[5]) < 4000): break
+        ents.append({'kind': w[0], 'sub': w[1], 'flag': w[2], 'x': w[4], 'y': w[5], 'z': w[6], 'rot': w[8], 'link': w[10]})
+        o += 32
+    st['entities'] = ents
+    st['propsSector'] = None
+    if ents:
+        for sec in mesh:
+            if sec in packs and packs[sec]['n'] >= 15: st['propsSector'] = sec; break
+        if st['propsSector'] and st['propsSector'] not in props_out:
+            sec = st['propsSector']; pk = packs[sec]
+            base = sec * S + 4 + 4 * pk['n']; offs = [b['off'] for b in pk['blobs']]
+            nxt = min([q for q in packs if q > sec] or [len(d) // S])
+            pp = meshparse.parse_pack(d, base, offs, offs[1:] + [nxt * S - base])
+            props_out[sec] = {str(ix2): {'verts': r['verts'], 'faces': [{'v': list(f['v']), 'uv': [list(c) for c in f['uv']]} for f in r['faces'] + r['extra']]}
+                              for ix2, r in sorted(pp.items()) if r['faces']}
+for sec, pr in props_out.items():
+    json.dump(pr, open(os.path.join(out, f'props{sec}.json'), 'w'), separators=(',', ':'))
 atlas_index = {s: k for k, s in enumerate(atl)}
 total = 0
 for k, st in enumerate(stages):

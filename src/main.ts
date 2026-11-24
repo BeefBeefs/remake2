@@ -125,6 +125,7 @@ async function showStage(k: number): Promise<void> {
   stage?.dispose();
   stage = st;
   scene.add(st.root);
+  await st.addProps();
   // Atlases listed in the stage's resource descriptor are marked; which one a face uses is not decoded yet (faces
   // probably pick by page bits), so try the others if it looks noisy.
   const listed = new Set(st.data.atlases ?? []);
@@ -132,7 +133,7 @@ async function showStage(k: number): Promise<void> {
   atlasSel.value = String(st.data.atlases?.[0] ?? st.data.atlas);
   await st.setAtlas(`assets/stages/a${String(atlasSel.value).padStart(3, '0')}.png`);
   animSel.replaceChildren();
-  info.textContent = `${st.data.meshes.length} room meshes, ${st.triangles} triangles`;
+  info.textContent = `${st.data.meshes.length} room meshes, ${st.triangles} triangles, ${st.propCount} props`;
 }
 atlasSel.onchange = () => void stage?.setAtlas(`assets/stages/a${String(atlasSel.value).padStart(3, '0')}.png`);
 

@@ -4,6 +4,17 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step R – entity table decoded for room stages; props placed**
+- ✅ After a stage's mesh-pair list come **32-byte entity records** (kind, sub, flag | x, y, z | rot, link …). x/z lie inside the room box; y is
+  height (floor 400 or 100). Ordinary records (flag −254) are **props**: `kind` = part index in the stage's props pack (bed, counter, wardrobe,
+  cupboard, table …); the first two records are the entrance door/trigger (`link` = destination). Checked by rendering stage 1 with props at
+  their positions: tables/beds sit sensibly against the walls (rotation sign not distinguishable from the picture; both looked plausible).
+- 38 of 96 stages have such a table (rooms, inns, town buildings; some dungeon stages produced big tables such as stage 20: 63, 23: 89 records –
+  probably monster/chest spawns with a different `kind` meaning). 20 distinct props packs exported as `props<sector>.json`.
+- Viewer/play: `StageView.addProps()` places the props; play mode spawns the hero at the door position (nudged inward until it is on the
+  floor). Props have no collision yet.
+- Not decoded: meaning of `sub`, `link` (stage ids? 98/133/52…), how doors map to stage indices, spawn tables in dungeons, NPC records (e.g. kind 2 / link 57 = the expert?).
+
 **Step Q – stage names and the shape of the stage script**
 - ✅ Each stage descriptor is followed (within ~0x900 bytes) by a Pascal-style name string `- The Room -`; found for **30 of 96 stages**
   (0 The Roadside Inn, 1 The Room [item expert NPC], 2 Your Room, 10/11 The Abandoned Mine, 15 The Ruins Within the Earth,

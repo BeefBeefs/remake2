@@ -91,6 +91,7 @@ export class PlayMode {
     this.curAnim = -1;
     this.scene.add(st.root);
     this.scene.add(h.root);
+    await st.addProps();
     const atlas = st.data.atlases?.[0] ?? st.data.atlas;
     await st.setAtlas(`assets/stages/a${String(atlas).padStart(3, '0')}.png`);
     await h.setTexture(`assets/hero/h${String(heroIndex).padStart(2, '0')}_c0.png`);
@@ -113,6 +114,16 @@ export class PlayMode {
       if (area > best) {
         best = area;
         this.pos.set((tri.ax + tri.bx + tri.cx) / 3, (tri.ay + tri.by + tri.cy) / 3, (tri.az + tri.bz + tri.cz) / 3);
+      }
+    }
+    const door = st.data.entities?.[0];
+    if (door) {
+      // entity (x, y up, z) in PS1 space -> world (x, y, -z); nudge towards the room centre if the door is off the floor
+      for (const step of [0, 60, 120, 200]) {
+        const dx = this.pos.x - door.x, dz = this.pos.z + door.z, len = Math.hypot(dx, dz) || 1;
+        const px = door.x + (dx / len) * step, pz = -door.z + (dz / len) * step;
+        const fy = this.floorAt(px, pz, door.y);
+        if (fy !== null) { this.pos.set(px, fy, pz); break; }
       }
     }
     this.camera.far = 30000;
