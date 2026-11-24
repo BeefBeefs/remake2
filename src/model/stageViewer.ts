@@ -91,6 +91,33 @@ export class StageView {
       inner.add(new THREE.Mesh(g, this.material));
     }
     this.finishUvs();
+    // 18 of 96 stages have no textured room mesh in the format we decode (17-19, 30, 34, 36, 42-45, 48, 49, 66, 75, 77, 79, 81, 82):
+    // show their collision triangles as a flat height-shaded surface so they are at least visible and walkable.
+    if (!data.meshes.length) {
+      const c = data.collision;
+      const pos: number[] = [];
+      const col: number[] = [];
+      let y0 = Infinity, y1 = -Infinity;
+      for (const v of c.verts) { y0 = Math.min(y0, v[1]); y1 = Math.max(y1, v[1]); }
+      for (const t of c.tris) {
+        if (t.slice(0, 3).some((k) => k >= c.verts.length)) continue;
+        for (const k of t.slice(0, 3)) {
+          const p = c.verts[k];
+          pos.push(p[0], p[1], p[2]);
+          const h = y1 > y0 ? 1 - (p[1] - y0) / (y1 - y0) : 0.5; // PS1 y is down: higher = smaller y
+          col.push(0.25 + 0.5 * h, 0.4 + 0.4 * h, 0.35 + 0.2 * h);
+          for (let a = 0; a < 3; a++) {
+            min[a] = Math.min(min[a], p[a]);
+            max[a] = Math.max(max[a], p[a]);
+          }
+        }
+        this.triangles++;
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+      inner.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })));
+    }
     // centre on the bounding box and scale to fit the viewer
     if (!fit) return;
     const size = Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2], 1);

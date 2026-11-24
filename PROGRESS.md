@@ -4,6 +4,15 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step AC – all-stage contact sheet: ground planes, collision fallback**
+- Software-rendered all 96 stages (`render_stage.py`, scratch): 78 show recognisable maps (rooms, caves, mines, forests, castles).
+- ✅ **Run-time palette 0**: faces whose palette row is 0 show random colours because palette 0 of every atlas is filled by the game at run time. This hits the big ground planes of the outdoor stages
+  (20–26: one mesh with a single 128 x 128 tile repeated, texpage word 0 or pg 131). GUESS: they use atlas #2 of the stage's list with palette 3 (the grass/forest tile that other faces use); exporter marks
+  these faces (`groundGuess` count per stage). The fields now look like forest/grass instead of rainbow noise. Real palette is unknown (maybe set per time of day/area by the script).
+- 18 stages have collision but no textured mesh in the decoded format (17-19, 30, 34, 36, 42-45, 48, 49, 66, 75, 77, 79, 81, 82; their records after the collision header have another layout, e.g. stage 17: 8173-8178).
+  The viewer now draws their collision triangles height-shaded so play mode is not blank there.
+- Door/exit `link` ids (98, 133, 109, 105 …) exceed the 96 stage count: probably ids in a larger map table (inside the executable); stage-script bytecode around the dialogue boxes shows `0a`/`07 03 xx` commands but no obvious warp opcode yet.
+
 **Step AB – duplicate equipment sets on the heroes (two swords)**
 - The hero meshes contain **two near-identical sets of equipment parts** at the end of the part list (hero 0: parts 17-21 and 22-26 with equal vertex counts). Rendered separately: set A = sword sheathed on the back,
   set B = drawn blade in the raised hand (+ scabbard). Drawing both gave the doubled sword/scabbard and the extra shield-like block. The viewer detects the pair (parts p and p+P with equal vertex counts over ≥ 3 parts,

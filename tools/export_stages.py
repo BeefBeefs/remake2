@@ -174,6 +174,15 @@ for k, st in enumerate(stages):
     if st['atlases']:
         # default = the listed atlas with the most distinct colours (blank/flat pages are dynamic or unused ones)
         st['atlas'] = max(st['atlases'], key=lambda a: richness[a])
+    # Ground planes (one big tile, UV 0..127 square, texpage word 0 or pg 131 with palette 0): palette 0 of every atlas is a run-time palette
+    # (random colours in the file), so the colours are unknown. GUESS: the atlas after the first one, palette 3 (the common grass/ground tile).
+    nat = max(1, len(st['atlases']))
+    fixed = 0
+    for m in st['meshes']:
+        for f in m['faces']:
+            if f['clut'] == 0 and max(max(u, v) for u, v in f['uv']) >= 100 and (f['tp'] == 0 or (f['pg'] & 31) == 3 and f['pg'] >= 128):
+                f['pg'] = 1 if nat > 1 else 0; f['clut'] = 3; fixed += 1
+    st['groundGuess'] = fixed
     p = os.path.join(out, f'stage{k:02d}.json')
     json.dump(st, open(p, 'w'), separators=(',', ':')); total += os.path.getsize(p)
 json.dump({'atlasSectors': atl, 'stages': [{'sector': s['collision']['sector'], 'meshes': len(s['meshes']), 'atlas': s['atlas'], 'atlases': s['atlases'], 'texList': s.get('texList'), 'name': s.get('name')} for s in stages]},
