@@ -354,6 +354,20 @@ while True:
             if m in cand and len(cand[m]) > 1 and cand[m] - solved != cand[m]: cand[m] = cand[m] - solved; changed = True
     if not (c1 or changed): break
 model_name = {m: next(iter(c)) for m, c in cand.items() if len(c) == 1}
+# Fallback by majority vote for models the strict 'name in every stage' rule leaves open (a stage may stream a model its definition list does not
+# name): take the name that appears in at least 80% of >= 5 stages listing the model (model 17 -> Gargoyle 5/6, 30 -> Lesser-Vampire 4/5).
+import collections
+_sup = collections.defaultdict(collections.Counter); _tot = collections.Counter()
+for st in stages:
+    nm = {base_name(m['name']) for m in st['monsterDefs']}
+    if not nm: continue
+    for mid in st['monsters']:
+        _tot[mid] += 1
+        for n in nm: _sup[mid][n] += 1
+for mid, t in _tot.items():
+    if mid in model_name or t < 5: continue
+    (n1, c1), = _sup[mid].most_common(1)
+    if c1 * 5 >= t * 4 and sum(1 for v in _sup[mid].values() if v == c1) == 1: model_name[mid] = n1
 for st in stages:
     info = []
     for mid in st['monsters']:
