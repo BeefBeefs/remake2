@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { SndBanks } from './audio/sndBank';
+import { AnimatedModel, loadModel } from './model/modelViewer';
 
 // Placeholder scene: proves the build/asset pipeline. Real game systems land in later milestones
 // (see PROGRESS.md).
@@ -15,12 +16,23 @@ camera.position.set(0, 6, 10);
 camera.lookAt(0, 0, 0);
 
 scene.add(new THREE.GridHelper(40, 40, 0x444466, 0x222233));
-const hero = new THREE.Mesh(
-  new THREE.BoxGeometry(1, 2, 1),
-  new THREE.MeshBasicMaterial({ color: 0xc08040, wireframe: true }),
-);
-hero.position.y = 1;
-scene.add(hero);
+scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+const sun = new THREE.DirectionalLight(0xffffff, 2);
+sun.position.set(4, 8, 6);
+scene.add(sun);
+camera.position.set(0, 40, 140);
+camera.lookAt(0, 35, 0);
+
+// Animated model viewer (pack 3521 = knight; flat-shaded, untextured until the texture link is found).
+let model: AnimatedModel | undefined;
+loadModel('assets/models/pack_3521.json')
+  .then((m) => {
+    model = m;
+    scene.add(m.root);
+    const st = document.getElementById('status');
+    if (st) st.textContent += ` | model: ${m.data.parts.length} parts, ${m.frameCount} frames, ${m.skippedFaces}/${m.totalFaces} faces skipped`;
+  })
+  .catch((e) => console.error(e));
 
 addEventListener('resize', () => {
   renderer.setSize(innerWidth, innerHeight);
@@ -28,8 +40,14 @@ addEventListener('resize', () => {
   camera.updateProjectionMatrix();
 });
 
-renderer.setAnimationLoop((t) => {
-  hero.rotation.y = t / 1000;
+let last = 0;
+renderer.setAnimationLoop((t: number) => {
+  const dt = Math.min((t - last) / 1000, 0.1);
+  last = t;
+  if (model) {
+    model.update(dt);
+    model.root.rotation.y = t / 3000;
+  }
   renderer.render(scene, camera);
 });
 

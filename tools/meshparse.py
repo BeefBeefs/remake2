@@ -32,5 +32,9 @@ def parse_part(blob):
             r_ = blob[o:o + 16]
             out.append({'id': tuple(r_[0:4]), 'uv': [(r_[4 + 2 * k], r_[5 + 2 * k]) for k in range(4)], 'v': tuple(r_[12:16])})
         return out
-    faces = rows(0, h) + rows(h + w[9], len(blob))
+    f1 = rows(0, h)
+    f2 = rows(h + w[9], len(blob))
+    if len(f1) + len(f2) > nn:        # blobs are padded / followed by other data: #faces == #normals
+        f2 = f2[:max(0, nn - len(f1))]
+    faces = f1 + f2
     return {'subheader_at': h, 'verts': verts, 'normals': norms, 'faces': faces}

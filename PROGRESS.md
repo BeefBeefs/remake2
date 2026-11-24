@@ -4,6 +4,28 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ## Turn 6 – 2026-11-24 (multi-step; notes after each step)
+**Step 4 – three.js model viewer (written, NOT run)**
+- ✅ `src/model/modelViewer.ts` (`AnimatedModel`, `loadModel`): builds the bone tree from `parent[]`, attaches flat-shaded
+  part meshes to their bones, plays the 14 frames at 8 fps (Euler order `XYZ`, root rotated π about X because PS1 is Y-down).
+  `src/main.ts` now shows the spinning knight instead of the placeholder box (HUD status line reports skipped faces).
+- ⚠️ Not verified: `npm install` is blocked here, so it was never built/run in a browser. Typecheck with a stubbed `three`
+  module shows no errors other than stub artefacts. Frames were sanity-checked in Python only (`docs/knight_frames.png`,
+  subtle arm/sword motion, looks like an idle loop). Please run `npm install && npm run dev` and tell me what you see.
+- Also fixed: last part of a pack read face rows to the end of the pack (63k faces); face count is now capped at #normals,
+  and the last blob ends at the next pack. Part 26 (bone 58) is now 33 faces.
+
+**Step 3 – face→texture mapping (NOT solved)**
+- Face rows: `id[4]` are all equal within a row and count up per part (0,1,… / 2,3,… ) – they look like a per-part face
+  counter/sort key, **not** a texture or CLUT index. UVs are 0–255 / 0–123 (one 256-wide page, up to 128 high).
+- Tried to find the knight's texture by scoring all 503 extracted textures (opaque coverage, then UV-rect edge alignment vs
+  shifted rects). Results are not trustworthy: the winner (sector 7909) is a minimap sheet. Character textures
+  live at sectors 120–640 (256×64 sheets with faces/eyes, hero skins at 120–270), but a 64-px sheet doesn't cover v up to 123.
+- Hypothesis: the model→texture link is in a table I haven't parsed (e.g. an actor/model definition in a pack or level
+  block, possibly with the CLUT/tpage word). Next: look for records that reference sectors 3501/3521 and a texture sector.
+- Still open from Step 1: first 7 face rows of every part reference vertices that don't exist in the part (they are valid
+  quads by UV). The "nearest vertex" test against all assembled parts found no exact match, so a neighbour-part
+  reference is unproven. These faces are currently skipped (≈45% of knight faces, hence the holes).
+
 **Step 2 – assemble model from bones + pose 0 (done for the knight, pack 3521 + anim 3501)**
 - ✅ `tools/assemble.py`: bone world transforms from parent table + frame-0 pose. **Rotation matrix order X·Y·Z** (angles
   4096 = 360°) gives a coherent knight with a sword (zyx/xzy give garbage). See `docs/knight_pose0.png` (front + side wireframe).
@@ -20,7 +42,7 @@ later. Newest entry first; each work session appends here.
   out-of-range indices; R1 is probably seam/joint geometry referencing neighbouring parts' vertices (unresolved).
 - ✅ **Hierarchy table decoded**: `[-1,-1] + 59 bone parents + 27 part→bone indices` (2+59+27 = 88 = A+2).
 
-**Next**: Step 3 face→texture mapping (`id`, tpage/CLUT), Step 4 three.js viewer.
+**Next**: find the model→texture table, resolve the R1 vertex indices, check the viewer in a browser, other animation blobs.
 
 ## Turn 5 – 2026-11-24
 **Done**

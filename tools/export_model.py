@@ -16,7 +16,8 @@ mp, ap = packs[int(sys.argv[3])], packs[int(sys.argv[4])]
 anim = assemble.load_anim(d, ap, int(sys.argv[5]))
 base = mp['sector'] * S + 4 + 4 * mp['n']
 offs = [b['off'] for b in mp['blobs']]
-ends = offs[1:] + [min(offs[-1] + 0x10000, len(d) - base)]
+nxt = min([q['sector'] for q in packs.values() if q['sector'] > mp['sector']] or [len(d) // S])
+ends = offs[1:] + [nxt * S - base]   # last blob ends where the next pack starts
 parts = []
 for i in range(mp['n']):
     r = meshparse.parse_part(d[base + offs[i]:base + ends[i]])
