@@ -412,7 +412,7 @@ export class PlayMode {
       if (dd > 220) this.doorArmed = true;
       else if (dd < 90 && this.doorArmed) {
         this.travelling = true;
-        const next = (this.stageIndex + 1) % 96;
+        const next = (this.stageIndex + 1) % 78;
         this.hud.textContent = `door → stage ${next} (guess)…`;
         void this.enter(next, this.heroIndex)
           .then(() => { this.info = `stage ${next} (via door)`; })

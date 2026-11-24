@@ -91,7 +91,7 @@ export class StageView {
       inner.add(new THREE.Mesh(g, this.material));
     }
     this.finishUvs();
-    // 18 of 96 stages have no textured room mesh in the format we decode (17-19, 30, 34, 36, 42-45, 48, 49, 66, 75, 77, 79, 81, 82):
+    // A stage whose descriptor lists no textured room mesh we can decode (stage 75-ish in the old numbering):
     // show their collision triangles as a flat height-shaded surface so they are at least visible and walkable.
     if (!data.meshes.length) {
       const c = data.collision;

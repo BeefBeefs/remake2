@@ -34,11 +34,12 @@ const mk = (n: number, label: (i: number) => string) => {
   for (let i = 0; i < n; i++) sel.add(new Option(label(i), String(i)));
   return sel;
 };
-// 0-15 heroes, 16-112 the 97 monsters of the model table (data/model_table.json), 113+ the 96 stages
-// (room geometry, tools/export_stages.py)
+// 0-15 heroes, 16-112 the 97 monsters of the model table (data/model_table.json), 113+ the 78 stages
+// (room geometry, tools/export_stages.py; the 18 headerless extra records are merged into their owning stage)
 const STAGE0 = 16 + 97;
-const heroSel = mk(STAGE0 + 96, (i) => (i < 16 ? `hero ${i}` : i < STAGE0 ? `monster ${i - 16}` : `stage ${i - STAGE0}`));
-// Stage names (tools/export_stages.py finds ' - Name -' strings for 30 of 96 stages) label the dropdown entries.
+export const STAGE_COUNT = 78;
+const heroSel = mk(STAGE0 + STAGE_COUNT, (i) => (i < 16 ? `hero ${i}` : i < STAGE0 ? `monster ${i - 16}` : `stage ${i - STAGE0}`));
+// Stage names (tools/export_stages.py finds ' - Name -' strings for 30 of the stages) label the dropdown entries.
 fetch('assets/stages/index.json')
   .then((r) => r.json() as Promise<{ stages: { name?: string | null }[] }>)
   .then((ix) =>
@@ -68,7 +69,7 @@ hud?.append(document.createElement('hr'), heroSel, animSel, palSel, gearSel, atl
 
 // First playable slice: walk the selected hero (or hero 0) around the selected stage (stage 1 if none is selected).
 const play = new PlayMode(scene, camera, renderer.domElement);
-const playSel = mk(96, (i) => `stage ${i}`);
+const playSel = mk(STAGE_COUNT, (i) => `stage ${i}`);
 playSel.value = '1';
 const playBtn = document.createElement('button');
 playBtn.textContent = '▶ Play stage';

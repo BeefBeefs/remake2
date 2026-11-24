@@ -81,29 +81,48 @@ for s in range(n):
     if 'tris' in r:
         cur = {'collision': r, 'meshes': []}; stages.append(cur)
     elif r.get('both'):
+        # headerless textured record: either an extra mesh of the stage whose descriptor lists it (merged below) or, if nothing owns
+        # it, a stage of its own whose walkable floor is its own faces.
         tris = []
         for f in r['faces']:
             v = f['v']
             if v[2] != v[3]: tris.append([v[0], v[1], v[2], 0]); tris.append([v[0], v[2], v[3], 0])
             else: tris.append([v[0], v[1], v[2], 0])
-        cur = {'collision': {'sector': s, 'verts': r['verts'], 'tris': tris}, 'meshes': [r]}; stages.append(cur)
+        cur = {'collision': {'sector': s, 'verts': r['verts'], 'tris': tris}, 'meshes': [r], 'headerless': True}; stages.append(cur)
     elif cur is not None:
         cur['meshes'].append(r)
 import bisect
 # Stage resource descriptors: ... (sector,size) texture pairs | sentinel word 1601110016, x | (sector,size) mesh pairs ...
-# The first mesh pair is the stage's collision record, so find that sector as a u32 and walk back to the sentinel.
+# The first mesh pair is the stage's collision record (col16 'tris' record), the rest are its meshes, prop/monster packs etc.
 words = struct.unpack('<%dI' % (len(d) // 4), d[:len(d) // 4 * 4])
 SENT = 1601110016
-want = {st['collision']['sector']: st for st in stages}
+descs = []          # (word index, [(sector, size)] textures, [(sector, size)] meshes)
 for i, v in enumerate(words):
-    st = want.get(v)
-    if st is None or 'texList' in st: continue
-    for j in range(i - 1, max(0, i - 12), -1):
-        if words[j] == SENT:
-            p, tl = j - 1, []
-            while p >= 1 and 0 < words[p - 1] < 22600 and 1000 < words[p] < 60000: tl.append([words[p - 1], words[p]]); p -= 2
-            st['texList'] = tl[::-1]
-            break
+    if v != SENT: continue
+    p, tl = i - 1, []
+    while p >= 1 and 0 < words[p - 1] < 22600 and 1000 < words[p] < 100000: tl.append([words[p - 1], words[p]]); p -= 2
+    j, ms = i + 2, []
+    while 0 < words[j] < 22600 and 0 < words[j + 1] < 400000: ms.append([words[j], words[j + 1]]); j += 2
+    descs.append((i, tl[::-1], ms))
+# 17 "stages" (17-19, 30, 34, 36, 42-45, 48, 49, 66, 77, 79, 81, 82 in the old numbering) are headerless textured records that sit inside
+# the mesh list of the PREVIOUS stage's descriptor (same coordinate space): they are extra meshes of that stage, not stages.
+merged = 0
+for st in list(stages):
+    if not st.get('headerless'): continue
+    sec = st['collision']['sector']
+    own = None
+    for i, tl, ms in descs:
+        if any(a == sec for a, z in ms) and ms[0][0] != sec:
+            own = next((q for q in stages if q is not st and not q.get('headerless') and q['collision']['sector'] == ms[0][0]), None)
+            if own: break
+    if own is None: continue
+    own['meshes'].extend(st['meshes']); own.setdefault('extraMeshes', []).append(sec)
+    stages.remove(st); merged += 1
+print('merged', merged, 'headerless records into their owning stage')
+want = {st['collision']['sector']: st for st in stages}
+for i, tl, ms in descs:
+    st = want.get(ms[0][0]) if ms else None
+    if st is not None and 'texList' not in st: st['texList'] = tl
 # Stage names: a ' - Name -' string (Pascal-style, preceded by a length byte) sits within ~0x900 bytes after the descriptor
 import re
 for i, v in enumerate(words):

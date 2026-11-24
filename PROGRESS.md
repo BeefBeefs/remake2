@@ -4,6 +4,16 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step AD – the 17 "headerless stages" are not stages: 78 stages, real texture lists**
+- ✅ A descriptor (`… texture pairs | sentinel | mesh pairs`) lists ALL records of a stage: first mesh pair = col16 collision record, then textured meshes, prop/monster packs. The 17 headerless textured records
+  (old stages 17-19, 30, 31, 34, 36, 42-45, 48, 49, 66, 77, 79, 81, 82) all sit inside the mesh list of the PREVIOUS stage's descriptor and share its coordinate space: they are **extra meshes of that stage**.
+  Stage 16 (lava cave): record 8172 is the flat lava surface at y = 800 (that was the "flat purple" stage 17), 8179 / 8195 more cave geometry. The exporter now merges them (`extraMeshes` in stageNN.json) -> **78 stages**
+  (ids < 16 unchanged; later ids shifted down: old 20 -> 17 … – the stage picker / door guess use `STAGE_COUNT = 78`).
+- ✅ Texture lists: the walk-back from the collision sector was limited to 12 words (descriptor lists can be 18 pairs long) and rejected sizes >= 60000 (66080 = 8-bit 256 x 256 mode-9 atlas, 2 VRAM pages wide).
+  Now the descriptor is chosen by `first mesh pair == stage collision sector` and every texture pair < 100000 is kept. Stages 25, 28 … that had empty lists now have them. Still open: 8-bit 256 x 256 atlases
+  (size 66080, mode 9, 524-byte header) are not exported yet and shift VRAM page numbers (a page index probably counts 4-bit atlases as 1 page and these as 2).
+- Remaining without a list: stages 1, 25, 60 (descriptor is a 'mesh0 None' variant).
+
 **Step AC – all-stage contact sheet: ground planes, collision fallback**
 - Software-rendered all 96 stages (`render_stage.py`, scratch): 78 show recognisable maps (rooms, caves, mines, forests, castles).
 - ✅ **Run-time palette 0**: faces whose palette row is 0 show random colours because palette 0 of every atlas is filled by the game at run time. This hits the big ground planes of the outdoor stages
