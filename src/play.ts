@@ -35,6 +35,18 @@ interface HeroClass { hero: number; class: string; weapon: string; attack: numbe
 let classCache: Promise<HeroClass[]> | null = null;
 const heroClasses = (): Promise<HeroClass[]> => (classCache ??= fetch('assets/heroes/classes.json').then((r) => r.json() as Promise<HeroClass[]>).catch(() => []));
 
+interface Spell { n: number; name: string; mp: number; element: number; power: number }
+let spellCache: Promise<Spell[]> | null = null;
+const spellTable = (): Promise<Spell[]> => (spellCache ??= fetch('assets/spells.json').then((r) => r.json() as Promise<Spell[]>).catch(() => []));
+/** Guessed spell lists per class (kit index); names are rows of the spell table in module 4624. Priest/Elf/Fairy get Healing. */
+const CLASS_SPELLS: Record<number, string[]> = {
+  1: ['Healing', 'Refresh'],
+  3: ['Fire Bullet', 'Spark Bullet', 'Water Bullet', 'Stone Bullet', 'Lightbolt', 'Magic Missile', 'Blaze', 'Lightningbolt', 'Blizzard'],
+  5: ['Spark Bullet', 'Healing'],
+  7: ['Water Bullet', 'Healing'],
+};
+const ELEMENT_COLOR: Record<number, number> = { 2: 0xff8a2a, 3: 0x4aa8ff, 4: 0xb08a55, 5: 0xfff06a, 6: 0xffffff, 7: 0xb06aff, 8: 0xfff2b0, 9: 0x70ff90 };
+
 export class PlayMode {
   private enemies: Enemy[] = [];
   private stageIndex = 0;
@@ -66,7 +78,11 @@ export class PlayMode {
   private className = '';
   /** Ranged classes (Sorcerer, Hunter, Fairy; kit 3, 4, 7) shoot with Attack and melee with Attack 2. Colour per class. */
   private ranged: number | null = null;
-  private shots: { mesh: THREE.Mesh; vx: number; vz: number; life: number }[] = [];
+  private shots: { mesh: THREE.Mesh; vx: number; vz: number; life: number; dmg: number }[] = [];
+  /** Magic: 50 MP, regenerates 2/s. Spell lists per class are guesses (CLASS_SPELLS); MP cost / element / power come from the spell table. */
+  private mp = 50;
+  private spells: Spell[] = [];
+  private spellIdx = 0;
   /** Sound effects (set by main.ts once the sound banks are loaded). */
   sfx: Sfx | null = null;
   /** One-shot action (attack/jump…): hero anim index and seconds left. */
@@ -109,6 +125,8 @@ export class PlayMode {
       if (key === 'v') this.act('victory');
       if (key === 'g') this.act('guard');
       if (key === 'p') this.usePotion();
+      if (key === 'c') this.cast();
+      if (key === 'z') this.spellIdx = this.spells.length ? (this.spellIdx + 1) % this.spells.length : 0;
       if (key === ' ') e.preventDefault();
     });
     addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
@@ -135,6 +153,25 @@ export class PlayMode {
     dom.addEventListener('pointercancel', up);
   }
 
+  /** Cast the selected spell: healing spells restore `power` HP, attack spells fire a projectile for power x 3. */
+  cast(): void {
+    const sp = this.spells[this.spellIdx];
+    if (!this.active || !this.hero || this.hp <= 0 || !sp || this.action || this.mp < sp.mp) return;
+    this.mp -= sp.mp;
+    if (sp.element === 8) {
+      this.hp = Math.min(100, this.hp + sp.power);
+      this.sfx?.play('talk');
+    } else {
+      this.shoot(ELEMENT_COLOR[sp.element] ?? 0xffffff, sp.power * 3);
+      this.sfx?.play('swing');
+    }
+    this.act('attack2', true); // animation only
+  }
+
+  cycleSpell(): void {
+    if (this.spells.length) this.spellIdx = (this.spellIdx + 1) % this.spells.length;
+  }
+
   usePotion(): void {
     if (!this.active || this.hp <= 0 || this.potions <= 0 || this.hp >= 100) return;
     this.potions--;
@@ -143,11 +180,11 @@ export class PlayMode {
   }
 
   /** Hero animation slots (confirmed by eye): 0 idle, 1 walk, 2 hurt, 3 attack, 4 jump, 6 attack 2, 7 die, 8 victory; 5 looks like a guard (sword held across the body), unconfirmed. */
-  act(name: 'attack' | 'attack2' | 'jump' | 'hurt' | 'victory' | 'die' | 'guard'): void {
+  act(name: 'attack' | 'attack2' | 'jump' | 'hurt' | 'victory' | 'die' | 'guard', animOnly = false): void {
     const h = this.hero;
     if (!this.active || !h || this.action) return;
-    if ((name === 'attack' || name === 'attack2') && this.talk()) return;
-    if (name === 'attack' || name === 'attack2') {
+    if (!animOnly && (name === 'attack' || name === 'attack2') && this.talk()) return;
+    if (!animOnly && (name === 'attack' || name === 'attack2')) {
       this.sfx?.play('swing');
       if (name === 'attack' && this.ranged !== null) this.shoot(this.ranged);
       else this.strike();
@@ -178,6 +215,10 @@ export class PlayMode {
     this.heroDamage = cls ? cls.attack * 5 : 34;
     this.heroGuardDef = cls ? Math.floor(cls.defense / 2) : 0;
     this.className = cls ? `${cls.class} (${cls.weapon})` : '';
+    const table = await spellTable();
+    this.spells = (CLASS_SPELLS[heroIndex % 8] ?? []).map((nm) => table.find((t) => t.name === nm)).filter((t): t is Spell => !!t);
+    this.spellIdx = 0;
+    if (!this.travelling) this.mp = 50;
     this.ranged = ({ 3: 0xff8a2a, 4: 0xffe45a, 7: 0x6fe8ff } as Record<number, number>)[heroIndex % 8] ?? null;
     this.curAnim = -1;
     this.scene.add(st.root);
@@ -365,7 +406,7 @@ export class PlayMode {
     const defs = this.stage?.data.monsterDefs ?? [];
     const here = defs.length ? `\nhere: ${defs.map((d) => d.name).join(', ')}` : '';
     this.hud.style.whiteSpace = 'pre';
-    this.hud.textContent = `${this.className ? this.className + '\n' : ''}HP ${this.hp}   potions ${this.potions} (P)   enemies ${alive}${here}`;
+    this.hud.textContent = `${this.className ? this.className + '\n' : ''}HP ${this.hp}   ${this.spells.length ? `MP ${Math.floor(this.mp)} ${this.spells[this.spellIdx].name} (C cast, Z next)   ` : ''}potions ${this.potions} (P)   enemies ${alive}${here}`;
   }
 
   /** Prop collision: props are circles (radius ~ 60) – enemies and the hero cannot walk through them. */
@@ -436,12 +477,12 @@ export class PlayMode {
   }
 
   /** Ranged attack: a small glowing ball flying along the heading, hits the first enemy within 70 units. */
-  private shoot(color: number): void {
+  private shoot(color: number, dmg = Math.round(this.heroDamage * 0.8)): void {
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(18, 10, 8), new THREE.MeshBasicMaterial({ color }));
     const dx = Math.sin(this.heading), dz = Math.cos(this.heading);
     mesh.position.set(this.pos.x + dx * 60, this.pos.y + 90, this.pos.z + dz * 60);
     this.scene.add(mesh);
-    this.shots.push({ mesh, vx: dx * 900, vz: dz * 900, life: 1.0 });
+    this.shots.push({ mesh, vx: dx * 900, vz: dz * 900, life: 1.0, dmg });
   }
 
   private updateShots(dt: number): void {
@@ -452,7 +493,7 @@ export class PlayMode {
       for (const en of this.enemies) {
         if (en.npc || en.hp <= 0 || en.dying > 0) continue;
         if (Math.hypot(en.x - sh.mesh.position.x, en.z - sh.mesh.position.z) < 70) {
-          en.hp -= Math.round(this.heroDamage * 0.8);
+          en.hp -= sh.dmg;
           en.lock = 0.5;
           this.sfx?.play('hit');
           this.setEnemyAnim(en, 2);
@@ -546,6 +587,7 @@ export class PlayMode {
       }
       return;
     }
+    this.mp = Math.min(50, this.mp + 2 * dt);
     const k = this.keys;
     if (k.has('q')) this.camYaw += dt * 1.8;
     if (k.has('e')) this.camYaw -= dt * 1.8;

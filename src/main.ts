@@ -123,7 +123,7 @@ playBtn.onclick = async () => {
 };
 
 // Confirmed by eye on the phone (anim 1 'walk' and anim 5 not yet confirmed): see PROGRESS.md Step P.
-// On-screen action buttons (touch) shown while playing; keyboard: Space/J attack, K attack 2, L jump, H hurt, V victory, G guard (slot 5, guess), P potion.
+// On-screen action buttons (touch) shown while playing; keyboard: Space/J attack, K attack 2, L jump, H hurt, V victory, G guard (slot 5, guess), P potion, C cast spell, Z next spell.
 const pad = document.createElement('div');
 pad.style.cssText = 'position:fixed;right:10px;bottom:14px;display:none;gap:8px;z-index:5';
 for (const [label, act] of [['⚔', 'attack'], ['⚔2', 'attack2'], ['⤒', 'jump'], ['★', 'victory']] as const) {
@@ -134,6 +134,13 @@ for (const [label, act] of [['⚔', 'attack'], ['⚔2', 'attack2'], ['⤒', 'jum
     e.stopPropagation();
     play.act(act);
   };
+  pad.append(b);
+}
+for (const [label, fn] of [['✨', () => play.cast()], ['↻', () => play.cycleSpell()]] as const) {
+  const b = document.createElement('button');
+  b.textContent = label;
+  b.style.cssText = 'font-size:22px;width:56px;height:56px;border-radius:28px;opacity:.85';
+  b.onpointerdown = (e) => { e.stopPropagation(); fn(); };
   pad.append(b);
 }
 {
