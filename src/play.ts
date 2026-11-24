@@ -81,6 +81,7 @@ export class PlayMode {
       if (key === 'l') this.act('jump');
       if (key === 'h') this.act('hurt');
       if (key === 'v') this.act('victory');
+      if (key === 'g') this.act('guard');
       if (key === ' ') e.preventDefault();
     });
     addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
@@ -107,13 +108,13 @@ export class PlayMode {
     dom.addEventListener('pointercancel', up);
   }
 
-  /** Hero animation slots (confirmed by eye): 0 idle, 1 walk, 2 hurt, 3 attack, 4 jump, 6 attack 2, 7 die, 8 victory. */
-  act(name: 'attack' | 'attack2' | 'jump' | 'hurt' | 'victory' | 'die'): void {
+  /** Hero animation slots (confirmed by eye): 0 idle, 1 walk, 2 hurt, 3 attack, 4 jump, 6 attack 2, 7 die, 8 victory; 5 looks like a guard (sword held across the body), unconfirmed. */
+  act(name: 'attack' | 'attack2' | 'jump' | 'hurt' | 'victory' | 'die' | 'guard'): void {
     const h = this.hero;
     if (!this.active || !h || this.action) return;
     if ((name === 'attack' || name === 'attack2') && this.talk()) return;
     if (name === 'attack' || name === 'attack2') this.strike();
-    const anim = { attack: 3, attack2: 6, jump: 4, hurt: 2, victory: 8, die: 7 }[name];
+    const anim = { attack: 3, attack2: 6, jump: 4, hurt: 2, victory: 8, die: 7, guard: 5 }[name];
     if (anim >= h.animCount) return;
     h.setAnim(anim);
     this.curAnim = anim;
@@ -288,7 +289,8 @@ export class PlayMode {
         en.cooldown = 1.2;
         en.lock = 0.7;
         this.setEnemyAnim(en, 3);
-        this.hp = Math.max(0, this.hp - en.dmg);
+        // while the guess-guard animation plays (key G) the hit does half damage
+        this.hp = Math.max(0, this.hp - (this.action?.anim === 5 ? Math.ceil(en.dmg / 2) : en.dmg));
         this.act('hurt');
       }
       if (en.lock <= 0) this.setEnemyAnim(en, moving ? 1 : 0);
