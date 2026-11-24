@@ -321,11 +321,12 @@ for k, st in enumerate(stages):
     # Ground planes (one big tile, UV 0..127 square, texpage word 0 or pg 131 with palette 0): palette 0 of every atlas is a run-time palette
     # (random colours in the file), so the colours are unknown. GUESS: the atlas after the first one, palette 3 (the common grass/ground tile).
     nat = max(1, len(st['atlases']))
+    pos4 = [i for i, p in enumerate(st['pages']) if isinstance(p, int)]   # texture-list positions that are 4-bit atlases
     fixed = 0
     for m in st['meshes']:
         for f in m['faces']:
             if f['clut'] == 0 and max(max(u, v) for u, v in f['uv']) >= 100 and (f['tp'] == 0 or (f['pg'] & 31) == 3 and f['pg'] >= 128):
-                f['pg'] = 1 if nat > 1 else 0; f['clut'] = 3; fixed += 1
+                f['pg'] = pos4[1] if len(pos4) > 1 else (pos4[0] if pos4 else 0); f['clut'] = 3; fixed += 1
     st['groundGuess'] = fixed
     p = os.path.join(out, f'stage{k:02d}.json')
     json.dump(st, open(p, 'w'), separators=(',', ':')); total += os.path.getsize(p)
