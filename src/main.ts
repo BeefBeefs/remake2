@@ -131,7 +131,7 @@ async function showStage(k: number): Promise<void> {
   // probably pick by page bits), so try the others if it looks noisy.
   const listed = new Set(st.data.atlases ?? []);
   for (let i = 0; i < atlasSel.options.length; i++) atlasSel.options[i].text = `atlas ${i}${listed.has(i) ? ' ★' : ''}`;
-  atlasSel.value = String(st.data.atlases?.[0] ?? st.data.atlas);
+  atlasSel.value = String(st.data.atlas);
   await st.setAtlas(`assets/stages/a${String(atlasSel.value).padStart(3, '0')}.png`);
   animSel.replaceChildren();
   info.textContent = `${st.data.meshes.length} room meshes, ${st.triangles} triangles, ${st.propCount} props, ${st.markerCount} markers`;

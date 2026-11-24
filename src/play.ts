@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { AnimatedModel, loadHero } from './model/modelViewer';
+import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 import { loadStage, StageView } from './model/stageViewer';
 
 /**
@@ -14,7 +14,22 @@ interface Tri {
   cx: number; cy: number; cz: number;
 }
 
+interface Enemy {
+  model: AnimatedModel;
+  hp: number;
+  x: number;
+  y: number;
+  z: number;
+  cooldown: number;
+  dying: number;
+  npc: boolean;
+}
+
 export class PlayMode {
+  private enemies: Enemy[] = [];
+  hp = 100;
+  private deadTime = -1;
+  private readonly hud: HTMLDivElement;
   private stage?: StageView;
   private hero?: AnimatedModel;
   private tris: Tri[] = [];
@@ -36,6 +51,9 @@ export class PlayMode {
     private readonly camera: THREE.PerspectiveCamera,
     private readonly dom: HTMLElement,
   ) {
+    this.hud = document.createElement('div');
+    this.hud.style.cssText = 'position:fixed;left:10px;bottom:10px;color:#fff;font:14px monospace;text-shadow:0 0 3px #000;display:none;z-index:5';
+    document.body.append(this.hud);
     addEventListener('keydown', (e) => {
       const key = e.key.toLowerCase();
       this.keys.add(key);
@@ -74,6 +92,7 @@ export class PlayMode {
   act(name: 'attack' | 'attack2' | 'jump' | 'hurt' | 'victory' | 'die'): void {
     const h = this.hero;
     if (!this.active || !h || this.action) return;
+    if (name === 'attack' || name === 'attack2') this.strike();
     const anim = { attack: 3, attack2: 6, jump: 4, hurt: 2, victory: 8, die: 7 }[name];
     if (anim >= h.animCount) return;
     h.setAnim(anim);
@@ -92,7 +111,7 @@ export class PlayMode {
     this.scene.add(st.root);
     this.scene.add(h.root);
     await st.addProps();
-    const atlas = st.data.atlases?.[0] ?? st.data.atlas;
+    const atlas = st.data.atlas;
     await st.setAtlas(`assets/stages/a${String(atlas).padStart(3, '0')}.png`);
     await h.setTexture(`assets/hero/h${String(heroIndex).padStart(2, '0')}_c0.png`);
     // collision triangles in world space; keep up-facing ones
@@ -116,6 +135,7 @@ export class PlayMode {
         this.pos.set((tri.ax + tri.bx + tri.cx) / 3, (tri.ay + tri.by + tri.cy) / 3, (tri.az + tri.bz + tri.cz) / 3);
       }
     }
+    await this.spawnEnemies(st);
     const door = st.data.entities?.[0];
     if (door) {
       // entity (x, y up, z) in PS1 space -> world (x, y, -z); nudge towards the room centre if the door is off the floor
@@ -130,11 +150,94 @@ export class PlayMode {
     this.camera.near = 5;
     this.camera.updateProjectionMatrix();
     this.active = true;
+    this.hud.style.display = 'block';
     this.info = `stage ${stageIndex}: ${this.tris.length} floor triangles — left stick/WASD move, right drag/Q E turn`;
     this.updateHero(0);
   }
 
+  /**
+   * Enemies/NPCs (heuristic!): the stage lists the monster models it streams in. Room stages: the first listed model is the NPC placed on
+   * the entity that carries a link (e.g. the item expert). Dungeons: spawn cells are grouped by `kind`, the most common kind gets the first
+   * listed monster, the next kind the second, and so on; at most 10 spawns closest to the start are used.
+   */
+  private async spawnEnemies(st: StageView): Promise<void> {
+    const models = st.data.monsters ?? [];
+    const ents = st.data.entities ?? [];
+    if (!models.length) return;
+    const spots: { x: number; z: number; y: number; model: number; npc: boolean }[] = [];
+    const isRoom = ents.some((e) => e.flag === -254);
+    if (isRoom) {
+      const n = ents.find((e) => e.flag === -254 && e.link !== -1 && e.kind >= 0 && e.kind < 256);
+      if (n) spots.push({ x: n.x, z: -n.z, y: n.y, model: models[0], npc: true });
+    } else {
+      const counts = new Map<number, number>();
+      for (const e of ents) if (e.kind >= 0 && e.kind < 256 && e.sub === 1) counts.set(e.kind, (counts.get(e.kind) ?? 0) + 1);
+      const kinds = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k);
+      const door = ents[0];
+      const sx = door ? door.x : 0, sz = door ? -door.z : 0;
+      const cand = ents
+        .filter((e) => e.kind >= 0 && e.kind < 256 && e.sub === 1 && kinds.includes(e.kind))
+        .sort((a, b) => Math.hypot(a.x - sx, -a.z - sz) - Math.hypot(b.x - sx, -b.z - sz))
+        .filter((e) => Math.hypot(e.x - sx, -e.z - sz) > 500)
+        .slice(0, 10);
+      for (const e of cand) spots.push({ x: e.x, z: -e.z, y: e.y, model: models[Math.min(kinds.indexOf(e.kind), models.length - 1)], npc: false });
+    }
+    for (const sp of spots) {
+      try {
+        const m = await loadMonster(sp.model);
+        await m.setTexture(`assets/monsters/mon${String(sp.model).padStart(2, '0')}.png`);
+        this.scene.add(m.root);
+        this.enemies.push({ model: m, hp: 60, x: sp.x, y: sp.y, z: sp.z, cooldown: 0, dying: 0, npc: sp.npc });
+      } catch (err) {
+        console.warn('monster load failed', sp.model, err);
+      }
+    }
+  }
+
+  private updateEnemies(dt: number): void {
+    for (const en of this.enemies) {
+      const m = en.model;
+      if (en.dying > 0) {
+        en.dying -= dt;
+        m.root.scale.setScalar(Math.max(0.01, en.dying / 0.6));
+        continue;
+      }
+      const dx = this.pos.x - en.x, dz = this.pos.z - en.z, dist = Math.hypot(dx, dz);
+      en.cooldown -= dt;
+      if (!en.npc && dist < 700 && dist > 70) {
+        const nx = en.x + (dx / dist) * 90 * dt, nz = en.z + (dz / dist) * 90 * dt;
+        const fy = this.floorAt(nx, nz, en.y);
+        if (fy !== null && Math.abs(fy - en.y) < 80) { en.x = nx; en.z = nz; en.y = fy; }
+      }
+      if (!en.npc && dist <= 90 && en.cooldown <= 0) {
+        en.cooldown = 1.2;
+        this.hp = Math.max(0, this.hp - 8);
+        this.act('hurt');
+      }
+      m.update(dt);
+      m.root.position.set(en.x, en.y, en.z);
+      m.root.rotation.y = Math.atan2(dx, dz);
+    }
+    for (const en of this.enemies) if (en.dying <= 0 && en.hp <= 0) en.dying = 0.6;
+    const alive = this.enemies.filter((e) => !e.npc && e.hp > 0).length;
+    this.hud.textContent = `HP ${this.hp}   enemies ${alive}`;
+  }
+
+  /** Hero attack: damage enemies in front within 170 units. */
+  private strike(): void {
+    for (const en of this.enemies) {
+      if (en.npc || en.hp <= 0) continue;
+      const dx = en.x - this.pos.x, dz = en.z - this.pos.z;
+      if (Math.hypot(dx, dz) < 170) en.hp -= 34;
+    }
+  }
+
   exit(): void {
+    this.hud.style.display = 'none';
+    for (const en of this.enemies) en.model.dispose();
+    this.enemies = [];
+    this.hp = 100;
+    this.deadTime = -1;
     this.active = false;
     this.stage?.dispose();
     this.hero?.dispose();
@@ -164,6 +267,19 @@ export class PlayMode {
 
   update(dt: number): void {
     if (!this.active || !this.hero) return;
+    if (this.hp <= 0) {
+      // dead: play the dying animation once (anim 7), then freeze on its last frame
+      if (this.deadTime < 0) {
+        this.action = null;
+        this.hero.setAnim(Math.min(7, this.hero.animCount - 1));
+        this.curAnim = -2;
+        this.deadTime = 0;
+      }
+      this.deadTime += dt;
+      if (this.deadTime < this.hero.frameCount / this.hero.fps) this.hero.update(dt);
+      this.hud.textContent = 'You died — press Exit play and try again';
+      return;
+    }
     const k = this.keys;
     if (k.has('q')) this.camYaw += dt * 1.8;
     if (k.has('e')) this.camYaw -= dt * 1.8;
@@ -195,6 +311,7 @@ export class PlayMode {
         this.curAnim = -1;
       }
     }
+    this.updateEnemies(dt);
     this.updateHero(dt);
   }
 

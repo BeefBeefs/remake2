@@ -10,6 +10,8 @@ export interface StageJson {
   /** Room-type stages: door/trigger + prop placements (x, y = height above PS1 y=0, z; rot 4096 = 360 deg). */
   entities?: { kind: number; sub: number; flag: number; x: number; y: number; z: number; rot: number; link: number }[];
   propsSector?: number | null;
+  /** Monster/NPC model ids (0-96) whose textures the stage lists: models 16+id of data/model_table.json. */
+  monsters?: number[];
   meshes: { sector: number; verts: number[][]; faces: { v: number[]; uv: number[][] }[] }[];
 }
 

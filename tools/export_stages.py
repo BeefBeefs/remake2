@@ -48,6 +48,7 @@ for s in range(n):
     if struct.unpack_from('<II', d, o)[0] == 16 and struct.unpack_from('<I', d, o + 4)[0] in (8, 9) and struct.unpack_from('<I', d, o + 8)[0] == 524:
         A, B = struct.unpack_from('<HH', d, o + 524 + 16)
         if (2 * A, B) == (128, 256): atl.append(s)
+richness = []
 for k, s in enumerate(atl):
     o = s * S; P = o + 524 + 8
     A, B = struct.unpack_from('<HH', d, P + 8)
@@ -59,6 +60,7 @@ for k, s in enumerate(atl):
             v = pal[pix[y * 128 + x]]
             px[x, y] = (0, 0, 0, 0) if v == 0 else ((v & 31) * 255 // 31, ((v >> 5) & 31) * 255 // 31, ((v >> 10) & 31) * 255 // 31, 255)
     im.save(os.path.join(out, f'a{k:03d}.png'))
+    richness.append(len(set(pix[:128 * 256])))
 
 stages, cur = [], None
 for s in range(n):
@@ -80,7 +82,7 @@ for i, v in enumerate(words):
     for j in range(i - 1, max(0, i - 12), -1):
         if words[j] == SENT:
             p, tl = j - 1, []
-            while p >= 1 and 0 < words[p - 1] < 22600 and words[p] in (33312, 16928, 12832, 18464): tl.append([words[p - 1], words[p]]); p -= 2
+            while p >= 1 and 0 < words[p - 1] < 22600 and 1000 < words[p] < 60000: tl.append([words[p - 1], words[p]]); p -= 2
             st['texList'] = tl[::-1]
             break
 # Stage names: a ' - Name -' string (Pascal-style, preceded by a length byte) sits within ~0x900 bytes after the descriptor
@@ -125,6 +127,11 @@ for i, v in enumerate(words):
                               for ix2, r in sorted(pp.items()) if r['faces']}
 for sec, pr in props_out.items():
     json.dump(pr, open(os.path.join(out, f'props{sec}.json'), 'w'), separators=(',', ':'))
+# monsters a stage streams in = monster textures in its texture list (model table entries 16..112 -> monster 0..96)
+mtab = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'model_table.json')))
+mon_by_tex = {sec: k - 16 for k, (sec, _) in enumerate(mtab['textures']) if k >= 16}
+for st in stages:
+    st['monsters'] = [mon_by_tex[a] for a, z in st.get('texList', []) if a in mon_by_tex]
 atlas_index = {s: k for k, s in enumerate(atl)}
 total = 0
 for k, st in enumerate(stages):
@@ -132,7 +139,9 @@ for k, st in enumerate(stages):
     st['atlas'] = max(0, i - 1)        # guess: the 128x256 atlas before the last one preceding the stage
     st['id'] = k
     st['atlases'] = [atlas_index[a] for a, z in st.get('texList', []) if z == 33312 and a in atlas_index]
-    if st['atlases']: st['atlas'] = st['atlases'][0]
+    if st['atlases']:
+        # default = the listed atlas with the most distinct colours (blank/flat pages are dynamic or unused ones)
+        st['atlas'] = max(st['atlases'], key=lambda a: richness[a])
     p = os.path.join(out, f'stage{k:02d}.json')
     json.dump(st, open(p, 'w'), separators=(',', ':')); total += os.path.getsize(p)
 json.dump({'atlasSectors': atl, 'stages': [{'sector': s['collision']['sector'], 'meshes': len(s['meshes']), 'atlas': s['atlas'], 'atlases': s['atlases'], 'texList': s.get('texList'), 'name': s.get('name')} for s in stages]},

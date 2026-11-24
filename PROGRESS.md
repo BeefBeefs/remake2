@@ -4,6 +4,16 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step V – stage monster lists, better default atlas, enemies + NPC + combat in play mode (UNTESTED, heuristic)**
+- ✅ A stage's **texture list holds the monster/NPC textures it streams in**; matching them against the model table gives `monsters: [ids]` per stage
+  (stage 20: models 0, 16, 14; stage 23: 15, 39, 40; stage 1 "The Room": **model 84 = the item expert NPC**; stage 6: model 3). The walk-back over texture pairs now accepts any size
+  1000–60000 (monster textures are 5–17 KB). 
+- Default atlas = the listed atlas with the most distinct colours (blank/flat pages such as 6812 or 6140 are skipped) – the Abandoned Mine no longer starts on a white page.
+- Play mode: NPC placed on the room's linked prop entity; dungeons spawn up to 10 enemies from the entity cells: cells grouped by `kind` (sub 1), most common kind → first listed
+  monster, next kind → second … (**guess**: the kind↔model mapping is unknown). Enemies chase within 700 units, hit for 8 per 1.2 s when within 90 (hero plays hurt), hero attacks
+  (⚔ / Space) deal 34 damage within 170 units; enemies shrink away when dead; HP/enemy counter at bottom-left; hero dies at 0 HP (anim 7, frozen).
+- Not done: monster attack/hit/die animations (monster slots unknown), collision between actors/props, loot, XP, doors/stage links.
+
 **Step U – entity cells for all stages + markers in the viewer**
 - ✅ Entity tables are streams of **32-byte records made of 16-byte cells**; the exporter now scans the stream between the mesh pairs and the stage banner in 8-byte steps
   for the cell `(kind, sub, flag, 0, x, y, z, 0)` with flag −260…−20, giving 11 cells in stage 1 (room), 146 in stage 20, 115 in stage 23, 89 in stage 21 (dungeons).
