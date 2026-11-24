@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { SndBanks } from './audio/sndBank';
+import { Sfx, SFX_SLOTS, SfxSlot } from './audio/sfx';
 import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 import { loadStage, StageView } from './model/stageViewer';
 import { PlayMode } from './play';
@@ -246,6 +247,19 @@ SndBanks.load()
       const clip = snd.clips(bankSel.value)[Number(clipSel.value)];
       if (clip) void snd.play(clip);
     };
+    // play-mode sound effects: guessed defaults, reassignable to the clip selected above
+    const sfx = new Sfx(snd);
+    play.sfx = sfx;
+    const slotSel = $<HTMLSelectElement>('slot');
+    const info = () => { $('slotinfo').textContent = `${slotSel.value} = ${sfx.describe(slotSel.value as SfxSlot)}`; };
+    slotSel.replaceChildren(...SFX_SLOTS.map((s) => new Option(s, s)));
+    slotSel.onchange = info;
+    info();
+    $('assign').onclick = () => {
+      const clip = snd.clips(bankSel.value)[Number(clipSel.value)];
+      if (clip) { sfx.assign(slotSel.value as SfxSlot, clip); info(); void sfx.play(slotSel.value as SfxSlot); }
+    };
+    $<HTMLInputElement>('mute').onchange = (e) => { sfx.muted = (e.target as HTMLInputElement).checked; };
     $('status').textContent = `${snd.manifest.clips.length} sound clips loaded`;
   })
   .catch((e) => {

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 import { loadStage, StageView } from './model/stageViewer';
+import type { Sfx } from './audio/sfx';
 
 /**
  * First playable slice: walk a hero around one stage. Gameplay runs in three.js world space, where a PS1 point
@@ -53,6 +54,8 @@ export class PlayMode {
   private camYaw = 0;
   private moving = false;
   private curAnim = -1;
+  /** Sound effects (set by main.ts once the sound banks are loaded). */
+  sfx: Sfx | null = null;
   /** One-shot action (attack/jump…): hero anim index and seconds left. */
   private action: { anim: number; left: number; total: number; jump: boolean } | null = null;
   private readonly keys = new Set<string>();
@@ -113,7 +116,8 @@ export class PlayMode {
     const h = this.hero;
     if (!this.active || !h || this.action) return;
     if ((name === 'attack' || name === 'attack2') && this.talk()) return;
-    if (name === 'attack' || name === 'attack2') this.strike();
+    if (name === 'attack' || name === 'attack2') { this.sfx?.play('swing'); this.strike(); }
+    if (name === 'jump') this.sfx?.play('jump');
     const anim = { attack: 3, attack2: 6, jump: 4, hurt: 2, victory: 8, die: 7, guard: 5 }[name];
     if (anim >= h.animCount) return;
     h.setAnim(anim);
@@ -291,6 +295,7 @@ export class PlayMode {
         this.setEnemyAnim(en, 3);
         // while the guess-guard animation plays (key G) the hit does half damage
         this.hp = Math.max(0, this.hp - (this.action?.anim === 5 ? Math.ceil(en.dmg / 2) : en.dmg));
+        this.sfx?.play('hurt');
         this.act('hurt');
       }
       if (en.lock <= 0) this.setEnemyAnim(en, moving ? 1 : 0);
@@ -312,7 +317,7 @@ export class PlayMode {
       }
     }
     for (const en of this.enemies) {
-      if (en.dying <= 0 && en.hp <= 0) en.dying = 99;
+      if (en.dying <= 0 && en.hp <= 0) { en.dying = 99; this.sfx?.play('enemyDie'); }
     }
     const alive = this.enemies.filter((e) => !e.npc && e.hp > 0).length;
     const defs = this.stage?.data.monsterDefs ?? [];
@@ -341,6 +346,7 @@ export class PlayMode {
     if (Math.hypot(npc.x - this.pos.x, npc.z - this.pos.z) > 200) return false;
     this.talkBox.textContent = texts[this.talkIndex % texts.length] + `\n\n(${(this.talkIndex % texts.length) + 1}/${texts.length} — tap to close)`;
     this.talkBox.style.display = 'block';
+    this.sfx?.play('talk');
     this.talkIndex++;
     return true;
   }
@@ -352,6 +358,7 @@ export class PlayMode {
       const dx = en.x - this.pos.x, dz = en.z - this.pos.z;
       if (Math.hypot(dx, dz) < 170) {
         en.hp -= 34;
+        this.sfx?.play('hit');
         en.lock = 0.5;
         this.setEnemyAnim(en, 2);
       }
@@ -402,10 +409,18 @@ export class PlayMode {
         this.hero.setAnim(Math.min(7, this.hero.animCount - 1));
         this.curAnim = -2;
         this.deadTime = 0;
+        this.sfx?.play('heroDie');
       }
       this.deadTime += dt;
       if (this.deadTime < this.hero.frameCount / this.hero.fps) this.hero.update(dt);
-      this.hud.textContent = 'You died — press Exit play and try again';
+      this.hud.textContent = this.deadTime > 1.2 ? 'You died — press R (or tap) to retry this area, or Exit play' : 'You died';
+      if (this.deadTime > 1.2 && !this.travelling && (this.keys.has('r') || this.keys.has('enter') || this.stick.id >= 0)) {
+        this.travelling = true;
+        this.hp = 100; // enter() keeps the current HP while travelling
+        void this.enter(this.stageIndex, this.heroIndex, this.variant)
+          .catch((e) => console.warn('retry failed', e))
+          .finally(() => { this.travelling = false; });
+      }
       return;
     }
     const k = this.keys;
@@ -454,6 +469,7 @@ export class PlayMode {
       if (dmin > 220) this.doorArmed = true;
       else if (near && dmin < 90 && this.doorArmed) {
         this.travelling = true;
+        this.sfx?.play('door');
         const i0 = this.stageIndex;
         const [q0, q1] = this.stage?.data.questRange ?? [i0, i0];
         const quest = this.stage?.data.quest ?? -1;
