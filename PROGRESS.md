@@ -4,6 +4,8 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ## Turn 6 – 2026-11-24 (multi-step; notes after each step)
+**Verified in browser (user, via GitHub Pages)**: viewer runs, knight assembles from skeleton and animates. Camera was too close; framing adjusted.
+
 **Pages deploy** – `.github/workflows/pages.yml` builds with Vite and deploys `dist/` on every push to main.
 One-time manual step: repo Settings → Pages → Source = "GitHub Actions". Not verified (can't reach the Pages API from here).
 
@@ -27,7 +29,7 @@ One-time manual step: repo Settings → Pages → Source = "GitHub Actions". Not
   block, possibly with the CLUT/tpage word). Next: look for records that reference sectors 3501/3521 and a texture sector.
 - Still open from Step 1: first 7 face rows of every part reference vertices that don't exist in the part (they are valid
   quads by UV). The "nearest vertex" test against all assembled parts found no exact match, so a neighbour-part
-  reference is unproven. These faces are currently skipped (≈45% of knight faces, hence the holes).
+  reference is unproven. These faces are currently skipped (83 of 377 knight faces ≈ 22%, per the in-browser status line).
 
 **Step 2 – assemble model from bones + pose 0 (done for the knight, pack 3521 + anim 3501)**
 - ✅ `tools/assemble.py`: bone world transforms from parent table + frame-0 pose. **Rotation matrix order X·Y·Z** (angles

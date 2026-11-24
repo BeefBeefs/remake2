@@ -15,13 +15,13 @@ const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 50
 camera.position.set(0, 6, 10);
 camera.lookAt(0, 0, 0);
 
-scene.add(new THREE.GridHelper(40, 40, 0x444466, 0x222233));
+scene.add(new THREE.GridHelper(400, 40, 0x444466, 0x222233));
 scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 const sun = new THREE.DirectionalLight(0xffffff, 2);
 sun.position.set(4, 8, 6);
 scene.add(sun);
-camera.position.set(0, 40, 140);
-camera.lookAt(0, 35, 0);
+camera.position.set(0, 70, 260);
+camera.lookAt(0, 55, 0);
 
 // Animated model viewer (pack 3521 = knight; flat-shaded, untextured until the texture link is found).
 let model: AnimatedModel | undefined;
