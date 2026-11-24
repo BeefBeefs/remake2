@@ -4,6 +4,18 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step X – level textures fixed (4-bit, 16 palettes per atlas), hero facing, prop collision sizes** (from the user's stage-10 screen recording)
+- ✅ The noisy/missing colours were a decoding bug: atlases are **256 x 256, 4-bit, with 16 palettes** (not 128 x 256 8-bit). Each face picks its palette from `attr` bits 4-7 and
+  its atlas from `pg & 31` (index into the stage's atlas list). The exporter now writes `aNNN.png` (colour indices) + `aNNN.pal.png` (16 x 16 palette) and the viewer builds one
+  coloured page per stage (a slot per used atlas/palette pair). The atlas dropdown has "auto (per face)" or forces one atlas for all faces. (271 atlases; one 8-bit record dropped.)
+- ✅ Software render of stage 10 now shows the real mine layout (tracks, two caverns, long corridor). Some floor faces still use "debug" number tiles (pg 1, palette 13) – probably
+  textures the game overwrites at run time.
+- ✅ Hero facing: models face −z at yaw 0 (rendered from four sides), the play-mode yaw is now `heading + PI` (it was walking backwards); same for monsters.
+- ✅ Collision: floor heights from the collision mesh match the visible floor (checked on stage 10); prop collision circles are now sized from each prop mesh (0.7 x radius, max 90, flat decals skipped)
+  instead of a fixed 55; the hero no longer spawns inside entity 0 when that is a prop (stage 10: pedestal/crystal).
+- Open: purpose of the numbered tiles, semi-transparent faces (cmd bit 1) are drawn opaque, palette choice for props (borrowed from the stage's most common atlas-0 palette), stage-10 mesh 6854 / 6882 /
+  6894 may be alternative or event versions drawn on top of each other.
+
 **Step W – monster animation slots (guess), actor/prop collision, door travel (guess)**
 - Monster anim packs have 1–15 anims (mostly 4–7); slot 2 is 20 frames in 68 of 97 monsters (shared "hit" template) and slot 3 is mostly 15 frames, so monsters follow the hero
   layout: **0 idle, 1 walk, 2 hit, 3 attack, last slot = die** (unconfirmed – eyeball in the viewer's anim buttons and tell me what is wrong).

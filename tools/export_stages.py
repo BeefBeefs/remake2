@@ -32,8 +32,9 @@ def record(s):
             # the last byte of each face row is the PS1 GPU command: 0x24-0x27 / 0x34-0x37 = triangle, 0x2c-0x2f / 0x3c-0x3f = quad
             # (bit 1 = semi-transparent, bit 0 = raw texture). A triangle's 4th vertex slot is padded with 0 -> repeat the 3rd.
             if (cmd & 0xc) == 4: v4[3] = v4[2]
-            pg = (struct.unpack_from('<I', d, b + 28)[0] >> 16) & 0xff
-            faces.append({'cmd': cmd, 'pg': pg, 'v': v4, 'uv': [[d[b + 16 + 2 * k], d[b + 17 + 2 * k]] for k in range(4)]})
+            attr = struct.unpack_from('<I', d, b + 28)[0]
+            pg = (attr >> 16) & 0xff
+            faces.append({'cmd': cmd, 'pg': pg, 'clut': (attr >> 4) & 15, 'tp': attr & 0xffff, 'v': v4, 'uv': [[d[b + 16 + 2 * k], d[b + 17 + 2 * k]] for k in range(4)]})
         return {'sector': s, 'verts': verts, 'faces': faces}
     tris = []
     for i in range(F):
@@ -41,26 +42,30 @@ def record(s):
         tris.append(list(struct.unpack_from('<4H', d, b)))
     return {'sector': s, 'verts': verts, 'tris': tris}
 
-# atlases: 128-wide, 256-high, psize 524
+# atlases: TIM-style records, mode 8 = 4-bit with a 16x16 CLUT (16 palettes of 16 colours), pixel header w=64 halfwords -> 256 px wide, 256 high.
+# Each face picks its palette through bits 4-7 of its attr word. Exported as aNNN.png (256x256 greyscale, value = colour index) +
+# aNNN.pal.png (16 wide x 16 rows RGBA, colour 0 transparent); the viewer composes the coloured page for the cluts a stage uses.
 atl = []
 for s in range(n):
     o = s * S
     if struct.unpack_from('<II', d, o)[0] == 16 and struct.unpack_from('<I', d, o + 4)[0] in (8, 9) and struct.unpack_from('<I', d, o + 8)[0] == 524:
         A, B = struct.unpack_from('<HH', d, o + 524 + 16)
-        if (2 * A, B) == (128, 256): atl.append(s)
+        if (2 * A, B) == (128, 256) and struct.unpack_from('<I', d, o + 4)[0] == 8: atl.append(s)
 richness = []
 for k, s in enumerate(atl):
     o = s * S; P = o + 524 + 8
-    A, B = struct.unpack_from('<HH', d, P + 8)
-    pix = d[P + 12:P + 12 + 128 * 256]
-    pal = [struct.unpack_from('<H', d, o + 0x14 + 2 * i)[0] for i in range(256)]
-    im = Image.new('RGBA', (128, 256)); px = im.load()
-    for y in range(256):
-        for x in range(128):
-            v = pal[pix[y * 128 + x]]
-            px[x, y] = (0, 0, 0, 0) if v == 0 else ((v & 31) * 255 // 31, ((v >> 5) & 31) * 255 // 31, ((v >> 10) & 31) * 255 // 31, 255)
-    im.save(os.path.join(out, f'a{k:03d}.png'))
-    richness.append(len(set(pix[:128 * 256])))
+    raw = d[P + 12:P + 12 + 128 * 256]
+    idx = bytearray(256 * 256)
+    for i, byte in enumerate(raw):
+        idx[2 * i] = byte & 15; idx[2 * i + 1] = byte >> 4
+    Image.frombytes('L', (256, 256), bytes(idx)).save(os.path.join(out, f'a{k:03d}.png'))
+    pal = Image.new('RGBA', (16, 16)); pp = pal.load()
+    for r in range(16):
+        for c in range(16):
+            v = struct.unpack_from('<H', d, o + 0x14 + 2 * (r * 16 + c))[0]
+            pp[c, r] = (0, 0, 0, 0) if v == 0 else ((v & 31) * 255 // 31, ((v >> 5) & 31) * 255 // 31, ((v >> 10) & 31) * 255 // 31, 255)
+    pal.save(os.path.join(out, f'a{k:03d}.pal.png'))
+    richness.append(len(set(idx)) * 1000 + len(set(raw)))
 
 stages, cur = [], None
 for s in range(n):

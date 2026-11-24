@@ -44,7 +44,7 @@ export class PlayMode {
   private hero?: AnimatedModel;
   private tris: Tri[] = [];
   private readonly pos = new THREE.Vector3();
-  private heading = 0;
+  private heading = Math.PI; // movement direction; models face -z at rotation 0, so the visual yaw adds PI
   private camYaw = 0;
   private moving = false;
   private curAnim = -1;
@@ -126,8 +126,7 @@ export class PlayMode {
     this.scene.add(st.root);
     this.scene.add(h.root);
     await st.addProps();
-    const atlas = st.data.atlas;
-    await st.setAtlas(`assets/stages/a${String(atlas).padStart(3, '0')}.png`);
+    await st.loadTextures(null);
     await h.setTexture(`assets/hero/h${String(heroIndex).padStart(2, '0')}_c0.png`);
     // collision triangles in world space; keep up-facing ones
     const c = st.data.collision;
@@ -155,7 +154,8 @@ export class PlayMode {
     this.doorPos = door && door.flag === -126 && door.kind === -1 ? { x: door.x, z: -door.z } : null;
     if (door) {
       // entity (x, y up, z) in PS1 space -> world (x, y, -z); nudge towards the room centre if the door is off the floor
-      for (const step of [0, 60, 120, 200]) {
+      // entity 0 is a door in rooms but a prop (pedestal/crystal) in some dungeons: do not spawn inside it
+      for (const step of this.doorPos ? [0, 60, 120, 200] : [160, 220, 280, 120, 0]) {
         const dx = this.pos.x - door.x, dz = this.pos.z + door.z, len = Math.hypot(dx, dz) || 1;
         const px = door.x + (dx / len) * step, pz = -door.z + (dz / len) * step;
         const fy = this.floorAt(px, pz, door.y);
@@ -179,7 +179,7 @@ export class PlayMode {
   private async spawnEnemies(st: StageView): Promise<void> {
     const models = st.data.monsters ?? [];
     const ents = st.data.entities ?? [];
-    this.solids = ents.filter((e, i) => i > 0 && e.flag === -254).map((e) => ({ x: e.x, z: -e.z, r: 55 }));
+    this.solids = st.propSolids.map((q) => ({ x: q.x, z: -q.z, r: q.r }));
     if (!models.length) return;
     const spots: { x: number; z: number; y: number; model: number; npc: boolean }[] = [];
     const isRoom = ents.some((e) => e.flag === -254);
@@ -256,7 +256,7 @@ export class PlayMode {
       if (en.lock <= 0) this.setEnemyAnim(en, moving ? 1 : 0);
       m.update(dt);
       m.root.position.set(en.x, en.y, en.z);
-      m.root.rotation.y = Math.atan2(dx, dz);
+      m.root.rotation.y = Math.atan2(dx, dz) + Math.PI;
     }
     // enemies push each other apart so they do not stack on one spot
     for (let i = 0; i < this.enemies.length; i++) {
@@ -408,7 +408,7 @@ export class PlayMode {
     h.update(dt);
     h.root.position.copy(this.pos);
     if (this.action?.jump) h.root.position.y += Math.sin(Math.PI * (1 - this.action.left / this.action.total)) * 70;
-    h.root.rotation.y = this.heading;
+    h.root.rotation.y = this.heading + Math.PI;
     const d = 380, pitch = 0.55;
     this.camera.position.set(
       this.pos.x + Math.sin(this.camYaw) * d * Math.cos(pitch),

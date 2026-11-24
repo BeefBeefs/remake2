@@ -150,3 +150,12 @@ After the `- Name -` banner of a stage descriptor comes a byte stream mixing com
 `1f d0 <id> 0c "Speaker:\r text" 0f` (e.g. stage 1: `The expert:\rHo, it's a bunch of newbies!`), `\r` = line break, `0f` = end of box,
 `0a <n> ...` / `07 03 <n> ...` are commands (give item / set flag / branch – unverified). Entity `link` values (door 98 in stage 1, 133 in stage 2,
 NPC 57/81/52…) are therefore **offsets/ids into this stream, not stage numbers**; the door-to-stage mapping must come from decoding it.
+
+## Level atlases are 4-bit with 16 palettes (corrects earlier notes)
+
+Atlas records (`u32 16, 8, 524`) are TIM-style **mode 8 = 4-bit CLUT**: the CLUT header is 16 x 16 (= **16 palettes of 16 colours**, 16-bit PS1 colours at +0x14,
+row r = palette r) and the pixel header's `w = 64` halfwords means **256 x 256 pixels**, two pixels per byte (low nibble = left pixel). Earlier decoding as
+"128 x 256, 8-bit" produced the noisy colours. Per face: palette = `(attr >> 4) & 15`; atlas = the stage's atlas list entry `pg & 31` (bits 5-7 of `pg`
+are flags, e.g. 32/64/128 = semi-transparent/other); verified on stage 10 (pg 0 -> first listed atlas, pg 1 -> second; later listed atlases hold the minimap and effect sprites).
+Palette 0 of a page is usually a default/garbage palette; real tiles use rows 1..14.
+Hero models face **-z** in model space (verified by rendering anim 0 from four sides), so their world yaw needs +PI.

@@ -50,7 +50,13 @@ fetch('assets/stages/index.json')
     }),
   )
   .catch(() => undefined);
-const atlasSel = mk(272, (i) => `atlas ${i}`);
+const atlasSel = mk(271, (i) => `atlas ${i}`);
+{
+  const auto = document.createElement('option');
+  auto.value = 'auto';
+  auto.text = 'auto (per face)';
+  atlasSel.prepend(auto);
+}
 atlasSel.style.display = 'none';
 let stage: StageView | undefined;
 const animSel = document.createElement('select');
@@ -135,13 +141,13 @@ async function showStage(k: number): Promise<void> {
   // Atlases listed in the stage's resource descriptor are marked; which one a face uses is not decoded yet (faces
   // probably pick by page bits), so try the others if it looks noisy.
   const listed = new Set(st.data.atlases ?? []);
-  for (let i = 0; i < atlasSel.options.length; i++) atlasSel.options[i].text = `atlas ${i}${listed.has(i) ? ' ★' : ''}`;
-  atlasSel.value = String(st.data.atlas);
-  await st.setAtlas(`assets/stages/a${String(atlasSel.value).padStart(3, '0')}.png`);
+  for (let i = 1; i < atlasSel.options.length; i++) atlasSel.options[i].text = `atlas ${i - 1}${listed.has(i - 1) ? ' ★' : ''}`;
+  atlasSel.value = 'auto';
+  await st.loadTextures(null);
   animSel.replaceChildren();
   info.textContent = `${st.data.meshes.length} room meshes, ${st.triangles} triangles, ${st.propCount} props, ${st.markerCount} markers`;
 }
-atlasSel.onchange = () => void stage?.setAtlas(`assets/stages/a${String(atlasSel.value).padStart(3, '0')}.png`);
+atlasSel.onchange = () => void stage?.loadTextures(atlasSel.value === 'auto' ? null : Number(atlasSel.value));
 
 async function showHero(h: number): Promise<void> {
   const isStage = h >= STAGE0;
