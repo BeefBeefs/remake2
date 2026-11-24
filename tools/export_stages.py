@@ -125,6 +125,16 @@ want = {st['collision']['sector']: st for st in stages}
 for i, tl, ms in descs:
     st = want.get(ms[0][0]) if ms else None
     if st is not None and 'texList' not in st: st['texList'] = tl
+# Fallback (stage 25): the descriptor has no sentinel word; the texture pairs directly precede the first mesh (= collision) pair.
+for st in stages:
+    if 'texList' in st: continue
+    sec = st['collision']['sector']
+    for i, v in enumerate(words):
+        if v != sec or not 1000 < words[i + 1] < 400000: continue
+        p, tl = i - 1, []
+        while p >= 1 and 0 < words[p - 1] < 22600 and 1000 < words[p] < 100000 and len(tl) < 14: tl.append([words[p - 1], words[p]]); p -= 2
+        if len(tl) >= 3 and any(z == 33312 for a, z in tl):
+            st['texList'] = tl[::-1]; print('texList fallback for stage at sector', sec, st['texList']); break
 # Stage names: a ' - Name -' string (Pascal-style, preceded by a length byte) sits within ~0x900 bytes after the descriptor
 import re
 for i, v in enumerate(words):
