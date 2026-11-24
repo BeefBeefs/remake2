@@ -19,6 +19,18 @@ later. Newest entry first; each work session appends here.
 
 
 ### Turn 8 (continues; notes after each step)
+**Step F – "v ≥ 64" faces were valid triangles with a dummy UV slot (viewer fixed)**
+- ✅ 10 % of faces (722 of 7,303 main rows) had UVs outside the 64-row page and *none* of them was rectangle-like, whereas 33 % of the others
+  are. Cause: **triangles are stored as quad rows with a repeated vertex index, and the repeated slot carries the dummy UV (2,123)**
+  (e.g. vertex idx `(9,8,8,10)`, uv slot 2 = `(2,123)`). My old triangulation used the dummy slot's UV. Correct rule: take the first slot
+  of every distinct vertex index (`(a,b,b,c)` → slots 0,1,3). The earlier "fan from one corner" UV lines were this dummy.
+- ✅ Applied in `src/model/modelViewer.ts` and in my software renderer; wizard/warrior/elf/knight textures are cleaner
+  (`docs/heroes_sample.png`, hero 0/3/8/15).
+- ✅ The 16 × 2592 B resource entries are 256×8 icon strips (8 tiles of 32×8), *not* a second model texture page; the 8 × 6400 B entries start with the ASCII
+  text "Normal Sword" (weapon records – not parsed yet).
+- Not verified: browser run of the viewer; rows with three distinct indices but 4-slot order assumptions (winding/orientation of triangles
+  is unchecked, the viewer uses DoubleSide).
+
 **Step E – face data layout SOLVED (mostly): the "R1" rows belong to the previous part**
 - ✅ Evidence chain: (1) 66 % of out-of-range faces fit entirely inside the *previous* part's vertex count and 65 % of their
   true quads are planar there (control: own valid faces 56 %; part two back: 8 hits); (2) re-assigning rows as
@@ -117,7 +129,7 @@ One-time manual step: repo Settings → Pages → Source = "GitHub Actions". Not
   out-of-range indices; R1 is probably seam/joint geometry referencing neighbouring parts' vertices (unresolved).
 - ✅ **Hierarchy table decoded**: `[-1,-1] + 59 bone parents + 27 part→bone indices` (2+59+27 = 88 = A+2).
 
-**Next**: faces with v ≥ 64 (second texture page?), name the animations, monsters/NPCs, level data.
+**Next**: weapon records ("Normal Sword" blobs), animation names, monsters/NPCs, level data.
 
 ## Turn 5 – 2026-11-24
 **Done**

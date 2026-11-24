@@ -52,13 +52,20 @@ export class AnimatedModel {
       for (const f of part.faces) {
         this.totalFaces++;
         const idx = f.v;
-        if (idx.some((k) => k >= part.verts.length) || f.uv.some((c) => c[1] >= this.texH)) {
+        if (idx.some((k) => k >= part.verts.length)) {
           this.skippedFaces++;
           continue;
         }
-        const tris = idx[3] === idx[2] || idx[3] === idx[0] ? [[0, 1, 2]] : [[0, 1, 2], [0, 2, 3]];
+        // Triangles are stored as quad rows with a repeated vertex index; the repeated slot carries a dummy UV
+        // (2,123), so use the first slot of every distinct index: (a,b,b,c) -> slots 0,1,3.
+        const slots: number[] = [];
+        for (let k = 0; k < 4; k++) if (!slots.some((q) => idx[q] === idx[k])) slots.push(k);
+        const tris = slots.length === 4 ? [[0, 1, 2], [0, 2, 3]] : slots.length === 3 ? [slots] : [];
         for (const t of tris) {
-          if (new Set(t.map((k) => idx[k])).size < 3) continue; // degenerate
+          if (t.some((k) => f.uv[k][1] >= this.texH)) {
+            this.skippedFaces++;
+            continue;
+          }
           for (const k of t) {
             pos.push(...part.verts[idx[k]]);
             uvs.push((f.uv[k][0] + 0.5) / this.texW, (f.uv[k][1] + 0.5) / this.texH);
