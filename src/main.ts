@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { SndBanks } from './audio/sndBank';
 import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
+import { loadStage, StageView } from './model/stageViewer';
 
 // Placeholder scene: proves the build/asset pipeline. Real game systems land in later milestones
 // (see PROGRESS.md).
@@ -31,12 +32,17 @@ const mk = (n: number, label: (i: number) => string) => {
   for (let i = 0; i < n; i++) sel.add(new Option(label(i), String(i)));
   return sel;
 };
-// 0-15 = heroes, 16.. = monsters (78 anim<->mesh pairs; texture group is a guess, pick another with "tex")
-const heroSel = mk(16 + 78, (i) => (i < 16 ? `hero ${i}` : `monster ${i - 16}`));
+// 0-15 heroes, 16-112 the 97 monsters of the model table (data/model_table.json), 113+ the 96 stages
+// (room geometry, tools/export_stages.py)
+const STAGE0 = 16 + 97;
+const heroSel = mk(STAGE0 + 96, (i) => (i < 16 ? `hero ${i}` : i < STAGE0 ? `monster ${i - 16}` : `stage ${i - STAGE0}`));
+const atlasSel = mk(272, (i) => `atlas ${i}`);
+atlasSel.style.display = 'none';
+let stage: StageView | undefined;
 const animSel = document.createElement('select');
 const palSel = mk(4, (i) => `palette ${i}`);
 const info = document.createElement('div');
-hud?.append(document.createElement('hr'), heroSel, animSel, palSel, info);
+hud?.append(document.createElement('hr'), heroSel, animSel, palSel, atlasSel, info);
 
 const HERO_ANIMS = ['idle', 'walk', 'run', 'hit', 'attack'];
 const MONSTER_ANIMS = ['idle', 'walk', 'attack', 'hit'];
@@ -48,7 +54,34 @@ const texUrl = () =>
 const describe = (m: AnimatedModel) =>
   `${m.data.parts.length} parts, ${m.frameCount} frames, ${m.skippedFaces}/${m.totalFaces} faces skipped`;
 
+async function showStage(k: number): Promise<void> {
+  info.textContent = 'loading…';
+  const st = await loadStage(k);
+  if (model) {
+    scene.remove(model.root);
+    model.dispose();
+    model = undefined;
+  }
+  stage?.dispose();
+  stage = st;
+  scene.add(st.root);
+  atlasSel.value = String(k < 6 ? 4 : st.data.atlas); // atlas pairing is a guess; pick another if the walls look wrong
+  await st.setAtlas(`assets/stages/a${String(atlasSel.value).padStart(3, '0')}.png`);
+  animSel.replaceChildren();
+  info.textContent = `${st.data.meshes.length} room meshes, ${st.triangles} triangles`;
+}
+atlasSel.onchange = () => void stage?.setAtlas(`assets/stages/a${String(atlasSel.value).padStart(3, '0')}.png`);
+
 async function showHero(h: number): Promise<void> {
+  const isStage = h >= STAGE0;
+  atlasSel.style.display = isStage ? '' : 'none';
+  palSel.style.display = isStage ? 'none' : '';
+  animSel.style.display = isStage ? 'none' : '';
+  if (isStage) return showStage(h - STAGE0);
+  if (stage) {
+    stage.dispose();
+    stage = undefined;
+  }
   info.textContent = 'loading…';
   const m = h < 16 ? await loadHero(h) : await loadMonster(h - 16);
   if (model) {
@@ -92,6 +125,7 @@ renderer.setAnimationLoop((t: number) => {
     model.update(dt);
     model.root.rotation.y = t / 3000;
   }
+  if (stage) stage.root.rotation.y = t / 6000;
   renderer.render(scene, camera);
 });
 

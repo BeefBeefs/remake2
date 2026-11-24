@@ -4,6 +4,18 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step L – ROOM GEOMETRY decoded: 96 stages (walls/floors) in the viewer**
+- ✅ Blobs 5155 / 5158 / 5162 are **room meshes**: header words `V|N<<16`, `F`, vertex table @0x40 (`i16 x,y,z,pad`), normals, then faces.
+  5158 = walls, 5162 = floor (32-byte face rows with UVs into a **128×256 atlas**), 5155 = collision (16-byte rows, no UV).
+  Rendered correctly with atlas 4987 (green wallpaper room) and 5004 (stone variant); 5138 is a plain colour page. Formats: docs/FORMATS.md.
+- ✅ A whole-file signature scan finds **562 room-mesh records = 96 stages** (collision record + 1–8 textured records each) and
+  272 atlases. `tools/export_stages.py` → `public/assets/stages/stageNN.json` (16 MB), `aNNN.png`, `index.json`.
+- Viewer: entries 113–208 = stages (rotating, auto-scaled), with an "atlas" dropdown (the stage→atlas pairing is a guess:
+  stages 0–5 default to atlas 4 = sector 4987, others to a nearby-preceding one; pick another if textures look wrong).
+- 🐞 Fixed: the previous commit's monster dropdown still had only 78 entries (an edit had not applied); it now lists all 97.
+- Not verified: stage names/numbering, which atlas each stage uses, object placement (props pack 5165 etc. → positions), spawn points,
+  door/exit links, what the u32/u16 tables at `w12`/`w13` are (collision grid? visibility lists?).
+
 **Step K – level data survey: texture atlases and prop meshes found (levels live in sectors 5072–22473)**
 - 272 packs (sectors 4026–22473) are still unclassified; 5231 (16 × 640 B, e.g. a "Genocide" record) is another item table.
 - ✅ Level resources are listed as **(sector,size) pairs inside stage/script data** (e.g. around file offset 0xad9cf0: 4987, 5004, 918, 5138,

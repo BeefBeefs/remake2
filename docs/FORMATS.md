@@ -115,3 +115,20 @@ subheader inside the slice). Record i, starting at `base+offs[i]+h0`:
 N normals @+w8-4 | F face rows @+w9`. Rows run on across the slice boundary until the next record's subheader (the rows at the start of
 a slice are the tail of the previous part). Row (16 B): `u8 normal_idx[4]` (same value x4 = flat normal), `u8 uv[4][2]`, `u8 vertex_idx[4]`
 (repeated index = triangle). Slices without a subheader hold extra rows that index the previous part's vertices.
+
+
+## Room meshes (stages)
+
+Found by scanning every 2048-byte sector for the header signature `u32[8]==0x40`, `u32[9]==0x40+8V`, `u32[10]==u32[9]+8N`,
+`u16[4]==V` (562 hits; `tools/export_stages.py`). Header (u32 words): `w0 = V | N<<16`, `w1 = F | x<<16`, `w8 = 0x40` (vertex
+table), `w9` (normal table), `w10` (face table); `w12`/`w13` point to further tables (lists of u32 offsets / u16 index lists
+terminated by 0xffff, role unknown). Vertices are `i16 x,y,z,pad` (8 B), normals 8 B.
+- **Textured room mesh** (466 records; walls, floors, ceilings…): `w12 == 0 && w13 > w10`; face rows are **32 B**:
+  `u16 vertex[4]`, `u16 normal[4]`, `u8 uv[4][2]` (atlas pixels, atlas is **128×256**), `u32 flags` (0/1), `u32 attr`
+  (e.g. 0x2c000070 / 0x3c000020: low byte probably a tile offset or material; not needed to texture correctly). Triangles repeat a vertex index
+  (use the distinct-index rule of character meshes).
+- **Collision mesh** (96 records, one per stage): face rows are **16 B**: `u16 vertex[4]` (three used, 4th = 0) + 8 B (zeros / 3).
+  A stage = a collision record followed by its textured records (2–8 each) in file order.
+- Tile atlases: 272 records of 128×256 with 1 CLUT (psize 524), e.g. sectors 3368, 3403, 3420, 4109, 4987, 5004, 5021, 5138 …
+  Which atlas a stage uses is listed in the stage's (sector,size) resource block (e.g. 4987, 5004, 918, 5138 for the stage at 5155);
+  the pairing is still guessed by the viewer (dropdown).
