@@ -106,4 +106,4 @@ some image-data noise remains near sector 663).
 BLAZE.ALL holds `(u32 sector, u32 size)` pairs at file offset 0x906b88 (copies at 0x907388, …; see `data/resource_table.json`):
 5 misc textures, then 16 hero textures (sectors 120..270), 16×2592 B blobs, 8×6400 B blobs, 16 animation packs, 16 mesh packs.
 Entry *k* of each list belongs to hero *k* (hero 0 = knight: texture 120, anim pack 3501, mesh pack 3521).
-Hero texture records have 8 CLUTs of 256 colours (palette block 2060 B) and a 256x64 image; model UVs index that image directly.
+Hero texture records have 4 CLUTs of 256 colours (palette block 2048 B at +0x14, psize 2060) and a 256x64 image; model UVs index that image directly.

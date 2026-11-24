@@ -23,12 +23,17 @@ scene.add(sun);
 camera.position.set(0, 70, 260);
 camera.lookAt(0, 55, 0);
 
-// Animated model viewer (pack 3521 = knight; flat-shaded, untextured until the texture link is found).
+// Animated model viewer (pack 3521 = knight; textured with hero texture 120, 4 palettes).
 let model: AnimatedModel | undefined;
 loadModel('assets/models/pack_3521.json')
   .then((m) => {
     model = m;
     scene.add(m.root);
+    const sel = document.createElement('select');
+    for (let c = 0; c < 4; c++) sel.add(new Option(`palette ${c}`, String(c)));
+    sel.onchange = () => void m.setTexture(`assets/hero/h00_c${sel.value}.png`);
+    document.getElementById('hud')?.append(document.createElement('br'), sel);
+    void m.setTexture('assets/hero/h00_c0.png');
     const st = document.getElementById('status');
     if (st) st.textContent += ` | model: ${m.data.parts.length} parts, ${m.frameCount} frames, ${m.skippedFaces}/${m.totalFaces} faces skipped`;
   })

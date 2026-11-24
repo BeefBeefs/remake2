@@ -9,14 +9,24 @@ later. Newest entry first; each work session appends here.
   `(sector, size)` u32 pairs. After 5 misc textures it lists, in parallel order: **16 hero textures** (sectors 120,130,…,270,
   18464 B each), 16 small blobs (3437…, 2592 B), 8 blobs (3469…, 6400 B), **16 animation packs** (3501, 1030, 1046, …, 1271)
   and **16 mesh packs** (3521, 2634, 2641, …, 2753). Entry *k* of each list belongs to hero *k*.
-  → knight (anim 3501 / mesh 3521) uses **texture 120** (256×64, 8 CLUTs of 256 colours: psize 2060 = 12 + 8·512).
+  → knight (anim 3501 / mesh 3521) uses **texture 120** (256×64, 4 CLUTs of 256 colours: psize 2060 = 12 + 4·512).
 - ✅ Verified visually: the knight's UV rectangles (v<64) line up with the eye, helmet, chest, arms and legs pieces in tex 120
   (`/tmp` overlay; recreate with tools/ once added).
 - 💡 The 48 faces with v ≥ 64 are the ones that produce long fan-shaped UV lines from one corner → the "R1" rows are
   **not valid textured quads**. This explains their out-of-range vertex indices: they are probably a different structure.
-- Not verified: which of the 8 CLUTs is the default skin; meaning of the 16×2592 and 8×6400 blobs (maybe equipment/palettes);
+- Not verified: which of the 4 CLUTs (red/green/grey-blue/gold colour schemes) is the default; meaning of the 16×2592 and 8×6400 blobs (maybe equipment/palettes);
   other 15 heroes not yet checked.
 
+
+**Step C – textured knight (software-verified, browser run pending)**
+- ✅ `tools/export_hero_tex.py` → `public/assets/hero/h<k>_c<j>.png` (16 heroes × 4 CLUTs; the 4 CLUTs are colour schemes:
+  red, green, grey-blue, gold). PS1 colour 0 = transparent.
+- ✅ Viewer now textures every part (UV = (u+.5)/256, (v+.5)/64, nearest filter, alphaTest) with a palette dropdown in the HUD
+  (`src/model/modelViewer.ts` `setTexture`, `src/main.ts`).
+- ✅ Verified with a Python software rasteriser (`docs/knight_textured.png`, frame 0, seen from behind because of my
+  test renderer's depth sign): hair, red tunic, skin, belt, gold/grey armour all land on the right parts → UV mapping and
+  triangle split are right. Face/front pieces are absent: they are among the skipped R1 faces.
+- Not verified: in the real viewer (needs your phone/browser after the Pages deploy); other 15 heroes' meshes not exported yet.
 
 **Step B – mesh layout corrected, R1 rows still open**
 - ✅ Corrected again (verified by data, not guesses): **V = (w8-w7)/8 vertices at `h+w7-4`** (= low u16 of subheader word 1; slot
@@ -71,7 +81,7 @@ One-time manual step: repo Settings → Pages → Source = "GitHub Actions". Not
   out-of-range indices; R1 is probably seam/joint geometry referencing neighbouring parts' vertices (unresolved).
 - ✅ **Hierarchy table decoded**: `[-1,-1] + 59 bone parents + 27 part→bone indices` (2+59+27 = 88 = A+2).
 
-**Next**: find the model→texture table, resolve the R1 vertex indices, check the viewer in a browser, other animation blobs.
+**Next**: resolve the R1 rows (front/face pieces), export all 16 heroes with a selector, other animation blobs (walk/attack).
 
 ## Turn 5 – 2026-11-24
 **Done**

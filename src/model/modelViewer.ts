@@ -21,7 +21,7 @@ const ANGLE = (Math.PI * 2) / 4096;
 /**
  * Skeleton + flat-shaded mesh for one animated model. PS1 space is Y-down, so the whole model hangs
  * under a root rotated by PI around X. Pose rotation order is X*Y*Z, which is three.js Euler order 'XYZ'.
- * Faces whose vertex indices fall outside the part's own vertex list are skipped for now
+ * Textured with a hero CLUT PNG (tools/export_hero_tex.py). Faces whose vertex indices fall outside the part's own vertex list are skipped for now
  * (open problem in PROGRESS.md: the first 7 face rows of every part).
  */
 export class AnimatedModel {
@@ -32,6 +32,11 @@ export class AnimatedModel {
   fps = 8;
   skippedFaces = 0;
   totalFaces = 0;
+  /** Shared by every part; swap `material.map` to change the CLUT (colour scheme). */
+  readonly material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, alphaTest: 0.5, color: 0xffffff });
+  /** Texture page size in pixels (hero textures are 256 x 64). */
+  texW = 256;
+  texH = 64;
 
   constructor(readonly data: ModelJson) {
     const inner = new THREE.Group();
@@ -46,8 +51,9 @@ export class AnimatedModel {
       else this.bones[p].add(this.bones[b]);
     }
 
-    data.parts.forEach((part, i) => {
+    data.parts.forEach((part) => {
       const pos: number[] = [];
+      const uvs: number[] = [];
       for (const f of part.faces) {
         this.totalFaces++;
         const idx = f.v;
@@ -55,21 +61,40 @@ export class AnimatedModel {
           this.skippedFaces++;
           continue;
         }
+        // UVs beyond the 64-row page belong to the unresolved "R1" rows; treat them as bad faces.
+        if (f.uv.some((c) => c[1] >= this.texH)) {
+          this.skippedFaces++;
+          continue;
+        }
         const tris = idx[3] === idx[2] || idx[3] === idx[0] ? [[0, 1, 2]] : [[0, 1, 2], [0, 2, 3]];
         for (const t of tris) {
           if (new Set(t.map((k) => idx[k])).size < 3) continue; // degenerate
-          for (const k of t) pos.push(...part.verts[idx[k]]);
+          for (const k of t) {
+            pos.push(...part.verts[idx[k]]);
+            uvs.push((f.uv[k][0] + 0.5) / this.texW, (f.uv[k][1] + 0.5) / this.texH);
+          }
         }
       }
       if (!pos.length) return;
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-      g.computeVertexNormals();
-      const color = new THREE.Color().setHSL((i * 0.137) % 1, 0.45, 0.55);
-      const mesh = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color, side: THREE.DoubleSide, flatShading: true }));
+      g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      const mesh = new THREE.Mesh(g, this.material);
       this.bones[part.bone]?.add(mesh);
     });
     this.setFrame(0);
+  }
+
+  /** Load one CLUT image (PNG, 256 x 64, colour 0 transparent) and apply it to the whole model. */
+  async setTexture(url: string): Promise<void> {
+    const tex = await new THREE.TextureLoader().loadAsync(url);
+    tex.flipY = false; // UVs are written top-down (PS1 convention)
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.NearestFilter;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    this.material.map?.dispose();
+    this.material.map = tex;
+    this.material.needsUpdate = true;
   }
 
   get frameCount(): number {
