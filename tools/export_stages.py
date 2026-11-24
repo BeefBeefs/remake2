@@ -61,13 +61,30 @@ for s in range(n):
     elif cur is not None:
         cur['meshes'].append(r)
 import bisect
+# Stage resource descriptors: ... (sector,size) texture pairs | sentinel word 1601110016, x | (sector,size) mesh pairs ...
+# The first mesh pair is the stage's collision record, so find that sector as a u32 and walk back to the sentinel.
+words = struct.unpack('<%dI' % (len(d) // 4), d[:len(d) // 4 * 4])
+SENT = 1601110016
+want = {st['collision']['sector']: st for st in stages}
+for i, v in enumerate(words):
+    st = want.get(v)
+    if st is None or 'texList' in st: continue
+    for j in range(i - 1, max(0, i - 12), -1):
+        if words[j] == SENT:
+            p, tl = j - 1, []
+            while p >= 1 and 0 < words[p - 1] < 22600 and words[p] in (33312, 16928, 12832, 18464): tl.append([words[p - 1], words[p]]); p -= 2
+            st['texList'] = tl[::-1]
+            break
+atlas_index = {s: k for k, s in enumerate(atl)}
 total = 0
 for k, st in enumerate(stages):
     i = bisect.bisect(atl, st['collision']['sector']) - 1
     st['atlas'] = max(0, i - 1)        # guess: the 128x256 atlas before the last one preceding the stage
     st['id'] = k
+    st['atlases'] = [atlas_index[a] for a, z in st.get('texList', []) if z == 33312 and a in atlas_index]
+    if st['atlases']: st['atlas'] = st['atlases'][0]
     p = os.path.join(out, f'stage{k:02d}.json')
     json.dump(st, open(p, 'w'), separators=(',', ':')); total += os.path.getsize(p)
-json.dump({'atlasSectors': atl, 'stages': [{'sector': s['collision']['sector'], 'meshes': len(s['meshes']), 'atlas': s['atlas']} for s in stages]},
+json.dump({'atlasSectors': atl, 'stages': [{'sector': s['collision']['sector'], 'meshes': len(s['meshes']), 'atlas': s['atlas'], 'atlases': s['atlases'], 'texList': s.get('texList')} for s in stages]},
           open(os.path.join(out, 'index.json'), 'w'))
 print(len(atl), 'atlases,', len(stages), 'stages, json KB', total // 1024)

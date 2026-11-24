@@ -4,6 +4,8 @@ import * as THREE from 'three';
 export interface StageJson {
   id: number;
   atlas: number;
+  /** 128x256 atlases listed in the stage's resource descriptor (indices into assets/stages/aNNN.png). */
+  atlases?: number[];
   collision: { sector: number; verts: number[][]; tris: number[][] };
   meshes: { sector: number; verts: number[][]; faces: { v: number[]; uv: number[][] }[] }[];
 }

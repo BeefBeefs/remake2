@@ -4,6 +4,18 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step M – stage resource descriptors parsed (atlas lists per stage)**
+- ✅ Each stage has a descriptor of `(sector,size)` u32 pairs: **texture pairs** (33312 B = 128×256 atlas, 16928 B = 256×64 texture,
+  12832 …) | sentinel `1601110016, x` | **mesh pairs** (collision, walls, floors, …, props pack, text pack) | `0xffffffff, 65410`.
+  Example (stage 1 / sector 5155): textures 4987, 5004, 918, 5138; meshes 5155, 5158, 5162, props 5165, text 5079. Located by finding the
+  collision sector as a u32 and walking back to the sentinel (62 of 96 stages found this way; others have no copy near a sentinel).
+  Stage texture lists also contain monster textures (e.g. 303), so monsters are streamed per stage.
+- Observed on busy stages (6–8): face UVs use u up to 255 and attribute byte (bits 16–23 of the u32 at +28) is 0/1, so faces probably
+  address a **256-wide page = two 128-wide atlases side by side** and/or pick between atlas pairs; with a single atlas those stages
+  render as noise. Atlases 5840 / 5857 look noisy even alone (maybe a second CLUT/other depth) – undecoded.
+- Viewer: stage atlas dropdown marks the listed atlases with ★ and starts on the first one.
+- Next: decode the page rule (render stage 6 with [A|B] pages and attr bit), parse collision tris into walkable data, place props.
+
 **Step L – ROOM GEOMETRY decoded: 96 stages (walls/floors) in the viewer**
 - ✅ Blobs 5155 / 5158 / 5162 are **room meshes**: header words `V|N<<16`, `F`, vertex table @0x40 (`i16 x,y,z,pad`), normals, then faces.
   5158 = walls, 5162 = floor (32-byte face rows with UVs into a **128×256 atlas**), 5155 = collision (16-byte rows, no UV).
