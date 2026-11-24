@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { quadOrder } from './geom';
 
 /** JSON written by tools/export_heroes.py (formats: docs/FORMATS.md). */
 export interface HeroJson {
@@ -234,22 +235,3 @@ export async function loadHero(hero: number): Promise<AnimatedModel> {
   return new AnimatedModel((await res.json()) as HeroJson);
 }
 
-/** Slot order that traces a quad's outline as a convex loop: (0,1,2,3), else (0,1,3,2), else (0,2,1,3); falls back to the stored order. */
-function quadOrder(p: number[][]): number[] {
-  const sub = (a: number[], b: number[]): number[] => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-  const cross = (a: number[], b: number[]): number[] => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-  const dot = (a: number[], b: number[]): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-  const convex = (o: number[]): boolean | null => {
-    let n = cross(sub(p[o[1]], p[o[0]]), sub(p[o[2]], p[o[0]]));
-    if (Math.hypot(n[0], n[1], n[2]) < 1e-9) n = cross(sub(p[o[2]], p[o[1]]), sub(p[o[3]], p[o[1]]));
-    if (Math.hypot(n[0], n[1], n[2]) < 1e-9) return null;
-    let pos = 0, neg = 0;
-    for (let i = 0; i < 4; i++) {
-      const c = dot(cross(sub(p[o[(i + 1) % 4]], p[o[i]]), sub(p[o[(i + 2) % 4]], p[o[(i + 1) % 4]])), n);
-      if (c >= 0) pos++; if (c <= 0) neg++;
-    }
-    return pos === 4 || neg === 4;
-  };
-  for (const o of [[0, 1, 2, 3], [0, 1, 3, 2], [0, 2, 1, 3]]) if (convex(o)) return o;
-  return [0, 1, 2, 3];
-}

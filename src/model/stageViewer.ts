@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { coplanarRanks, quadOrder } from './geom';
 
 /** JSON written by tools/export_stages.py (formats: docs/FORMATS.md "Room meshes"). */
 export interface StageJson {
@@ -55,6 +56,10 @@ export class StageView {
   /** Walls are single-sided in the game (the near wall of a room vanishes when seen from outside); in play mode they are drawn front-side only. */
   readonly wallMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, alphaTest: 0.5 });
   triangles = 0;
+  /** Extra materials for triangles lying over other coplanar ones: depth-offset layers 1..3 (floor, wall) so decals stop z-fighting. */
+  private readonly layerMats: THREE.MeshBasicMaterial[] = [];
+  /** coplanar overlapping triangles found / total */
+  coplanar = 0;
   propCount = 0;
   /** Collision circles of the placed props (entity x, z in PS1 space, radius from the prop mesh size; flat decals are skipped). */
   readonly propSolids: { x: number; z: number; r: number }[] = [];
@@ -80,40 +85,43 @@ export class StageView {
     for (const m of data.meshes) for (const f of m.faces) if (((f.pg ?? 0) & 31) === 0) cc.set(f.clut ?? 0, (cc.get(f.clut ?? 0) ?? 0) + 1);
     this.propClut = [...cc.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 1;
     for (const m of data.meshes) {
-      const pos: number[] = [], uvs: number[] = [];
-      const posW: number[] = [], uvsW: number[] = []; // vertical faces (walls)
+      // 1. every triangle of the mesh with its raw UVs; quads use the slot order that is a convex outline (a few are strip-ordered)
+      const T: { p: number[][]; uv: number[][]; slot: number; wall: boolean }[] = [];
       for (const f of m.faces) {
         const idx = f.v;
         if (idx.some((k) => k >= m.verts.length)) continue;
         const slots: number[] = [];
         for (let k = 0; k < 4; k++) if (!slots.some((q) => idx[q] === idx[k])) slots.push(k);
-        const tris = slots.length === 4 ? [[0, 1, 2], [0, 2, 3]] : slots.length === 3 ? [slots] : [];
+        let tris: number[][] = slots.length === 3 ? [slots] : [];
+        if (slots.length === 4) { const o = quadOrder(idx.map((k) => m.verts[k])); tris = [[o[0], o[1], o[2]], [o[0], o[2], o[3]]]; }
         // hub rooms and the inn (quest 0): the room faces all say list position 0 but the room tile sheet is position 1 (position 0 is the furniture sheet the props use)
         const slot = this.slotOf(((f.pg ?? 0) & 31) + (data.quest === 0 ? 1 : 0), f.clut ?? 0);
         for (const t of tris) {
-          const [a, b, c] = t.map((k) => m.verts[idx[k]]);
+          const p = t.map((k) => m.verts[idx[k]]);
+          const [a, b, c] = p;
           const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
           const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
-          const wall = Math.abs(ny) < 0.5 * (Math.hypot(nx, ny, nz) || 1);
-          const P = wall ? posW : pos, U = wall ? uvsW : uvs;
-          for (const k of t) {
-            const p = m.verts[idx[k]];
-            P.push(p[0], p[1], p[2]);
-            for (let q = 0; q < 3; q++) {
-              min[q] = Math.min(min[q], p[q]);
-              max[q] = Math.max(max[q], p[q]);
-            }
-            U.push(f.uv[k][0], f.uv[k][1], slot);
-          }
+          T.push({ p, uv: t.map((k) => f.uv[k]), slot, wall: Math.abs(ny) < 0.5 * (Math.hypot(nx, ny, nz) || 1) });
+          for (const v of p) for (let q = 0; q < 3; q++) { min[q] = Math.min(min[q], v[q]); max[q] = Math.max(max[q], v[q]); }
           this.triangles++;
         }
       }
-      for (const [P, U, mat] of [[pos, uvs, this.material], [posW, uvsW, this.wallMaterial]] as const) {
-        if (!P.length) continue;
-        const g = new THREE.BufferGeometry();
-        g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
-        this.meshUv.push({ g, raw: U as number[] });
-        inner.add(new THREE.Mesh(g, mat));
+      // 2. coplanar overlaps get a depth-offset layer each (smaller triangle over the larger one)
+      const rank = coplanarRanks(T.map((t) => t.p));
+      this.coplanar += rank.filter((r) => r > 0).length;
+      for (let r = 0; r <= 3; r++) {
+        for (const wall of [false, true]) {
+          const P: number[] = [], U: number[] = [];
+          T.forEach((t, i) => {
+            if (rank[i] !== r || t.wall !== wall) return;
+            t.p.forEach((p, k) => { P.push(p[0], p[1], p[2]); U.push(t.uv[k][0], t.uv[k][1], t.slot); });
+          });
+          if (!P.length) continue;
+          const g = new THREE.BufferGeometry();
+          g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+          this.meshUv.push({ g, raw: U });
+          inner.add(new THREE.Mesh(g, this.layerMaterial(r, wall)));
+        }
       }
     }
     this.finishUvs();
@@ -225,6 +233,22 @@ export class StageView {
     }
   }
 
+  /** Material for depth layer `r` (0 = base): layers pull their fragments toward the camera so they win over the coplanar triangles below. */
+  private layerMaterial(r: number, wall: boolean): THREE.MeshBasicMaterial {
+    const base = wall ? this.wallMaterial : this.material;
+    if (r === 0) return base;
+    const k = (r - 1) * 2 + (wall ? 1 : 0);
+    let m = this.layerMats[k];
+    if (!m) {
+      m = base.clone();
+      m.polygonOffset = true;
+      m.polygonOffsetFactor = -r;
+      m.polygonOffsetUnits = -r * 4;
+      this.layerMats[k] = m;
+    }
+    return m;
+  }
+
   /** Slot index for (atlas list position, palette row); new slots are appended. */
   private slotOf(pg: number, clut: number): number {
     const li = pg & 31; // pg bits 5-7 are flags (semi-transparency etc.), 0-4 = position in the stage's atlas list
@@ -332,6 +356,7 @@ export class StageView {
     this.material.needsUpdate = true;
     this.wallMaterial.map = tex;
     this.wallMaterial.needsUpdate = true;
+    for (const m of this.layerMats) if (m) { m.map = tex; m.needsUpdate = true; }
   }
 
   dispose(): void {
@@ -339,6 +364,7 @@ export class StageView {
     this.tex?.dispose();
     this.material.dispose();
     this.wallMaterial.dispose();
+    for (const m of this.layerMats) m?.dispose();
     this.root.traverse((o: THREE.Object3D) => {
       const m = o as THREE.Mesh;
       if (m.geometry) m.geometry.dispose();
