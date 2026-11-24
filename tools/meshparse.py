@@ -1,10 +1,10 @@
 """Parse Blaze & Blade mesh-part blobs (reverse-engineered; see docs/FORMATS.md).
 
 Blob layout (all little-endian):
-  [7 rows R1] [subheader @h] [vertices V*8 @h+w7-4] [normals N*8 @h+w8-12] [12 B gap] [face rows F2 @h+w9]
+  [7 rows R1] [subheader @h] [vertices V*8 @h+w7-4] [normals N*8 @h+w8-4] [4 B gap] [face rows F2 @h+w9]
   face row (16 B): u8 id[4], u8 uv[4][2], u8 vidx[4]   (textured quad; repeated vidx = triangle)
   subheader (u32 words at h): w0..w4 = counts (u16: N, N, V, N, N ...), w7 = 0x40 (vertices at h+w7-4),
-                              w8 -> normals at h+w8-12, w9 -> F2 face rows at h+w9. V=(w8-w7)/8-1, N=(w9-w8)/8.
+                              w8 -> normals at h+w8-4, w9 -> F2 face rows at h+w9. V=(w8-w7)/8, N=(w9-w8)/8.
   vertex: i16 x,y,z, i16 pad. normal: i16 x,y,z (4096 = 1.0), i16 pad.
 """
 import struct
@@ -20,12 +20,12 @@ def parse_part(blob):
     r = find_subheader(blob)
     if not r: return None
     h, w = r
-    nv = (w[8] - w[7]) // 8 - 1          # vertices start at h+w7-4 (verified: F2 quads are planar rectangles)
+    nv = (w[8] - w[7]) // 8              # == subheader w1 low half; vertices start at h+w7-4 (slot before is a zero vertex)
     nn = (w[9] - w[8]) // 8
     if h + w[9] > len(blob) or nv > 4096 or nn > 4096:
         return None
     verts = [struct.unpack_from('<3h', blob, h + w[7] - 4 + 8 * i) for i in range(nv)]
-    norms = [struct.unpack_from('<3h', blob, h + w[8] - 12 + 8 * i) for i in range(nn)]
+    norms = [struct.unpack_from('<3h', blob, h + w[8] - 4 + 8 * i) for i in range(nn)]
     def rows(a, b):
         out = []
         for o in range(a, b - 15, 16):

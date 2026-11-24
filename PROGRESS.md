@@ -18,6 +18,15 @@ later. Newest entry first; each work session appends here.
   other 15 heroes not yet checked.
 
 
+**Step B – mesh layout corrected, R1 rows still open**
+- ✅ Corrected again (verified by data, not guesses): **V = (w8-w7)/8 vertices at `h+w7-4`** (= low u16 of subheader word 1; slot
+  before vertex 0 is a zero vertex) and **normals at `h+w8-4`** (4 B gap before F2). Normals now come out unit length (≈4096) – earlier
+  `-12` reads were off by 8 bytes. My Turn 6 "V−1" was wrong; F2 faces were fine either way.
+- Out-of-range faces: 83 → 61 of 377 on the knight.
+- ❓ R1 (the 7 rows before the subheader): UV rects are valid for several rows but vertex indices are not (mostly row 6, and
+  all 7 rows in parts with few vertices). Tested index shift −1/0/+1 and "nearest other part's vertex": no planar quads → unresolved.
+  Rows with v≥64 UVs and fan-shaped UVs look like mis-parsed data. Currently skipped.
+
 ## Turn 6 – 2026-11-24 (multi-step; notes after each step)
 **Verified in browser (user, via GitHub Pages)**: viewer runs, knight assembles from skeleton and animates. Camera was too close; framing adjusted.
 
