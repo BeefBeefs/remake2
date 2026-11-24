@@ -159,3 +159,11 @@ row r = palette r) and the pixel header's `w = 64` halfwords means **256 x 256 p
 are flags, e.g. 32/64/128 = semi-transparent/other); verified on stage 10 (pg 0 -> first listed atlas, pg 1 -> second; later listed atlases hold the minimap and effect sprites).
 Palette 0 of a page is usually a default/garbage palette; real tiles use rows 1..14.
 Hero models face **-z** in model space (verified by rendering anim 0 from four sides), so their world yaw needs +PI.
+
+
+## Stage descriptors and extra meshes (corrects the "96 stages" count)
+A stage descriptor is `… (sector,size) texture pairs | sentinel 1601110016, x | (sector,size) mesh pairs | 32-byte entity records | ' - Name -' | script`. The first mesh pair is the col16 collision record; the
+following pairs are the stage's textured meshes, prop/monster packs and extra meshes. 17 headerless textured records (w12 == w13 == 0, valid 32-byte rows) found as separate "stages" in the first scan sit inside the
+mesh list of the preceding stage's descriptor and share its coordinates (stage 16: lava surface at y = 800): they are additional meshes of that stage. Result: **78 stages**. Texture pairs may be 33312 B (4-bit atlas),
+16928 B (8-bit 256 x 64 monster/prop textures), 66080 B (8-bit 256 x 256, probably sky) and others; descriptors repeat in groups (variants of the same stage with the same mesh list).
+Eight script/data modules (`u32 256, A, B, 0, 4 …`, offset tables into bytecode) sit at BLAZE.ALL offsets 0x906000, 0x906800, 0x907800, 0x908000, 0x90c800, 0x90f000, 0x90f800, 0x911000; likely home of the door/warp logic.

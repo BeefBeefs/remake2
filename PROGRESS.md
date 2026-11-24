@@ -10,9 +10,17 @@ later. Newest entry first; each work session appends here.
   Stage 16 (lava cave): record 8172 is the flat lava surface at y = 800 (that was the "flat purple" stage 17), 8179 / 8195 more cave geometry. The exporter now merges them (`extraMeshes` in stageNN.json) -> **78 stages**
   (ids < 16 unchanged; later ids shifted down: old 20 -> 17 … – the stage picker / door guess use `STAGE_COUNT = 78`).
 - ✅ Texture lists: the walk-back from the collision sector was limited to 12 words (descriptor lists can be 18 pairs long) and rejected sizes >= 60000 (66080 = 8-bit 256 x 256 mode-9 atlas, 2 VRAM pages wide).
-  Now the descriptor is chosen by `first mesh pair == stage collision sector` and every texture pair < 100000 is kept. Stages 25, 28 … that had empty lists now have them. Still open: 8-bit 256 x 256 atlases
-  (size 66080, mode 9, 524-byte header) are not exported yet and shift VRAM page numbers (a page index probably counts 4-bit atlases as 1 page and these as 2).
-- Remaining without a list: stages 1, 25, 60 (descriptor is a 'mesh0 None' variant).
+  Now the descriptor is chosen by `first mesh pair == stage collision sector` and every texture pair < 100000 is kept. 66080-byte entries (mode 9, 8-bit 256 x 256, one per stage in 11 stages) are most likely sky /
+  background pages: no face's page index reaches past the stage's 4-bit atlas count because of them, so they are not exported yet. Faces with page index == atlas count (stages 37-39, 41, 46: ~1-3 %) probably use a run-time page.
+- Remaining without a list: stages 1, 25, 60 (their descriptors have another layout: no mesh pairs after the sentinel / the collision sector appears in the texture part).
+
+**Door / exit targets – investigated, still unresolved (what is ruled out)**
+- `link` ids do not pair up between stages (no second door with the same id in another room stage), are not stage numbers, descriptor sectors or descriptor indices (180 sentinels), and stage 6, the 'natural' hub, is a
+  cave maze, not a town. Only room stages 0-5 have a clean entity table; for the other stages the 8-byte cell scan mostly finds noise (kinds like 10519 / 5376), so most "links" there are garbage.
+- `Blaze.exe` never mentions descriptor sector numbers (searched as u16/u32: only code-immediate false positives), so the stage list is reached through data inside BLAZE.ALL. Around file offset 0x906000-0x912000 there are
+  **8 script/data modules** (header `u32 256, A, B, 0, 4 …` at 0x906000, 0x906800, 0x907800, 0x908000 (A=1752, B=15404: the biggest, its offset table holds ~430 increasing offsets), 0x90c800, 0x90f000, 0x90f800,
+  0x911000) next to the hero resource table. They look like the compiled game script (offset tables into bytecode); the warp targets (link id -> stage + entry point) are almost certainly executed by this VM.
+  Decoding it is the next real step for doors; until then play mode keeps the "next stage in file order" guess (the stage picker lets you jump anywhere).
 
 **Step AC – all-stage contact sheet: ground planes, collision fallback**
 - Software-rendered all 96 stages (`render_stage.py`, scratch): 78 show recognisable maps (rooms, caves, mines, forests, castles).
