@@ -65,10 +65,12 @@ export class AnimatedModel {
         // UV (2,123) is the dummy written into an unused corner (triangle rows); never use such a corner, even when its
         // vertex index differs from the others (e.g. a (a,b,c,d) row whose third UV is the dummy = triangle a,b,d).
         // A row with four distinct vertices whose third UV slot holds a texture-page word is a quad (98 % planar, like the normal quads),
-        // not a triangle: rebuild the lost third UV as the parallelogram corner UV1 + UV3 - UV0.
+        // not a triangle: rebuild the lost third UV as the parallelogram corner UV1 + UV3 - UV0. The same holds when slot 2 holds the (2,123)
+        // dummy but all four vertices differ (13 rows, all planar; hero 0's crown quads).
         let uv = f.uv;
         const isPage = (k: number): boolean => f.uv[k][1] >= this.texH && !(f.uv[k][0] === 2 && f.uv[k][1] === 123);
-        if (isPage(2) && !isPage(0) && !isPage(1) && !isPage(3) && new Set(idx).size === 4 && f.uv[3][1] < this.texH && !(f.uv[3][0] === 2 && f.uv[3][1] === 123)) {
+        const isDummy = (k: number): boolean => f.uv[k][0] === 2 && f.uv[k][1] === 123;
+        if ((isPage(2) || isDummy(2)) && !isPage(0) && !isPage(1) && !isPage(3) && !isDummy(0) && !isDummy(1) && new Set(idx).size === 4 && f.uv[3][1] < this.texH && !isDummy(3)) {
           const cl = (n: number, hi: number): number => Math.max(0, Math.min(hi, n));
           uv = [f.uv[0], f.uv[1], [cl(f.uv[1][0] + f.uv[3][0] - f.uv[0][0], 255), cl(f.uv[1][1] + f.uv[3][1] - f.uv[0][1], this.texH - 1)], f.uv[3]];
         }
@@ -78,7 +80,13 @@ export class AnimatedModel {
           if ((uv[k][0] === 2 && uv[k][1] === 123) || uv[k][1] >= this.texH) continue;
           if (!slots.some((q) => idx[q] === idx[k])) slots.push(k);
         }
-        const tris = slots.length === 4 ? [[0, 1, 2], [0, 2, 3]] : slots.length === 3 ? [slots] : [];
+        // A quad row is normally stored in perimeter order, but ~0.6 % are in Z (strip) order (0,1,3,2) or (0,2,1,3): splitting those
+        // as (0,1,2),(0,2,3) makes a bow-tie that leaves a triangular hole (hero 0's crown). Pick the slot order that is a convex outline.
+        let tris: number[][] = slots.length === 3 ? [slots] : [];
+        if (slots.length === 4) {
+          const o = quadOrder(idx.map((k) => part.verts[k]));
+          tris = [[o[0], o[1], o[2]], [o[0], o[2], o[3]]];
+        }
         for (const t of tris) {
           if (t.some((k) => uv[k][1] >= this.texH)) {
             this.skippedFaces++;
@@ -224,4 +232,24 @@ export async function loadHero(hero: number): Promise<AnimatedModel> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
   return new AnimatedModel((await res.json()) as HeroJson);
+}
+
+/** Slot order that traces a quad's outline as a convex loop: (0,1,2,3), else (0,1,3,2), else (0,2,1,3); falls back to the stored order. */
+function quadOrder(p: number[][]): number[] {
+  const sub = (a: number[], b: number[]): number[] => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const cross = (a: number[], b: number[]): number[] => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const dot = (a: number[], b: number[]): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const convex = (o: number[]): boolean | null => {
+    let n = cross(sub(p[o[1]], p[o[0]]), sub(p[o[2]], p[o[0]]));
+    if (Math.hypot(n[0], n[1], n[2]) < 1e-9) n = cross(sub(p[o[2]], p[o[1]]), sub(p[o[3]], p[o[1]]));
+    if (Math.hypot(n[0], n[1], n[2]) < 1e-9) return null;
+    let pos = 0, neg = 0;
+    for (let i = 0; i < 4; i++) {
+      const c = dot(cross(sub(p[o[(i + 1) % 4]], p[o[i]]), sub(p[o[(i + 2) % 4]], p[o[(i + 1) % 4]])), n);
+      if (c >= 0) pos++; if (c <= 0) neg++;
+    }
+    return pos === 4 || neg === 4;
+  };
+  for (const o of [[0, 1, 2, 3], [0, 1, 3, 2], [0, 2, 1, 3]]) if (convex(o)) return o;
+  return [0, 1, 2, 3];
 }
