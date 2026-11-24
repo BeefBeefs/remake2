@@ -6,6 +6,8 @@ export interface StageJson {
   atlas: number;
   /** 128x256 atlases listed in the stage's resource descriptor (indices into assets/stages/aNNN.png). */
   atlases?: number[];
+  /** One entry per texture-list position (`pg & 31`): 4-bit atlas index, 8-bit page name `bSECTOR` (assets/stages/bSECTOR.png), or null. */
+  pages?: (number | string | null)[];
   collision: { sector: number; verts: number[][]; tris: number[][] };
   /** Room-type stages: door/trigger + prop placements (x, y = height above PS1 y=0, z; rot 4096 = 360 deg). */
   entities?: { kind: number; sub: number; flag: number; x: number; y: number; z: number; rot: number; link: number }[];
@@ -210,7 +212,7 @@ export class StageView {
   /** Slot index for (atlas list position, palette row); new slots are appended. */
   private slotOf(pg: number, clut: number): number {
     const li = pg & 31; // pg bits 5-7 are flags (semi-transparency etc.), 0-4 = position in the stage's atlas list
-    const key = li * 16 + (clut & 15);
+    const key = li * 16 + (typeof this.data.pages?.[li] === 'string' ? 0 : clut & 15);
     let s = this.slots.get(key);
     if (s === undefined) this.slots.set(key, (s = this.slots.size));
     return s;
@@ -244,13 +246,25 @@ export class StageView {
   async loadTextures(override: number | null = this.override): Promise<void> {
     this.override = override;
     this.finishUvs();
+    const pages = this.data.pages;
     const list = this.data.atlases?.length ? this.data.atlases : [this.data.atlas];
-    const need = new Set<number>();
-    const src = (li: number): number => override ?? list[Math.min(li, list.length - 1)];
+    // what texture-list position `li` shows: an 8-bit page name, or a 4-bit atlas index
+    const src = (li: number): number | string => {
+      if (override !== null) return override;
+      const p = pages?.[li];
+      if (typeof p === 'string') return p;
+      if (typeof p === 'number') return p;
+      return list[Math.min(li, list.length - 1)];
+    };
+    const need = new Set<number | string>();
     for (const key of this.slots.keys()) need.add(src(Math.floor(key / 16)));
-    const loaded = new Map<number, { idx: ImageData; pal: ImageData }>();
+    const loaded = new Map<number | string, { idx: ImageData; pal?: ImageData }>();
     await Promise.all(
       [...need].map(async (a) => {
+        if (typeof a === 'string') {
+          loaded.set(a, { idx: await loadPixels(`assets/stages/${a}.png`) });
+          return;
+        }
         const name = `assets/stages/a${String(a).padStart(3, '0')}`;
         loaded.set(a, { idx: await loadPixels(`${name}.png`), pal: await loadPixels(`${name}.pal.png`) });
       }),
@@ -262,6 +276,19 @@ export class StageView {
       const a = loaded.get(src(li));
       if (!a) continue;
       const ox = Math.floor(slot / SLOT_ROWS) * ATLAS, oy = (slot % SLOT_ROWS) * ATLAS;
+      if (!a.pal) {
+        // 8-bit page: already coloured RGBA, smaller than a slot; copy as is
+        for (let y = 0; y < a.idx.height && y < ATLAS; y++) {
+          for (let x = 0; x < a.idx.width && x < ATLAS; x++) {
+            const si = (y * a.idx.width + x) * 4, o = ((oy + y) * W + ox + x) * 4;
+            out.data[o] = a.idx.data[si];
+            out.data[o + 1] = a.idx.data[si + 1];
+            out.data[o + 2] = a.idx.data[si + 2];
+            out.data[o + 3] = a.idx.data[si + 3];
+          }
+        }
+        continue;
+      }
       for (let y = 0; y < ATLAS; y++) {
         for (let x = 0; x < ATLAS; x++) {
           const ci = a.idx.data[(y * ATLAS + x) * 4] & 15;

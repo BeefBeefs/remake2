@@ -276,6 +276,22 @@ mon_by_tex = {sec: k - 16 for k, (sec, _) in enumerate(mtab['textures']) if k >=
 for st in stages:
     st['monsters'] = [mon_by_tex[a] for a, z in st.get('texList', []) if a in mon_by_tex]
 atlas_index = {s: k for k, s in enumerate(atl)}
+# 8-bit pages (mode 9, 256-entry CLUT at +0x14, w/h halfword pair at +540, pixels at +544): exported as bSECTOR.png (RGBA, colour index 0 with
+# a zero CLUT entry transparent). Faces of a few stages (17, 23, 49, 72 ...) point at them through `pg` = position in the full texture list.
+def export_page8(sec):
+    o = sec * S
+    if struct.unpack_from('<III', d, o)[0:3] != (16, 9, 524): return None
+    A, B = struct.unpack_from('<HH', d, o + 540)
+    w, h = 2 * A, B
+    if not (0 < w <= 256 and 0 < h <= 256) or o + 544 + w * h > len(d): return None
+    pal = struct.unpack_from('<256H', d, o + 0x14)
+    im = Image.new('RGBA', (w, h)); pp = im.load(); raw = d[o + 544:o + 544 + w * h]
+    for i, b in enumerate(raw):
+        v = pal[b]
+        pp[i % w, i // w] = (0, 0, 0, 0) if v == 0 else ((v & 31) * 255 // 31, ((v >> 5) & 31) * 255 // 31, ((v >> 10) & 31) * 255 // 31, 255)
+    im.save(os.path.join(out, f'b{sec}.png'))
+    return f'b{sec}'
+page8 = {}
 total = 0
 for k, st in enumerate(stages):
     i = bisect.bisect(atl, st['collision']['sector']) - 1
@@ -285,6 +301,13 @@ for k, st in enumerate(stages):
     if st['atlases']:
         # default = the listed atlas with the most distinct colours (blank/flat pages are dynamic or unused ones)
         st['atlas'] = max(st['atlases'], key=lambda a: richness[a])
+    pages = []
+    for a, z in st.get('texList') or []:
+        if z == 33312 and a in atlas_index: pages.append(atlas_index[a])
+        else:
+            if a not in page8: page8[a] = export_page8(a)
+            pages.append(page8[a])
+    st['pages'] = pages
     # Ground planes (one big tile, UV 0..127 square, texpage word 0 or pg 131 with palette 0): palette 0 of every atlas is a run-time palette
     # (random colours in the file), so the colours are unknown. GUESS: the atlas after the first one, palette 3 (the common grass/ground tile).
     nat = max(1, len(st['atlases']))
