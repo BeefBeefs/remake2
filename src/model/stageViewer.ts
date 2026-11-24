@@ -29,7 +29,7 @@ export interface StageJson {
   arrivals?: { id: number; x: number; y: number; z: number; rot: number }[];
   /** Story-state variants of this map (other descriptors with the same meshes but different entities / dialogue). */
   variants?: { desc: number; name: string | null; entities: NonNullable<StageJson['entities']>; texts: string[] }[];
-  meshes: { sector: number; verts: number[][]; faces: { v: number[]; uv: number[][]; pg?: number; clut?: number }[] }[];
+  meshes: { sector: number; verts: number[][]; faces: { v: number[]; uv: number[][]; pg?: number; clut?: number; cmd?: number }[] }[];
 }
 
 /** Atlases are 4-bit 256 x 256 pages with 16 palettes of 16 colours (aNNN.png = colour indices, aNNN.pal.png = 16 x 16 RGBA). */
@@ -86,7 +86,7 @@ export class StageView {
     this.propClut = [...cc.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 1;
     for (const m of data.meshes) {
       // 1. every triangle of the mesh with its raw UVs; quads use the slot order that is a convex outline (a few are strip-ordered)
-      const T: { p: number[][]; uv: number[][]; slot: number; wall: boolean }[] = [];
+      const T: { p: number[][]; uv: number[][]; slot: number; wall: boolean; mode: number }[] = [];
       for (const f of m.faces) {
         const idx = f.v;
         if (idx.some((k) => k >= m.verts.length)) continue;
@@ -96,12 +96,15 @@ export class StageView {
         if (slots.length === 4) { const o = quadOrder(idx.map((k) => m.verts[k])); tris = [[o[0], o[1], o[2]], [o[0], o[2], o[3]]]; }
         // hub rooms and the inn (quest 0): the room faces all say list position 0 but the room tile sheet is position 1 (position 0 is the furniture sheet the props use)
         const slot = this.slotOf(((f.pg ?? 0) & 31) + (data.quest === 0 ? 1 : 0), f.clut ?? 0);
+        // GPU command bit 1 = semi-transparent; the blend mode (ABR) is texpage bits 5-6: 0 = 50% back + 50% front, 1 = back + front, 2 = back - front, 3 = back + 25% front.
+        // (Nearly every palette entry has the STP bit set, so the whole textured face blends.)
+        const mode = (f.cmd ?? 0) & 2 ? 1 + (((f.pg ?? 0) >> 5) & 3) : 0;
         for (const t of tris) {
           const p = t.map((k) => m.verts[idx[k]]);
           const [a, b, c] = p;
           const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
           const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
-          T.push({ p, uv: t.map((k) => f.uv[k]), slot, wall: Math.abs(ny) < 0.5 * (Math.hypot(nx, ny, nz) || 1) });
+          T.push({ p, uv: t.map((k) => f.uv[k]), slot, mode, wall: Math.abs(ny) < 0.5 * (Math.hypot(nx, ny, nz) || 1) });
           for (const v of p) for (let q = 0; q < 3; q++) { min[q] = Math.min(min[q], v[q]); max[q] = Math.max(max[q], v[q]); }
           this.triangles++;
         }
@@ -110,17 +113,19 @@ export class StageView {
       const rank = coplanarRanks(T.map((t) => t.p));
       this.coplanar += rank.filter((r) => r > 0).length;
       for (let r = 0; r <= 3; r++) {
-        for (const wall of [false, true]) {
+        for (const wall of [false, true]) for (const mode of [0, 1, 2, 3, 4]) {
           const P: number[] = [], U: number[] = [];
           T.forEach((t, i) => {
-            if (rank[i] !== r || t.wall !== wall) return;
+            if (rank[i] !== r || t.wall !== wall || t.mode !== mode) return;
             t.p.forEach((p, k) => { P.push(p[0], p[1], p[2]); U.push(t.uv[k][0], t.uv[k][1], t.slot); });
           });
           if (!P.length) continue;
           const g = new THREE.BufferGeometry();
           g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
           this.meshUv.push({ g, raw: U });
-          inner.add(new THREE.Mesh(g, this.layerMaterial(r, wall)));
+          const mesh = new THREE.Mesh(g, this.layerMaterial(r, wall, mode));
+          if (mode) mesh.renderOrder = 1 + r; // blended faces after all opaque ones
+          inner.add(mesh);
         }
       }
     }
@@ -233,17 +238,32 @@ export class StageView {
     }
   }
 
-  /** Material for depth layer `r` (0 = base): layers pull their fragments toward the camera so they win over the coplanar triangles below. */
-  private layerMaterial(r: number, wall: boolean): THREE.MeshBasicMaterial {
+  /** Material for depth layer `r` (0 = base) and blend `mode` (0 opaque, 1..4 = PS1 ABR 0..3): layers pull their fragments toward the camera so they win over coplanar triangles below. */
+  private layerMaterial(r: number, wall: boolean, mode = 0): THREE.MeshBasicMaterial {
     const base = wall ? this.wallMaterial : this.material;
-    if (r === 0) return base;
-    const k = (r - 1) * 2 + (wall ? 1 : 0);
+    if (r === 0 && mode === 0) return base;
+    const k = (mode * 4 + r) * 2 + (wall ? 1 : 0);
     let m = this.layerMats[k];
     if (!m) {
       m = base.clone();
-      m.polygonOffset = true;
-      m.polygonOffsetFactor = -r;
-      m.polygonOffsetUnits = -r * 4;
+      if (r > 0) {
+        m.polygonOffset = true;
+        m.polygonOffsetFactor = -r;
+        m.polygonOffsetUnits = -r * 4;
+      }
+      if (mode) {
+        m.transparent = true;
+        m.depthWrite = false;
+        m.alphaTest = 0.01; // texel alpha is 0 or 1; the blend factor below does the rest
+        if (mode === 1) m.opacity = 0.5; // 0.5 B + 0.5 F
+        else if (mode === 2) { m.blending = THREE.AdditiveBlending; } // B + F
+        else if (mode === 3) {
+          m.blending = THREE.CustomBlending; // B - F
+          m.blendEquation = THREE.ReverseSubtractEquation;
+          m.blendSrc = THREE.SrcAlphaFactor;
+          m.blendDst = THREE.OneFactor;
+        } else { m.blending = THREE.AdditiveBlending; m.opacity = 0.25; } // B + 0.25 F
+      }
       this.layerMats[k] = m;
     }
     return m;
