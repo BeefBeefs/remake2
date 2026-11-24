@@ -4,6 +4,16 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step T – the last byte of a room face row is the PS1 GPU command (exact triangle/quad flag)**
+- ✅ Face rows' final byte = GPU packet command: 0x24–0x27 / 0x34–0x37 = triangle, 0x2c–0x2f / 0x3c–0x3f = quad. The padded 4th vertex (index 0) of triangles matches this in
+  ~98% of rows; the exporter now uses the command byte instead of the distance heuristic (Step N) and stores `cmd` and `pg` per face.
+  The low 16 bits of that u32 look like a PS1 **texpage word** (bit 4 page Y, bits 5–6 transparency, bit 7 8-bit depth); X bits are always 0, so the u≥128 texels
+  must lie in the neighbouring atlas of the same 256-wide page.
+- ❓ Cave stages: splitting faces by the page-Y bit and pairing atlases as [A|B] / [C|D] still shows noise/white (atlas D, e.g. sector 6140, is mostly blank), so the
+  atlas assignment is not verified. Rooms (stages 1–5) still render correctly.
+- Dungeon entity records use another layout (`…, kind, sub, flag | 0, x, y, z …` with the flag at word 4, e.g. `(0,0,7,1,-127,0, 4704,150,-5876,…)`): the room-table parser
+  only reads their first records. A real dungeon-spawn parser is still to do.
+
 **Step S – dungeon stage entities: what is known**
 - Dungeon stages (e.g. 20, 21, 23) also use 32-byte entity records, but with flags −255 / −127 / −126 / −30 and much bigger tables
   (stage 20: 63 records, 57 × `kind 0, sub 1` at y = 150; stage 21: 70 × `kind 10`; stage 23: 65 × `kind 7`, plus `kind 5633…5635 sub 8` and
