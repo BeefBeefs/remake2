@@ -149,6 +149,11 @@ for (const [label, fn] of [['✨', () => play.cast()], ['↻', () => play.cycleS
   b.style.cssText = 'font-size:22px;width:56px;height:56px;border-radius:28px;opacity:.85';
   b.onpointerdown = (e) => { e.stopPropagation(); play.usePotion(); };
   pad.append(b);
+  const buy = document.createElement('button');
+  buy.textContent = '🪙';
+  buy.style.cssText = 'font-size:22px;width:56px;height:56px;border-radius:28px;opacity:.85';
+  buy.onpointerdown = (e) => { e.stopPropagation(); play.buyPotion(); };
+  pad.append(buy);
 }
 document.body.append(pad);
 
