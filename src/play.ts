@@ -23,6 +23,8 @@ export class PlayMode {
   private camYaw = 0;
   private moving = false;
   private curAnim = -1;
+  /** One-shot action (attack/jump…): hero anim index and seconds left. */
+  private action: { anim: number; left: number; total: number; jump: boolean } | null = null;
   private readonly keys = new Set<string>();
   private stick = { id: -1, x0: 0, y0: 0, x: 0, y: 0 };
   private look = { id: -1, x0: 0 };
@@ -34,7 +36,16 @@ export class PlayMode {
     private readonly camera: THREE.PerspectiveCamera,
     private readonly dom: HTMLElement,
   ) {
-    addEventListener('keydown', (e) => this.keys.add(e.key.toLowerCase()));
+    addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+      this.keys.add(key);
+      if (key === ' ' || key === 'j') this.act('attack');
+      if (key === 'k') this.act('attack2');
+      if (key === 'l') this.act('jump');
+      if (key === 'h') this.act('hurt');
+      if (key === 'v') this.act('victory');
+      if (key === ' ') e.preventDefault();
+    });
     addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
     dom.style.touchAction = 'none';
     dom.addEventListener('pointerdown', (e) => {
@@ -57,6 +68,18 @@ export class PlayMode {
     };
     dom.addEventListener('pointerup', up);
     dom.addEventListener('pointercancel', up);
+  }
+
+  /** Hero animation slots (confirmed by eye): 0 idle, 1 walk, 2 hurt, 3 attack, 4 jump, 6 attack 2, 7 die, 8 victory. */
+  act(name: 'attack' | 'attack2' | 'jump' | 'hurt' | 'victory' | 'die'): void {
+    const h = this.hero;
+    if (!this.active || !h || this.action) return;
+    const anim = { attack: 3, attack2: 6, jump: 4, hurt: 2, victory: 8, die: 7 }[name];
+    if (anim >= h.animCount) return;
+    h.setAnim(anim);
+    this.curAnim = anim;
+    const total = h.frameCount / h.fps;
+    this.action = { anim, left: total, total, jump: name === 'jump' };
   }
 
   async enter(stageIndex: number, heroIndex: number): Promise<void> {
@@ -136,7 +159,7 @@ export class PlayMode {
     let ix = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0) + this.stick.x;
     let iy = (k.has('s') || k.has('arrowdown') ? 1 : 0) - (k.has('w') || k.has('arrowup') ? 1 : 0) + this.stick.y; // +y = back
     const mag = Math.hypot(ix, iy);
-    this.moving = mag > 0.15;
+    this.moving = mag > 0.15 && !this.action;
     if (this.moving) {
       if (mag > 1) { ix /= mag; iy /= mag; }
       // camera-relative: forward = away from the camera
@@ -154,19 +177,27 @@ export class PlayMode {
       }
       this.heading = Math.atan2(dx, dz);
     }
+    if (this.action) {
+      this.action.left -= dt;
+      if (this.action.left <= 0) {
+        this.action = null;
+        this.curAnim = -1;
+      }
+    }
     this.updateHero(dt);
   }
 
   private updateHero(dt: number): void {
     const h = this.hero;
     if (!h) return;
-    const want = this.moving && h.animCount > 1 ? 1 : 0;
+    const want = this.action ? this.action.anim : this.moving && h.animCount > 1 ? 1 : 0;
     if (want !== this.curAnim) {
       h.setAnim(want);
       this.curAnim = want;
     }
     h.update(dt);
     h.root.position.copy(this.pos);
+    if (this.action?.jump) h.root.position.y += Math.sin(Math.PI * (1 - this.action.left / this.action.total)) * 70;
     h.root.rotation.y = this.heading;
     const d = 380, pitch = 0.55;
     this.camera.position.set(

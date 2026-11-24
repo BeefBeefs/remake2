@@ -56,6 +56,7 @@ playBtn.onclick = async () => {
     play.exit();
     grid.visible = true;
     playBtn.textContent = '▶ Play stage';
+    pad.style.display = 'none';
     heroSel.onchange?.(new Event('change'));
     return;
   }
@@ -69,6 +70,7 @@ playBtn.onclick = async () => {
   try {
     await play.enter(stageIdx, heroIdx);
     playBtn.textContent = '■ Exit play';
+    pad.style.display = 'flex';
     info.textContent = play.info;
   } catch (e) {
     info.textContent = `play failed: ${e}`;
@@ -77,7 +79,23 @@ playBtn.onclick = async () => {
   }
 };
 
-const HERO_ANIMS = ['idle', 'walk', 'run', 'hit', 'attack'];
+// Confirmed by eye on the phone (anim 1 'walk' and anim 5 not yet confirmed): see PROGRESS.md Step P.
+// On-screen action buttons (touch) shown while playing; keyboard: Space/J attack, K attack 2, L jump, H hurt, V victory.
+const pad = document.createElement('div');
+pad.style.cssText = 'position:fixed;right:10px;bottom:14px;display:none;gap:8px;z-index:5';
+for (const [label, act] of [['⚔', 'attack'], ['⚔2', 'attack2'], ['⤒', 'jump'], ['★', 'victory']] as const) {
+  const b = document.createElement('button');
+  b.textContent = label;
+  b.style.cssText = 'font-size:22px;width:56px;height:56px;border-radius:28px;opacity:.85';
+  b.onpointerdown = (e) => {
+    e.stopPropagation();
+    play.act(act);
+  };
+  pad.append(b);
+}
+document.body.append(pad);
+
+const HERO_ANIMS = ['idle', 'walk?', 'hurt', 'attack', 'jump', '', 'attack 2', 'die', 'victory'];
 const MONSTER_ANIMS = ['idle', 'walk', 'attack', 'hit'];
 const isMonster = () => Number(heroSel.value) >= 16;
 const texUrl = () =>
@@ -130,7 +148,7 @@ async function showHero(h: number): Promise<void> {
   // Guessed from frame-count patterns shared by all models (see PROGRESS.md Step J); "?" = unverified.
   const guess = h < 16 ? HERO_ANIMS : MONSTER_ANIMS;
   animSel.replaceChildren(
-    ...Array.from({ length: m.animCount }, (_, i) => new Option(`anim ${i}${guess[i] ? ` (${guess[i]}?)` : ''}`, String(i))),
+    ...Array.from({ length: m.animCount }, (_, i) => new Option(`anim ${i}${guess[i] ? ` (${guess[i]}${h >= 16 ? '?' : ''})` : ''}`, String(i))),
   );
   palSel.value = '0';
   palSel.disabled = h >= 16;

@@ -4,6 +4,18 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step P – hero animation roles confirmed by eye (user check on the phone) + actions in play mode**
+- ✅ Confirmed by the user watching the viewer: hero **anim 0 = idle**; **anim 2 = hurt/flinch** (was guessed "run"); **anim 3 = attack**
+  (was "hit"); **anim 4 = jump** (was "attack"); **anim 6 = a second attack**; **anim 7 = dying**; **anim 8 = victory / level-up**
+  (the 1-frame extra blob I assumed to be a pose is the victory pose – only some heroes have anim 8). Not commented on: anim 1
+  (assumed walk, still marked "walk?") and anim 5 (frame counts 6–29, role unknown – maybe cast/skill).
+  Monster labels are still guesses ("?"), since heroes and monsters do not share the same slot order.
+- Play mode: Space/J attack, K attack 2, L jump (with a hop), H hurt, V victory, plus touch buttons ⚔ ⚔2 ⤒ ★; one-shot actions
+  block movement until the animation has played once.
+- Peek at stage script data (not decoded): after the mesh list of a stage descriptor come 24-byte-ish records of i16 values such as
+  `(−254, 0, −692, 400 …)` (y = 400 = floor height → probably entity/NPC/door placements) and then **dialogue strings** ("he …", ASCII). Positions
+  do not fall inside the stage-1 room box (x −1540…−550), so the table is either relative, or shared by several room variants.
+
 **Step O – first playable slice: walk a hero around a stage (UNTESTED in a browser)**
 - `src/play.ts` (`PlayMode`) + a "▶ Play stage" button in the viewer HUD: loads the selected stage (stage 1 if a hero/monster is selected)
   in raw PS1 units (`loadStage(k, false)`), the selected hero (hero 0 by default), and walks the hero on the stage's **collision mesh**.
