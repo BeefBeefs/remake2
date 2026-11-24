@@ -66,7 +66,8 @@ export class AnimatedModel {
         // vertex index differs from the others (e.g. a (a,b,c,d) row whose third UV is the dummy = triangle a,b,d).
         const slots: number[] = [];
         for (let k = 0; k < 4; k++) {
-          if (f.uv[k][0] === 2 && f.uv[k][1] === 123) continue;
+          // a UV row beyond the 64-row page is the texture-page word the game stores in an unused corner, e.g. (3,81), (0,87): not a real coordinate
+          if ((f.uv[k][0] === 2 && f.uv[k][1] === 123) || f.uv[k][1] >= this.texH) continue;
           if (!slots.some((q) => idx[q] === idx[k])) slots.push(k);
         }
         const tris = slots.length === 4 ? [[0, 1, 2], [0, 2, 3]] : slots.length === 3 ? [slots] : [];
