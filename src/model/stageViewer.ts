@@ -88,7 +88,8 @@ export class StageView {
         const slots: number[] = [];
         for (let k = 0; k < 4; k++) if (!slots.some((q) => idx[q] === idx[k])) slots.push(k);
         const tris = slots.length === 4 ? [[0, 1, 2], [0, 2, 3]] : slots.length === 3 ? [slots] : [];
-        const slot = this.slotOf(f.pg ?? 0, f.clut ?? 0);
+        // hub rooms and the inn (quest 0): the room faces all say list position 0 but the room tile sheet is position 1 (position 0 is the furniture sheet the props use)
+        const slot = this.slotOf(((f.pg ?? 0) & 31) + (data.quest === 0 ? 1 : 0), f.clut ?? 0);
         for (const t of tris) {
           const [a, b, c] = t.map((k) => m.verts[idx[k]]);
           const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
