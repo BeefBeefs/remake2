@@ -55,7 +55,7 @@ def main():
             f.seek(s2 * S)
             areas[(qi, a)] = f.read(z2)
     pat = re.compile(rb'\x03\x02\x2d\x01\x11([\x00-\x0a\xff])([\x00-\x1f\xff])([\x00-\x1f\xff])\xff')
-    out = {}
+    out, arr = {}, {}
     for (qi, a), m in sorted(areas.items()):
         if qi not in first or a >= nst[qi]: continue
         st = first[qi] + a
@@ -66,8 +66,19 @@ def main():
             dst = first[dq] + ar if dq in first and ar < nst[dq] else None
             ex.append({'quest': dq, 'area': ar, 'arrival': ai, 'stage': dst})
         out[str(st)] = ex
+        # arrival table (header word +0x40 -> 32-byte records `i16 flag, tag, x, y, z, 0, rot, 0, id, ...`), indexed by the arrival byte of the door script
+        A = struct.unpack_from('<I', m, 0)[0]
+        o = A + struct.unpack_from('<I', m, 0x40)[0]
+        recs = []
+        while o + 32 <= len(m):
+            r = struct.unpack_from('<16h', m, o)
+            if not (0 <= r[0] < 64 and 0 < r[1] < 1000 and r[5] == 0 and r[7] == 0 and r[10] == -1): break
+            recs.append({'x': r[2], 'y': r[3], 'z': r[4], 'rot': r[6], 'id': r[8]})
+            o += 32
+        arr[str(st)] = recs
     path = os.path.join(ROOT, 'public/assets/stages/doors.json')
     json.dump(out, open(path, 'w'), separators=(',', ':'))
+    json.dump(arr, open(os.path.join(ROOT, 'public/assets/stages/arrivals.json'), 'w'), separators=(',', ':'))
     print('wrote', path, sum(len(v) for v in out.values()), 'door scripts in', len(out), 'stages')
 
 

@@ -254,6 +254,7 @@ export class PlayMode {
     this.heroIndex = heroIndex;
     this.doorArmed = false;
     this.doorData ??= await fetch('assets/stages/doors.json').then((r) => r.json()).catch(() => ({}));
+    this.arrData ??= await fetch('assets/stages/arrivals.json').then((r) => r.json()).catch(() => ({}));
     const st = await loadStage(stageIndex, false, variant);
     const h = await loadHero(heroIndex);
     this.stage = st;
@@ -304,17 +305,35 @@ export class PlayMode {
     // the inn (stage 0) has no (-1,-1,-126) door record; its three -126 trigger records (two at the east wall, one at the north) serve as the room doors (guess)
     this.doors = doorList;
     const hasDoor = !!(door && door.flag === -126 && door.kind === -1);
-    // arrival points (first records of the map module): where the hero appears when entering; face the middle of the floor
-    const arrivals = st.data.arrivals ?? [];
+    // arrival points: the area module's arrival table (tools/export_doors.py -> arrivals.json); a door script names the arrival index,
+    // starting a stage from the menu uses arrival 0 (the entrance). Face the middle of the floor.
+    const arrivals = this.arrData?.[String(stageIndex)] ?? [];
     let placed = false;
     if (arrivals.length) {
-      const dpos = door && door.flag === -126 ? door : null;
-      const a = [...arrivals].sort((p, q) => (dpos ? Math.hypot(p.x - dpos.x, p.z - dpos.z) - Math.hypot(q.x - dpos.x, q.z - dpos.z) : 0))[0];
-      const fy = this.floorAt(a.x, -a.z, a.y);
+      const a = arrivals[this.travelling ? Math.min(this.pendingArrival, arrivals.length - 1) : 0];
+      // the table's height sign is not certain: take the floor that fits either +y or -y better
+      let fy: number | null = null, fd = Infinity;
+      for (const hint of [a.y, -a.y]) {
+        const f = this.floorAt(a.x, -a.z, hint);
+        if (f !== null && Math.abs(f - hint) < fd) { fd = Math.abs(f - hint); fy = f; }
+      }
+      const cx = this.pos.x, cz = this.pos.z;
+      let px = a.x, pz = -a.z;
+      if (fy === null) {
+        // arrivals sit on the door cell, which is just outside the walkable floor: step towards the middle of the floor until there is ground
+        const dx = cx - px, dz = cz - pz, len = Math.hypot(dx, dz) || 1;
+        for (const step of [60, 120, 200, 300, 450, 650]) {
+          const qx = px + (dx / len) * step, qz = pz + (dz / len) * step;
+          for (const hint of [a.y, -a.y]) {
+            const f = this.floorAt(qx, qz, hint);
+            if (f !== null && Math.abs(f - hint) < fd) { fd = Math.abs(f - hint); fy = f; px = qx; pz = qz; }
+          }
+          if (fy !== null) break;
+        }
+      }
       if (fy !== null) {
-        const cx = this.pos.x, cz = this.pos.z;
-        this.pos.set(a.x, fy, -a.z);
-        this.heading = Math.atan2(cx - a.x, cz + a.z);
+        this.pos.set(px, fy, pz);
+        this.heading = Math.atan2(cx - px, cz - pz);
         placed = true;
       }
     }
@@ -332,10 +351,15 @@ export class PlayMode {
     if (this.doors.length) {
       let bi = 0, bd = Infinity;
       this.doors.forEach((d, i) => { const dd = Math.hypot(d.x - this.pos.x, d.z - this.pos.z); if (dd < bd) { bd = dd; bi = i; } });
-      for (const d of this.doors) if (Math.hypot(d.x - this.doors[bi].x, d.z - this.doors[bi].z) < 300) d.exit = false;
+      // arriving by arrival index >= 1 (coming back through the exit side) the nearest door is the exit, the others lead back
+      const viaExit = placed && this.travelling && this.pendingArrival >= 1 && (st.data.quest ?? -1) !== 0;
+      for (const d of this.doors) {
+        const near = Math.hypot(d.x - this.doors[bi].x, d.z - this.doors[bi].z) < 300;
+        d.exit = viaExit ? near : !near;
+      }
     }
     // arrival 1 and up = coming back through the area's other door: appear next to the exit door instead of the entrance
-    if (this.pendingArrival >= 1 && this.travelling && (st.data.quest ?? -1) !== 0) {
+    if (!placed && this.pendingArrival >= 1 && this.travelling && (st.data.quest ?? -1) !== 0) {
       const ex = this.doors.filter((d) => d.exit).sort((a, b) => Math.hypot(b.x - this.pos.x, b.z - this.pos.z) - Math.hypot(a.x - this.pos.x, a.z - this.pos.z))[0];
       if (ex) {
         const cx = this.pos.x, cz = this.pos.z;
@@ -829,6 +853,7 @@ export class PlayMode {
   }
 
   /** real door destinations per stage (door scripts `11 group area arrival`), loaded once */
+  private arrData: Record<string, { x: number; y: number; z: number; rot: number; id: number }[]> | null = null;
   private doorData: Record<string, { quest: number; area: number; arrival: number; stage: number | null }[]> | null = null;
 
   /** destination of a door: stage and arrival index (0 = the area's entrance door, 1.. = other doors, e.g. the exit door when coming back) */
