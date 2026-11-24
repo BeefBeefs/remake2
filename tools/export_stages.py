@@ -85,6 +85,13 @@ for i, v in enumerate(words):
             while p >= 1 and 0 < words[p - 1] < 22600 and words[p] in (33312, 16928, 12832, 18464): tl.append([words[p - 1], words[p]]); p -= 2
             st['texList'] = tl[::-1]
             break
+# Stage names: a ' - Name -' string (Pascal-style, preceded by a length byte) sits within ~0x900 bytes after the descriptor
+import re
+for i, v in enumerate(words):
+    st = want.get(v)
+    if st is None or st.get('name'): continue
+    m = re.search(rb"- ([A-Z][A-Za-z0-9 ,'\.:!?-]{2,40}?) -", d[i * 4:i * 4 + 0x900])
+    if m: st['name'] = m.group(1).decode()
 atlas_index = {s: k for k, s in enumerate(atl)}
 total = 0
 for k, st in enumerate(stages):
@@ -95,6 +102,6 @@ for k, st in enumerate(stages):
     if st['atlases']: st['atlas'] = st['atlases'][0]
     p = os.path.join(out, f'stage{k:02d}.json')
     json.dump(st, open(p, 'w'), separators=(',', ':')); total += os.path.getsize(p)
-json.dump({'atlasSectors': atl, 'stages': [{'sector': s['collision']['sector'], 'meshes': len(s['meshes']), 'atlas': s['atlas'], 'atlases': s['atlases'], 'texList': s.get('texList')} for s in stages]},
+json.dump({'atlasSectors': atl, 'stages': [{'sector': s['collision']['sector'], 'meshes': len(s['meshes']), 'atlas': s['atlas'], 'atlases': s['atlases'], 'texList': s.get('texList'), 'name': s.get('name')} for s in stages]},
           open(os.path.join(out, 'index.json'), 'w'))
 print(len(atl), 'atlases,', len(stages), 'stages, json KB', total // 1024)

@@ -4,6 +4,17 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step Q – stage names and the shape of the stage script**
+- ✅ Each stage descriptor is followed (within ~0x900 bytes) by a Pascal-style name string `- The Room -`; found for **30 of 96 stages**
+  (0 The Roadside Inn, 1 The Room [item expert NPC], 2 Your Room, 10/11 The Abandoned Mine, 15 The Ruins Within the Earth,
+  29–31/36 Underground Cave, 63 The Palace of the Immortal, 64 The Fantastic Palace, 73/75 The Ancient Ruins, 74 The Sorcerer's
+  Laboratory, 78/79 The Griffon's Nest, 84/92 The Sealed Cave, 89 Ice Grotto, 93 The Land of Storms, 94/95 The Hall of Demons).
+  Dungeon floors without a banner name stay unnamed. The stage dropdown shows the names; `index.json` has `name`.
+- ✅ Stage 1 ("The Room") script contains the **item expert's dialogue** ("The expert: Ho, it's a bunch of newbies!", appraisal lines such as
+  "Hee hee… that's a <item> if I ever saw one") – so NPC dialogue is embedded as text with `\r` line breaks and item-name substitution slots.
+  The same stage layouts are repeated 12× in the file (once per save/variant block), 0xa800–0xb000 apart.
+- Not decoded: the entity table before the name (16-bit position/orientation records with y=400) and the script opcodes between texts.
+
 **Step P – hero animation roles confirmed by eye (user check on the phone) + actions in play mode**
 - ✅ Confirmed by the user watching the viewer: hero **anim 0 = idle**; **anim 2 = hurt/flinch** (was guessed "run"); **anim 3 = attack**
   (was "hit"); **anim 4 = jump** (was "attack"); **anim 6 = a second attack**; **anim 7 = dying**; **anim 8 = victory / level-up**

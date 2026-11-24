@@ -38,6 +38,15 @@ const mk = (n: number, label: (i: number) => string) => {
 // (room geometry, tools/export_stages.py)
 const STAGE0 = 16 + 97;
 const heroSel = mk(STAGE0 + 96, (i) => (i < 16 ? `hero ${i}` : i < STAGE0 ? `monster ${i - 16}` : `stage ${i - STAGE0}`));
+// Stage names (tools/export_stages.py finds ' - Name -' strings for 30 of 96 stages) label the dropdown entries.
+fetch('assets/stages/index.json')
+  .then((r) => r.json() as Promise<{ stages: { name?: string | null }[] }>)
+  .then((ix) =>
+    ix.stages.forEach((st, k) => {
+      if (st.name) heroSel.options[STAGE0 + k].text = `stage ${k} – ${st.name}`;
+    }),
+  )
+  .catch(() => undefined);
 const atlasSel = mk(272, (i) => `atlas ${i}`);
 atlasSel.style.display = 'none';
 let stage: StageView | undefined;
