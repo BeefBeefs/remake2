@@ -4,6 +4,17 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step N – busy stages (caves) fixed: triangle rows are padded with vertex 0**
+- 🐞 Stages 6+ rendered as spiky fans because triangles in room meshes are stored as `(a,b,c,0)` – the 4th index is vertex **0**, not a repeat of
+  an earlier index. The exporter now turns those rows into repeated-index rows (unless vertex 0 is geometrically near the others) → the cave
+  stages (e.g. stage 7: 1044/829 verts/faces floor + wall meshes) now show clean cave outlines. Stage JSON also carries `pg` per face
+  (page bit = bits 16–23 of the attr word) for the atlas question.
+- ❓ Atlas assignment on cave stages is still **unresolved**: u goes up to 255 on a 128-wide atlas and `pg` is 0/1, but every combination
+  of a left/right atlas pair from the stage list looks like dithered noise (cave rock is genuinely dithered) or white (atlas 6140 is a
+  mostly blank page – maybe dynamic/lightmap), so the visual check is inconclusive. Needs a clearer test (e.g. a stage with a recognisable
+  painted texture, or reading how the face's attr low byte maps to a tile offset).
+- Collision meshes are exported in `stageNN.json → collision` (verts + u16 triangles) for later walkability work.
+
 **Step M – stage resource descriptors parsed (atlas lists per stage)**
 - ✅ Each stage has a descriptor of `(sector,size)` u32 pairs: **texture pairs** (33312 B = 128×256 atlas, 16928 B = 256×64 texture,
   12832 …) | sentinel `1601110016, x` | **mesh pairs** (collision, walls, floors, …, props pack, text pack) | `0xffffffff, 65410`.

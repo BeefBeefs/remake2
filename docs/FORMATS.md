@@ -125,8 +125,9 @@ table), `w9` (normal table), `w10` (face table); `w12`/`w13` point to further ta
 terminated by 0xffff, role unknown). Vertices are `i16 x,y,z,pad` (8 B), normals 8 B.
 - **Textured room mesh** (466 records; walls, floors, ceilings…): `w12 == 0 && w13 > w10`; face rows are **32 B**:
   `u16 vertex[4]`, `u16 normal[4]`, `u8 uv[4][2]` (atlas pixels, atlas is **128×256**), `u32 flags` (0/1), `u32 attr`
-  (e.g. 0x2c000070 / 0x3c000020: low byte probably a tile offset or material; not needed to texture correctly). Triangles repeat a vertex index
-  (use the distinct-index rule of character meshes).
+  (e.g. 0x2c000070 / 0x3c000020: low byte probably a tile offset or material; not needed to texture correctly). Triangles are **not** marked by a repeated index here: the 4th
+  vertex index is padded with **0** (4th normal slot 0 too), so row `(16,18,17,0)` is a triangle. The exporter turns a padded row into a repeated index
+  unless vertex 0 lies close to the other three corners (`pg` = bits 16–23 of the last u32 = page bit, kept in the JSON).
 - **Collision mesh** (96 records, one per stage): face rows are **16 B**: `u16 vertex[4]` (three used, 4th = 0) + 8 B (zeros / 3).
   A stage = a collision record followed by its textured records (2–8 each) in file order.
 - Tile atlases: 272 records of 128×256 with 1 CLUT (psize 524), e.g. sectors 3368, 3403, 3420, 4109, 4987, 5004, 5021, 5138 …

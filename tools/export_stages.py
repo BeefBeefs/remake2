@@ -25,7 +25,17 @@ def record(s):
         faces = []
         for i in range(F):
             b = o + w[10] + 32 * i
-            faces.append({'v': list(struct.unpack_from('<4H', d, b)), 'uv': [[d[b + 16 + 2 * k], d[b + 17 + 2 * k]] for k in range(4)]})
+            v4 = list(struct.unpack_from('<4H', d, b))
+            if v4[3] == 0 and max(v4[:3]) < V and 0 not in v4[:3]:
+                # triangle rows are padded with vertex index 0 (not a repeated index like character meshes). Treat it as a
+                # real quad only when vertex 0 lies close to the other three corners.
+                P = [verts[k] for k in v4[:3]]
+                cen = [sum(c[a] for c in P) / 3 for a in range(3)]
+                edge = max(sum((P[i][a] - P[(i + 1) % 3][a]) ** 2 for a in range(3)) ** .5 for i in range(3))
+                dist = sum((verts[0][a] - cen[a]) ** 2 for a in range(3)) ** .5
+                if dist > 1.5 * edge + 1: v4[3] = v4[2]
+            pg = (struct.unpack_from('<I', d, b + 28)[0] >> 16) & 0xff
+            faces.append({'pg': pg, 'v': v4, 'uv': [[d[b + 16 + 2 * k], d[b + 17 + 2 * k]] for k in range(4)]})
         return {'sector': s, 'verts': verts, 'faces': faces}
     tris = []
     for i in range(F):
