@@ -1,3 +1,4 @@
+import { questOf } from './quests';
 import * as THREE from 'three';
 import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 import { loadStage, StageView } from './model/stageViewer';
@@ -329,7 +330,8 @@ export class PlayMode {
     this.camera.updateProjectionMatrix();
     this.active = true;
     this.hud.style.display = 'block';
-    this.info = `stage ${stageIndex}: ${this.tris.length} floor triangles — left stick/WASD move, right drag/Q E turn, ? = help`;
+    const qn = questOf(stageIndex);
+    this.info = `${qn ? `${qn.name} – area ${qn.area + 1}/${qn.areas} (stage ${stageIndex})` : `stage ${stageIndex}`}: ${this.tris.length} floor triangles — left stick/WASD move, right drag/Q E turn, ? = help`;
     this.updateHero(0);
   }
 

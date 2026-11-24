@@ -4,6 +4,7 @@ import { Sfx, SFX_SLOTS, SfxSlot } from './audio/sfx';
 import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 import { loadStage, StageView } from './model/stageViewer';
 import { PlayMode } from './play';
+import { questOf } from './quests';
 
 // Placeholder scene: proves the build/asset pipeline. Real game systems land in later milestones
 // (see PROGRESS.md).
@@ -39,15 +40,16 @@ const mk = (n: number, label: (i: number) => string) => {
 // (room geometry, tools/export_stages.py; the 18 headerless extra records are merged into their owning stage)
 const STAGE0 = 16 + 97;
 export const STAGE_COUNT = 78;
-const heroSel = mk(STAGE0 + STAGE_COUNT, (i) => (i < 16 ? `hero ${i}` : i < STAGE0 ? `monster ${i - 16}` : `stage ${i - STAGE0}`));
+const qLabel = (k: number): string => { const q = questOf(k); return q ? `${q.name} ${q.area + 1}/${q.areas}` : ''; };
+const heroSel = mk(STAGE0 + STAGE_COUNT, (i) => (i < 16 ? `hero ${i}` : i < STAGE0 ? `monster ${i - 16}` : `stage ${i - STAGE0} – ${qLabel(i - STAGE0)}`));
 // Stage names (tools/export_stages.py finds ' - Name -' strings for 30 of the stages) label the dropdown entries.
 fetch('assets/stages/index.json')
   .then((r) => r.json() as Promise<{ stages: { name?: string | null }[] }>)
   .then((ix) =>
     ix.stages.forEach((st, k) => {
       if (st.name) {
-        heroSel.options[STAGE0 + k].text = `stage ${k} – ${st.name}`;
-        playSel.options[k].text = `stage ${k} – ${st.name}`;
+        heroSel.options[STAGE0 + k].text = `stage ${k} – ${st.name} (${qLabel(k)})`;
+        playSel.options[k].text = `stage ${k} – ${st.name} (${qLabel(k)})`;
       }
     }),
   )
@@ -75,7 +77,8 @@ hud?.append(document.createElement('hr'), heroSel, animSel, palSel, gearSel, atl
 
 // First playable slice: walk the selected hero (or hero 0) around the selected stage (stage 1 if none is selected).
 const play = new PlayMode(scene, camera, renderer.domElement);
-const playSel = mk(STAGE_COUNT, (i) => `stage ${i}`);
+const stageLabel = (i: number): string => { const q = questOf(i); return q ? `stage ${i} – ${q.name} ${q.area + 1}/${q.areas}` : `stage ${i}`; };
+const playSel = mk(STAGE_COUNT, stageLabel);
 playSel.value = '1';
 // Story-state variants: the inn and rooms exist several times (different dialogue / entities); the picker lists the extra copies.
 const variantSel = document.createElement('select');
