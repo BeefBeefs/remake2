@@ -117,7 +117,7 @@ export class PlayMode {
   constructor(
     private readonly scene: THREE.Scene,
     private readonly camera: THREE.PerspectiveCamera,
-    private readonly dom: HTMLElement,
+    readonly dom: HTMLElement,
   ) {
     this.hud = document.createElement('div');
     this.hud.style.cssText = 'position:fixed;left:10px;bottom:10px;color:#fff;font:14px monospace;text-shadow:0 0 3px #000;display:none;z-index:5';
