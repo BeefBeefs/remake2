@@ -52,6 +52,11 @@ fetch('assets/stages/index.json')
     }),
   )
   .catch(() => undefined);
+// Hero class names (character-select module of BLAZE.ALL, tools/export_classes.py) label the 16 hero entries.
+fetch('assets/heroes/classes.json')
+  .then((r) => r.json() as Promise<{ hero: number; class: string; weapon: string }[]>)
+  .then((cl) => cl.forEach((c) => { heroSel.options[c.hero].text = `hero ${c.hero} – ${c.class}`; }))
+  .catch(() => undefined);
 const atlasSel = mk(271, (i) => `atlas ${i}`);
 {
   const auto = document.createElement('option');

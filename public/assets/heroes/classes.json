@@ -1,0 +1,214 @@
+[
+ {
+  "hero": 0,
+  "class": "Warrior (m)",
+  "kit": 0,
+  "weapon": "Normal Sword",
+  "attack": 7,
+  "defense": 5,
+  "gear": [
+   "Normal Sword",
+   "Leather Armor",
+   "Leather Shield",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 1,
+  "class": "Priest",
+  "kit": 1,
+  "weapon": "Club",
+  "attack": 5,
+  "defense": 2,
+  "gear": [
+   "Club",
+   "Robe",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 2,
+  "class": "Rogue (m)",
+  "kit": 2,
+  "weapon": "Dagger",
+  "attack": 5,
+  "defense": 3,
+  "gear": [
+   "Dagger",
+   "Leather Armor",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 3,
+  "class": "Sorcerer",
+  "kit": 3,
+  "weapon": "Wooden Wand",
+  "attack": 5,
+  "defense": 2,
+  "gear": [
+   "Wooden Wand",
+   "Robe",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 4,
+  "class": "Hunter (m)",
+  "kit": 4,
+  "weapon": "Shortbow",
+  "attack": 5,
+  "defense": 3,
+  "gear": [
+   "Shortbow",
+   "Leather Armor",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 5,
+  "class": "Elf (m)",
+  "kit": 5,
+  "weapon": "Shortsword",
+  "attack": 6,
+  "defense": 3,
+  "gear": [
+   "Shortsword",
+   "Leather Armor",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 6,
+  "class": "Dwarf (m)",
+  "kit": 6,
+  "weapon": "Tomahawk",
+  "attack": 8,
+  "defense": 5,
+  "gear": [
+   "Tomahawk",
+   "Leather Armor",
+   "Leather Shield",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 7,
+  "class": "Fairy (m)",
+  "kit": 7,
+  "weapon": "Rod",
+  "attack": 5,
+  "defense": 2,
+  "gear": [
+   "Rod",
+   "Robe",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 8,
+  "class": "Warrior (f)",
+  "kit": 0,
+  "weapon": "Normal Sword",
+  "attack": 7,
+  "defense": 5,
+  "gear": [
+   "Normal Sword",
+   "Leather Armor",
+   "Leather Shield",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 9,
+  "class": "Priestess",
+  "kit": 1,
+  "weapon": "Club",
+  "attack": 5,
+  "defense": 2,
+  "gear": [
+   "Club",
+   "Robe",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 10,
+  "class": "Rogue (f)",
+  "kit": 2,
+  "weapon": "Dagger",
+  "attack": 5,
+  "defense": 3,
+  "gear": [
+   "Dagger",
+   "Leather Armor",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 11,
+  "class": "Sorceress",
+  "kit": 3,
+  "weapon": "Wooden Wand",
+  "attack": 5,
+  "defense": 2,
+  "gear": [
+   "Wooden Wand",
+   "Robe",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 12,
+  "class": "Hunter (f)",
+  "kit": 4,
+  "weapon": "Shortbow",
+  "attack": 5,
+  "defense": 3,
+  "gear": [
+   "Shortbow",
+   "Leather Armor",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 13,
+  "class": "Elf (f)",
+  "kit": 5,
+  "weapon": "Shortsword",
+  "attack": 6,
+  "defense": 3,
+  "gear": [
+   "Shortsword",
+   "Leather Armor",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 14,
+  "class": "Dwarf (f)",
+  "kit": 6,
+  "weapon": "Tomahawk",
+  "attack": 8,
+  "defense": 5,
+  "gear": [
+   "Tomahawk",
+   "Leather Armor",
+   "Leather Shield",
+   "Healing Potion"
+  ]
+ },
+ {
+  "hero": 15,
+  "class": "Fairy (f)",
+  "kit": 7,
+  "weapon": "Rod",
+  "attack": 5,
+  "defense": 2,
+  "gear": [
+   "Rod",
+   "Robe",
+   "Healing Potion"
+  ]
+ }
+]

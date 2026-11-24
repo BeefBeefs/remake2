@@ -31,6 +31,10 @@ interface Enemy {
   vz: number;
 }
 
+interface HeroClass { hero: number; class: string; weapon: string; attack: number; defense: number }
+let classCache: Promise<HeroClass[]> | null = null;
+const heroClasses = (): Promise<HeroClass[]> => (classCache ??= fetch('assets/heroes/classes.json').then((r) => r.json() as Promise<HeroClass[]>).catch(() => []));
+
 export class PlayMode {
   private enemies: Enemy[] = [];
   private stageIndex = 0;
@@ -56,6 +60,10 @@ export class PlayMode {
   private curAnim = -1;
   /** Healing Potions (the starting kits contain one: 'Restores HP to single unit'; the amount healed is not in the data we read, 40 is a guess). */
   potions = 3;
+  /** Damage per hit on enemies (weapon attack x 5; the Normal Sword's 7 gives about the old flat 34) and flat damage reduction from armor. */
+  private heroDamage = 34;
+  private heroGuardDef = 0;
+  private className = '';
   /** Sound effects (set by main.ts once the sound banks are loaded). */
   sfx: Sfx | null = null;
   /** One-shot action (attack/jump…): hero anim index and seconds left. */
@@ -159,6 +167,10 @@ export class PlayMode {
     const h = await loadHero(heroIndex);
     this.stage = st;
     this.hero = h;
+    const cls = (await heroClasses()).find((c) => c.hero === heroIndex);
+    this.heroDamage = cls ? cls.attack * 5 : 34;
+    this.heroGuardDef = cls ? Math.floor(cls.defense / 2) : 0;
+    this.className = cls ? `${cls.class} (${cls.weapon})` : '';
     this.curAnim = -1;
     this.scene.add(st.root);
     this.scene.add(h.root);
@@ -316,7 +328,7 @@ export class PlayMode {
         en.lock = 0.7;
         this.setEnemyAnim(en, 3);
         // while the guess-guard animation plays (key G) the hit does half damage
-        this.hp = Math.max(0, this.hp - (this.action?.anim === 5 ? Math.ceil(en.dmg / 2) : en.dmg));
+        this.hp = Math.max(0, this.hp - Math.max(1, (this.action?.anim === 5 ? Math.ceil(en.dmg / 2) : en.dmg) - this.heroGuardDef));
         this.sfx?.play('hurt');
         this.act('hurt');
       }
@@ -345,7 +357,7 @@ export class PlayMode {
     const defs = this.stage?.data.monsterDefs ?? [];
     const here = defs.length ? `\nhere: ${defs.map((d) => d.name).join(', ')}` : '';
     this.hud.style.whiteSpace = 'pre';
-    this.hud.textContent = `HP ${this.hp}   potions ${this.potions} (P)   enemies ${alive}${here}`;
+    this.hud.textContent = `${this.className ? this.className + '\n' : ''}HP ${this.hp}   potions ${this.potions} (P)   enemies ${alive}${here}`;
   }
 
   /** Prop collision: props are circles (radius ~ 60) – enemies and the hero cannot walk through them. */
@@ -421,7 +433,7 @@ export class PlayMode {
       if (en.npc || en.hp <= 0) continue;
       const dx = en.x - this.pos.x, dz = en.z - this.pos.z;
       if (Math.hypot(dx, dz) < 170) {
-        en.hp -= 34;
+        en.hp -= this.heroDamage;
         this.sfx?.play('hit');
         en.lock = 0.5;
         this.setEnemyAnim(en, 2);
