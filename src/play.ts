@@ -139,6 +139,7 @@ export class PlayMode {
       if (key === 'v') this.act('victory');
       if (key === 'g') this.act('guard');
       if (key === 'p') this.usePotion();
+      if (key === 'b') this.buyPotion();
       if (key === 'c') this.cast();
       if (key === 'z') this.spellIdx = this.spells.length ? (this.spellIdx + 1) % this.spells.length : 0;
       if (key === ' ') e.preventDefault();
@@ -184,6 +185,17 @@ export class PlayMode {
 
   cycleSpell(): void {
     if (this.spells.length) this.spellIdx = (this.spellIdx + 1) % this.spells.length;
+  }
+
+  /** Buy a Healing Potion for 30 gold (price is a guess: the shop prices are not decoded). */
+  buyPotion(): void {
+    if (!this.active || this.hp <= 0) return;
+    if (this.gold < 30 || this.potions >= 9) { this.notice = this.potions >= 9 ? 'Potion bag is full' : 'Not enough gold (30)'; this.noticeT = 1.5; return; }
+    this.gold -= 30;
+    this.potions++;
+    this.notice = 'Bought a Healing Potion (-30 gold)';
+    this.noticeT = 1.5;
+    try { localStorage.setItem('bb_prog', JSON.stringify({ level: this.level, xp: this.xp, gold: this.gold })); } catch { /* ignore */ }
   }
 
   usePotion(): void {
@@ -436,7 +448,7 @@ export class PlayMode {
     const here = defs.length ? `\nhere: ${defs.map((d) => d.name).join(', ')}` : '';
     this.hud.style.whiteSpace = 'pre';
     this.noticeT = Math.max(0, this.noticeT - dt);
-    this.hud.textContent = `${this.noticeT > 0 ? this.notice + '\n' : ''}${this.className ? this.className + ' ' : ''}Lv ${this.level} (xp ${this.xp}/${this.level * 40}, ${this.gold} gold)\nHP ${this.hp}/${this.maxHp}   ${this.spells.length ? `MP ${Math.floor(this.mp)} ${this.spells[this.spellIdx].name} (C cast, Z next)   ` : ''}potions ${this.potions} (P)   enemies ${alive}${here}`;
+    this.hud.textContent = `${this.noticeT > 0 ? this.notice + '\n' : ''}${this.className ? this.className + ' ' : ''}Lv ${this.level} (xp ${this.xp}/${this.level * 40}, ${this.gold} gold)\nHP ${this.hp}/${this.maxHp}   ${this.spells.length ? `MP ${Math.floor(this.mp)} ${this.spells[this.spellIdx].name} (C cast, Z next)   ` : ''}potions ${this.potions} (P use, B buy 30g)   enemies ${alive}${here}`;
   }
 
   /** Prop collision: props are circles (radius ~ 60) – enemies and the hero cannot walk through them. */
