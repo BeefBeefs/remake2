@@ -143,3 +143,10 @@ Positions fall inside the room's bounding box in the *same* x/z as the room mesh
 **props pack** (packs 5072/5165/5225/… share the same base parts: 1 bed, 2 counter, 3 wardrobe, 5 cupboard, 7 table …; extra parts differ per stage);
 the first two records (kind −1 / 512 with flag −126 / 130) are the entrance door/trigger with `link` = destination id. Found for 38 stages (room/town type);
 dungeon stages use another table (not decoded). `tools/export_stages.py` writes `stageNN.json → entities, propsSector` and `props<sector>.json`.
+
+## Stage script / dialogue bytecode (first look)
+
+After the `- Name -` banner of a stage descriptor comes a byte stream mixing commands and text. Dialogue boxes look like
+`1f d0 <id> 0c "Speaker:\r text" 0f` (e.g. stage 1: `The expert:\rHo, it's a bunch of newbies!`), `\r` = line break, `0f` = end of box,
+`0a <n> ...` / `07 03 <n> ...` are commands (give item / set flag / branch – unverified). Entity `link` values (door 98 in stage 1, 133 in stage 2,
+NPC 57/81/52…) are therefore **offsets/ids into this stream, not stage numbers**; the door-to-stage mapping must come from decoding it.

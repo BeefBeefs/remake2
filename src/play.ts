@@ -23,10 +23,20 @@ interface Enemy {
   cooldown: number;
   dying: number;
   npc: boolean;
+  anim: number;
+  lock: number; // seconds a one-shot animation (hit/attack) keeps playing
+  vx: number;
+  vz: number;
 }
 
 export class PlayMode {
   private enemies: Enemy[] = [];
+  private stageIndex = 0;
+  private heroIndex = 0;
+  private doorArmed = false;
+  private travelling = false;
+  private doorPos: { x: number; z: number } | null = null;
+  private solids: { x: number; z: number; r: number }[] = [];
   hp = 100;
   private deadTime = -1;
   private readonly hud: HTMLDivElement;
@@ -102,7 +112,12 @@ export class PlayMode {
   }
 
   async enter(stageIndex: number, heroIndex: number): Promise<void> {
+    const keepHp = this.travelling ? this.hp : 100;
     this.exit();
+    this.hp = keepHp;
+    this.stageIndex = stageIndex;
+    this.heroIndex = heroIndex;
+    this.doorArmed = false;
     const st = await loadStage(stageIndex, false);
     const h = await loadHero(heroIndex);
     this.stage = st;
@@ -137,6 +152,7 @@ export class PlayMode {
     }
     await this.spawnEnemies(st);
     const door = st.data.entities?.[0];
+    this.doorPos = door && door.flag === -126 && door.kind === -1 ? { x: door.x, z: -door.z } : null;
     if (door) {
       // entity (x, y up, z) in PS1 space -> world (x, y, -z); nudge towards the room centre if the door is off the floor
       for (const step of [0, 60, 120, 200]) {
@@ -163,6 +179,7 @@ export class PlayMode {
   private async spawnEnemies(st: StageView): Promise<void> {
     const models = st.data.monsters ?? [];
     const ents = st.data.entities ?? [];
+    this.solids = ents.filter((e, i) => i > 0 && e.flag === -254).map((e) => ({ x: e.x, z: -e.z, r: 55 }));
     if (!models.length) return;
     const spots: { x: number; z: number; y: number; model: number; npc: boolean }[] = [];
     const isRoom = ents.some((e) => e.flag === -254);
@@ -187,10 +204,20 @@ export class PlayMode {
         const m = await loadMonster(sp.model);
         await m.setTexture(`assets/monsters/mon${String(sp.model).padStart(2, '0')}.png`);
         this.scene.add(m.root);
-        this.enemies.push({ model: m, hp: 60, x: sp.x, y: sp.y, z: sp.z, cooldown: 0, dying: 0, npc: sp.npc });
+        this.enemies.push({ model: m, hp: 60, x: sp.x, y: sp.y, z: sp.z, cooldown: 0, dying: 0, npc: sp.npc, anim: 0, lock: 0, vx: 0, vz: 0 });
       } catch (err) {
         console.warn('monster load failed', sp.model, err);
       }
+    }
+  }
+
+  /** Monster animation slots (guess, mirrors the hero layout): 0 idle, 1 walk, 2 hit, 3 attack, last = die. */
+  private setEnemyAnim(en: Enemy, want: number): void {
+    const n = en.model.animCount;
+    const a = Math.min(want, n - 1);
+    if (en.anim !== a) {
+      en.anim = a;
+      en.model.setAnim(a);
     }
   }
 
@@ -198,29 +225,66 @@ export class PlayMode {
     for (const en of this.enemies) {
       const m = en.model;
       if (en.dying > 0) {
+        // play the death animation (last slot) once, then shrink away
+        if (en.dying === 99) {
+          this.setEnemyAnim(en, m.animCount >= 5 ? m.animCount - 1 : 2);
+          en.dying = 1.6;
+        }
         en.dying -= dt;
-        m.root.scale.setScalar(Math.max(0.01, en.dying / 0.6));
+        if (m.currentFrame < m.frameCount - 1) m.update(dt);
+        if (en.dying < 0.6) m.root.scale.setScalar(Math.max(0.01, en.dying / 0.6));
         continue;
       }
       const dx = this.pos.x - en.x, dz = this.pos.z - en.z, dist = Math.hypot(dx, dz);
       en.cooldown -= dt;
+      en.lock -= dt;
+      let moving = false;
       if (!en.npc && dist < 700 && dist > 70) {
         const nx = en.x + (dx / dist) * 90 * dt, nz = en.z + (dz / dist) * 90 * dt;
         const fy = this.floorAt(nx, nz, en.y);
-        if (fy !== null && Math.abs(fy - en.y) < 80) { en.x = nx; en.z = nz; en.y = fy; }
+        if (fy !== null && Math.abs(fy - en.y) < 80 && !this.blocked(nx, nz, en)) {
+          en.x = nx; en.z = nz; en.y = fy; moving = true;
+        }
       }
       if (!en.npc && dist <= 90 && en.cooldown <= 0) {
         en.cooldown = 1.2;
+        en.lock = 0.7;
+        this.setEnemyAnim(en, 3);
         this.hp = Math.max(0, this.hp - 8);
         this.act('hurt');
       }
+      if (en.lock <= 0) this.setEnemyAnim(en, moving ? 1 : 0);
       m.update(dt);
       m.root.position.set(en.x, en.y, en.z);
       m.root.rotation.y = Math.atan2(dx, dz);
     }
-    for (const en of this.enemies) if (en.dying <= 0 && en.hp <= 0) en.dying = 0.6;
+    // enemies push each other apart so they do not stack on one spot
+    for (let i = 0; i < this.enemies.length; i++) {
+      for (let j = i + 1; j < this.enemies.length; j++) {
+        const a = this.enemies[i], b = this.enemies[j];
+        if (a.dying > 0 || b.dying > 0) continue;
+        const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
+        if (d > 0 && d < 60) {
+          const push = (60 - d) / 2;
+          a.x -= (dx / d) * push; a.z -= (dz / d) * push;
+          b.x += (dx / d) * push; b.z += (dz / d) * push;
+        }
+      }
+    }
+    for (const en of this.enemies) {
+      if (en.dying <= 0 && en.hp <= 0) en.dying = 99;
+    }
     const alive = this.enemies.filter((e) => !e.npc && e.hp > 0).length;
     this.hud.textContent = `HP ${this.hp}   enemies ${alive}`;
+  }
+
+  /** Prop collision: props are circles (radius ~ 60) – enemies and the hero cannot walk through them. */
+  private blocked(x: number, z: number, self?: Enemy): boolean {
+    for (const p of this.solids) if (Math.hypot(x - p.x, z - p.z) < p.r) return true;
+    if (self) {
+      for (const o of this.enemies) if (o !== self && o.npc && Math.hypot(x - o.x, z - o.z) < 60) return true;
+    }
+    return false;
   }
 
   /** Hero attack: damage enemies in front within 170 units. */
@@ -228,7 +292,11 @@ export class PlayMode {
     for (const en of this.enemies) {
       if (en.npc || en.hp <= 0) continue;
       const dx = en.x - this.pos.x, dz = en.z - this.pos.z;
-      if (Math.hypot(dx, dz) < 170) en.hp -= 34;
+      if (Math.hypot(dx, dz) < 170) {
+        en.hp -= 34;
+        en.lock = 0.5;
+        this.setEnemyAnim(en, 2);
+      }
     }
   }
 
@@ -295,7 +363,7 @@ export class PlayMode {
       const dz = (-ix * sin + iy * cos) * 220 * dt;
       const tryMove = (nx: number, nz: number): boolean => {
         const fy = this.floorAt(nx, nz, this.pos.y);
-        if (fy === null || Math.abs(fy - this.pos.y) > 80) return false;
+        if (fy === null || Math.abs(fy - this.pos.y) > 80 || this.blocked(nx, nz)) return false;
         this.pos.set(nx, fy, nz);
         return true;
       };
@@ -313,6 +381,20 @@ export class PlayMode {
     }
     this.updateEnemies(dt);
     this.updateHero(dt);
+    // door trigger (GUESS: the door leads to the next stage in file order; the real target is in the stage script bytecode)
+    if (this.doorPos && !this.travelling) {
+      const dd = Math.hypot(this.pos.x - this.doorPos.x, this.pos.z - this.doorPos.z);
+      if (dd > 220) this.doorArmed = true;
+      else if (dd < 90 && this.doorArmed) {
+        this.travelling = true;
+        const next = (this.stageIndex + 1) % 96;
+        this.hud.textContent = `door → stage ${next} (guess)…`;
+        void this.enter(next, this.heroIndex)
+          .then(() => { this.info = `stage ${next} (via door)`; })
+          .catch((e) => console.warn('door travel failed', e))
+          .finally(() => { this.travelling = false; });
+      }
+    }
   }
 
   private updateHero(dt: number): void {

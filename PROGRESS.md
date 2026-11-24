@@ -4,6 +4,15 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step W – monster animation slots (guess), actor/prop collision, door travel (guess)**
+- Monster anim packs have 1–15 anims (mostly 4–7); slot 2 is 20 frames in 68 of 97 monsters (shared "hit" template) and slot 3 is mostly 15 frames, so monsters follow the hero
+  layout: **0 idle, 1 walk, 2 hit, 3 attack, last slot = die** (unconfirmed – eyeball in the viewer's anim buttons and tell me what is wrong).
+  Play mode uses them: walk while chasing, attack swing on contact, hit flinch when struck, die plays once then the body shrinks.
+- Collision: prop records (flag −254, radius 55) block hero and enemies, the NPC blocks enemies, enemies push each other apart.
+- Doors: the first record (flag −126, kind −1) is a door; walking up to it in play mode loads the **next stage in file order (guess)**, keeping HP. `link` is NOT a stage number
+  (98, 133, 57, 81 …): it indexes the stage's script bytecode, which starts after the `- Name -` banner – first findings in docs/FORMATS.md (dialogue boxes `1f d0 id 0c text 0f`).
+- Next: decode the script commands (give item, flags, warp) to get real door targets; monster ↔ spawn kind mapping.
+
 **Step V – stage monster lists, better default atlas, enemies + NPC + combat in play mode (UNTESTED, heuristic)**
 - ✅ A stage's **texture list holds the monster/NPC textures it streams in**; matching them against the model table gives `monsters: [ids]` per stage
   (stage 20: models 0, 16, 14; stage 23: 15, 39, 40; stage 1 "The Room": **model 84 = the item expert NPC**; stage 6: model 3). The walk-back over texture pairs now accepts any size
