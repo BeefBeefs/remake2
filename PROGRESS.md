@@ -3,6 +3,25 @@
 Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (Win EN). Repo will go private
 later. Newest entry first; each work session appends here.
 
+## Turn 6 – 2026-11-24 (multi-step; notes after each step)
+**Step 2 – assemble model from bones + pose 0 (done for the knight, pack 3521 + anim 3501)**
+- ✅ `tools/assemble.py`: bone world transforms from parent table + frame-0 pose. **Rotation matrix order X·Y·Z** (angles
+  4096 = 360°) gives a coherent knight with a sword (zyx/xzy give garbage). See `docs/knight_pose0.png` (front + side wireframe).
+- ✅ `tools/export_model.py` → `public/assets/models/pack_3521.json` now holds parts (with bone index), bone parents,
+  114 poses and 14 frame index lists, ready for a three.js skeleton viewer (Step 4).
+- ⚠️ Not verified: only frame 0 checked; 5 of 27 parts did not parse (22/27); handedness/Y-up; R1 face rows still
+  excluded from sensible output (see Step 1), so some seams/holes are expected; animation 3501 blob 0 is presumably "idle"
+  (other blobs/frames unchecked).
+
+**Step 1 – vertex indexing (partly solved)**
+- ✅ Corrected vertex base: vertices at `h+w7-4`, count `(w8-w7)/8-1` (previous `-12`/no `-1` was off by 8 bytes; F2 quads
+  are now exactly planar rectangles, e.g. pack 3521 part 2).
+- ✅ The 2nd face list (F2) indexes the part's own vertices correctly. The first 7 rows ("R1") do **not** – they use
+  out-of-range indices; R1 is probably seam/joint geometry referencing neighbouring parts' vertices (unresolved).
+- ✅ **Hierarchy table decoded**: `[-1,-1] + 59 bone parents + 27 part→bone indices` (2+59+27 = 88 = A+2).
+
+**Next**: Step 3 face→texture mapping (`id`, tpage/CLUT), Step 4 three.js viewer.
+
 ## Turn 5 – 2026-11-24
 **Done**
 - ✅ **Mesh format found**: face rows (quad + UVs + vertex idx), vertices, normals (`tools/meshparse.py`). #faces == #normals

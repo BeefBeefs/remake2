@@ -77,9 +77,9 @@ BGR555+STP-bit palettes, 256-wide texture pages, `0x1000 = 1.0` fixed point (GTE
 ### Mesh part blobs ✅ (layout) / 🟡 (indexing)
 Found in 23 packs (sectors ~2764–3521; e.g. pack 3521 has 27 parts = C of its animation pack at 3501). 395 blobs
 parse so far. Layout (`tools/meshparse.py`):
-`[F1 face rows][subheader @h, 16-aligned, found by w7==0x40][V vertices @h+w7-12][N normals @h+w8-12][12 B][F2 face rows @h+w9]`
+`[F1 face rows][subheader @h, 16-aligned, found by w7==0x40][V vertices @h+w7-4][N normals @h+w8-12][12 B][F2 face rows @h+w9]`
 * face row (16 B): `u8 id[4]`, `u8 uv[4][2]` (PS1 texture-page coords), `u8 vidx[4]` – textured quad (repeated index = tri).
-* vertex: `i16 x,y,z,0` (small ints, about ±60); normal: `i16 x,y,z,0`, 4096 = 1.0. `V=(w8-w7)/8`, `N=(w9-w8)/8`, and
+* vertex: `i16 x,y,z,0` (small ints, about ±60); normal: `i16 x,y,z,0`, 4096 = 1.0. `V=(w8-w7)/8-1`, `N=(w9-w8)/8`, and
   **#faces == N** in every parsed blob. Visual check: part 26 of pack 3521 is a sword.
 * ❓ Face vertex indices often exceed V (up to 88 for a 59-vertex part): they index a model-wide pool (shared joints).
   ❓ Which texture/CLUT a face uses (`id`?); how parts map onto bones.
