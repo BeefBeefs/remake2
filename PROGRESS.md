@@ -4,6 +4,15 @@ Goal: playable TypeScript/three.js web port of *Blaze & Blade: Eternal Quest* (W
 later. Newest entry first; each work session appends here.
 
 ### Turn 9 (continues; notes after each step)
+**Step S – dungeon stage entities: what is known**
+- Dungeon stages (e.g. 20, 21, 23) also use 32-byte entity records, but with flags −255 / −127 / −126 / −30 and much bigger tables
+  (stage 20: 63 records, 57 × `kind 0, sub 1` at y = 150; stage 21: 70 × `kind 10`; stage 23: 65 × `kind 7`, plus `kind 5633…5635 sub 8` and
+  `kind 256 sub 6, link 741/814`). Positions lie in the collision box, so these are placements (spawns, chests, triggers), first record = entrance.
+- The stage's texture list (before the sentinel) contains the **monster textures it needs**: stage 20 → models 0, 16, 14 (jackal warrior, …),
+  stage 23 → models 15, 39, 40. The numeric `kind` of the repeating records does **not** equal one of those model ids (stage 23 uses 7), so `kind`
+  is probably an index into a per-stage spawn/loot table that sits in the script data – not decoded yet.
+- Next lead: dump the script data between the entity table and the banner for a dungeon stage and look for lists with 7/10/0 as indices.
+
 **Step R – entity table decoded for room stages; props placed**
 - ✅ After a stage's mesh-pair list come **32-byte entity records** (kind, sub, flag | x, y, z | rot, link …). x/z lie inside the room box; y is
   height (floor 400 or 100). Ordinary records (flag −254) are **props**: `kind` = part index in the stage's props pack (bed, counter, wardrobe,
