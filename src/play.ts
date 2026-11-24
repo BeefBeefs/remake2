@@ -57,6 +57,8 @@ export class PlayMode {
   private heroIndex = 0;
   private doorArmed = false;
   private lastRoom = 0;
+  /** arrival index of the door script that brought the hero here (0 = entrance side) */
+  private pendingArrival = 0;
   private variant = 0;
   private travelling = false;
   private doors: { x: number; z: number; exit: boolean }[] = [];
@@ -325,6 +327,20 @@ export class PlayMode {
       this.doors.forEach((d, i) => { const dd = Math.hypot(d.x - this.pos.x, d.z - this.pos.z); if (dd < bd) { bd = dd; bi = i; } });
       for (const d of this.doors) if (Math.hypot(d.x - this.doors[bi].x, d.z - this.doors[bi].z) < 300) d.exit = false;
     }
+    // arrival 1 and up = coming back through the area's other door: appear next to the exit door instead of the entrance
+    if (this.pendingArrival >= 1 && this.travelling && (st.data.quest ?? -1) !== 0) {
+      const ex = this.doors.filter((d) => d.exit).sort((a, b) => Math.hypot(b.x - this.pos.x, b.z - this.pos.z) - Math.hypot(a.x - this.pos.x, a.z - this.pos.z))[0];
+      if (ex) {
+        const cx = this.pos.x, cz = this.pos.z;
+        const dx = cx - ex.x, dz = cz - ex.z, len = Math.hypot(dx, dz) || 1;
+        for (const step of [160, 220, 280, 120, 60]) {
+          const px = ex.x + (dx / len) * step, pz = ex.z + (dz / len) * step;
+          const fy = this.floorAt(px, pz, this.pos.y);
+          if (fy !== null) { this.pos.set(px, fy, pz); this.heading = Math.atan2(cx - px, cz - pz); break; }
+        }
+      }
+    }
+    this.pendingArrival = 0;
     this.buildMinimap();
     this.camera.far = 30000;
     this.camera.near = 5;
@@ -790,7 +806,9 @@ export class PlayMode {
         this.travelling = true;
         this.sfx?.play('door');
         const i0 = this.stageIndex;
-        const next = this.doorTarget(i0, near.exit);
+        const tgt = this.doorTarget(i0, near.exit);
+        const next = tgt.stage;
+        this.pendingArrival = tgt.arrival;
         if (next >= 1 && next <= 5) this.lastRoom = next;
         this.hud.textContent = `door → stage ${next}…`;
         void this.enter(next, this.heroIndex, this.variant)
@@ -804,28 +822,31 @@ export class PlayMode {
   /** real door destinations per stage (door scripts `11 group area arrival`), loaded once */
   private doorData: Record<string, { quest: number; area: number; arrival: number; stage: number | null }[]> | null = null;
 
-  private doorTarget(i0: number, exit: boolean): number {
-    const scripts = (this.doorData?.[String(i0)] ?? []).map((d) => d.stage).filter((n): n is number => n !== null && n !== i0);
+  /** destination of a door: stage and arrival index (0 = the area's entrance door, 1.. = other doors, e.g. the exit door when coming back) */
+  private doorTarget(i0: number, exit: boolean): { stage: number; arrival: number } {
+    const all = (this.doorData?.[String(i0)] ?? []).filter((d): d is { quest: number; area: number; arrival: number; stage: number } => d.stage !== null && d.stage !== i0);
     const quest = this.stage?.data.quest ?? -1;
     const [q0, q1] = this.stage?.data.questRange ?? [i0, i0];
-    if (!scripts.length) {
-      if (quest === 0) return i0 === 0 ? (this.lastRoom % 5) + 1 : 0;
-      return exit ? (i0 < q1 ? i0 + 1 : 0) : (i0 > q0 ? i0 - 1 : 0);
+    const to = (stage: number, arrival = 0) => ({ stage, arrival });
+    if (!all.length) {
+      if (quest === 0) return to(i0 === 0 ? (this.lastRoom % 5) + 1 : 0, i0 === 0 ? 0 : this.lastRoom);
+      return exit ? to(i0 < q1 ? i0 + 1 : 0) : to(i0 > q0 ? i0 - 1 : 0, 1);
     }
     if (quest === 0) {
-      if (i0 !== 0) return scripts[0];
-      const rooms = [...new Set(scripts)].sort((a, b) => a - b);
-      return rooms.find((n) => n > this.lastRoom) ?? rooms[0];
+      if (i0 !== 0) return all[0];
+      const rooms = [...new Set(all.map((d) => d.stage))].sort((a, b) => a - b);
+      const r = rooms.find((n) => n > this.lastRoom) ?? rooms[0];
+      return all.find((d) => d.stage === r) ?? all[0];
     }
-    const same = scripts.filter((n) => n >= q0 && n <= q1);
+    const same = all.filter((d) => d.stage >= q0 && d.stage <= q1);
     if (exit) {
-      const higher = same.filter((n) => n > i0);
-      return higher.length ? Math.min(...higher) : 0;
+      const higher = same.filter((d) => d.stage > i0).sort((a, b) => a.stage - b.stage);
+      return higher[0] ?? to(0, 1);
     }
-    const lower = same.filter((n) => n < i0);
-    if (lower.length) return Math.max(...lower);
-    const other = scripts.filter((n) => n < q0 || n > q1);
-    return other.length ? other[0] : 0;
+    const lower = same.filter((d) => d.stage < i0).sort((a, b) => b.stage - a.stage);
+    if (lower.length) return lower[0];
+    const other = all.filter((d) => d.stage < q0 || d.stage > q1);
+    return other[0] ?? to(0, 1);
   }
 
   private updateHero(dt: number): void {
