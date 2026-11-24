@@ -1,0 +1,5213 @@
+{
+"sampleRate": 22050,
+"clips": [
+{
+"file": "Base_00.wav",
+"bank": "Base",
+"index": 0,
+"bytes": 1308,
+"seconds": 0.059
+},
+{
+"file": "Base_01.wav",
+"bank": "Base",
+"index": 1,
+"bytes": 672,
+"seconds": 0.03
+},
+{
+"file": "Base_02.wav",
+"bank": "Base",
+"index": 2,
+"bytes": 2260,
+"seconds": 0.102
+},
+{
+"file": "Base_03.wav",
+"bank": "Base",
+"index": 3,
+"bytes": 2788,
+"seconds": 0.126
+},
+{
+"file": "Base_04.wav",
+"bank": "Base",
+"index": 4,
+"bytes": 9384,
+"seconds": 0.426
+},
+{
+"file": "Base_05.wav",
+"bank": "Base",
+"index": 5,
+"bytes": 9984,
+"seconds": 0.453
+},
+{
+"file": "Base_06.wav",
+"bank": "Base",
+"index": 6,
+"bytes": 4272,
+"seconds": 0.194
+},
+{
+"file": "Base_07.wav",
+"bank": "Base",
+"index": 7,
+"bytes": 8644,
+"seconds": 0.392
+},
+{
+"file": "Base_08.wav",
+"bank": "Base",
+"index": 8,
+"bytes": 10092,
+"seconds": 0.458
+},
+{
+"file": "Base_09.wav",
+"bank": "Base",
+"index": 9,
+"bytes": 6244,
+"seconds": 0.283
+},
+{
+"file": "Base_10.wav",
+"bank": "Base",
+"index": 10,
+"bytes": 14396,
+"seconds": 0.653
+},
+{
+"file": "Base_11.wav",
+"bank": "Base",
+"index": 11,
+"bytes": 10760,
+"seconds": 0.488
+},
+{
+"file": "Base_12.wav",
+"bank": "Base",
+"index": 12,
+"bytes": 10444,
+"seconds": 0.474
+},
+{
+"file": "Base_13.wav",
+"bank": "Base",
+"index": 13,
+"bytes": 23284,
+"seconds": 1.056
+},
+{
+"file": "Base_14.wav",
+"bank": "Base",
+"index": 14,
+"bytes": 5540,
+"seconds": 0.251
+},
+{
+"file": "Base_15.wav",
+"bank": "Base",
+"index": 15,
+"bytes": 13268,
+"seconds": 0.602
+},
+{
+"file": "Base_16.wav",
+"bank": "Base",
+"index": 16,
+"bytes": 38880,
+"seconds": 1.763
+},
+{
+"file": "Base_17.wav",
+"bank": "Base",
+"index": 17,
+"bytes": 12312,
+"seconds": 0.558
+},
+{
+"file": "Base_18.wav",
+"bank": "Base",
+"index": 18,
+"bytes": 10304,
+"seconds": 0.467
+},
+{
+"file": "Base_19.wav",
+"bank": "Base",
+"index": 19,
+"bytes": 13444,
+"seconds": 0.61
+},
+{
+"file": "Base_20.wav",
+"bank": "Base",
+"index": 20,
+"bytes": 21664,
+"seconds": 0.982
+},
+{
+"file": "Base_21.wav",
+"bank": "Base",
+"index": 21,
+"bytes": 21028,
+"seconds": 0.954
+},
+{
+"file": "Base_22.wav",
+"bank": "Base",
+"index": 22,
+"bytes": 6068,
+"seconds": 0.275
+},
+{
+"file": "Base_23.wav",
+"bank": "Base",
+"index": 23,
+"bytes": 2048,
+"seconds": 0.093
+},
+{
+"file": "Base_24.wav",
+"bank": "Base",
+"index": 24,
+"bytes": 26424,
+"seconds": 1.198
+},
+{
+"file": "Base_25.wav",
+"bank": "Base",
+"index": 25,
+"bytes": 5116,
+"seconds": 0.232
+},
+{
+"file": "Base_26.wav",
+"bank": "Base",
+"index": 26,
+"bytes": 18312,
+"seconds": 0.83
+},
+{
+"file": "Base_27.wav",
+"bank": "Base",
+"index": 27,
+"bytes": 27588,
+"seconds": 1.251
+},
+{
+"file": "Base_28.wav",
+"bank": "Base",
+"index": 28,
+"bytes": 10832,
+"seconds": 0.491
+},
+{
+"file": "Base_29.wav",
+"bank": "Base",
+"index": 29,
+"bytes": 4412,
+"seconds": 0.2
+},
+{
+"file": "Base_30.wav",
+"bank": "Base",
+"index": 30,
+"bytes": 16124,
+"seconds": 0.731
+},
+{
+"file": "Base_31.wav",
+"bank": "Base",
+"index": 31,
+"bytes": 21344,
+"seconds": 0.968
+},
+{
+"file": "Base_32.wav",
+"bank": "Base",
+"index": 32,
+"bytes": 36904,
+"seconds": 1.674
+},
+{
+"file": "Base_33.wav",
+"bank": "Base",
+"index": 33,
+"bytes": 5716,
+"seconds": 0.259
+},
+{
+"file": "Base_34.wav",
+"bank": "Base",
+"index": 34,
+"bytes": 14432,
+"seconds": 0.655
+},
+{
+"file": "Base_35.wav",
+"bank": "Base",
+"index": 35,
+"bytes": 21980,
+"seconds": 0.997
+},
+{
+"file": "Base_36.wav",
+"bank": "Base",
+"index": 36,
+"bytes": 4692,
+"seconds": 0.213
+},
+{
+"file": "Base_37.wav",
+"bank": "Base",
+"index": 37,
+"bytes": 20464,
+"seconds": 0.928
+},
+{
+"file": "Base_38.wav",
+"bank": "Base",
+"index": 38,
+"bytes": 39620,
+"seconds": 1.797
+},
+{
+"file": "Base_39.wav",
+"bank": "Base",
+"index": 39,
+"bytes": 39620,
+"seconds": 1.797
+},
+{
+"file": "Base_40.wav",
+"bank": "Base",
+"index": 40,
+"bytes": 17216,
+"seconds": 0.781
+},
+{
+"file": "Base_41.wav",
+"bank": "Base",
+"index": 41,
+"bytes": 8680,
+"seconds": 0.394
+},
+{
+"file": "Base_42.wav",
+"bank": "Base",
+"index": 42,
+"bytes": 14888,
+"seconds": 0.675
+},
+{
+"file": "Base_43.wav",
+"bank": "Base",
+"index": 43,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Base_44.wav",
+"bank": "Base",
+"index": 44,
+"bytes": 20852,
+"seconds": 0.946
+},
+{
+"file": "Base_45.wav",
+"bank": "Base",
+"index": 45,
+"bytes": 15420,
+"seconds": 0.699
+},
+{
+"file": "Base_46.wav",
+"bank": "Base",
+"index": 46,
+"bytes": 22720,
+"seconds": 1.03
+},
+{
+"file": "Base_47.wav",
+"bank": "Base",
+"index": 47,
+"bytes": 37856,
+"seconds": 1.717
+},
+{
+"file": "Base_48.wav",
+"bank": "Base",
+"index": 48,
+"bytes": 20288,
+"seconds": 0.92
+},
+{
+"file": "Base_49.wav",
+"bank": "Base",
+"index": 49,
+"bytes": 3636,
+"seconds": 0.165
+},
+{
+"file": "Base_50.wav",
+"bank": "Base",
+"index": 50,
+"bytes": 4092,
+"seconds": 0.186
+},
+{
+"file": "Base_51.wav",
+"bank": "Base",
+"index": 51,
+"bytes": 7444,
+"seconds": 0.338
+},
+{
+"file": "Base_52.wav",
+"bank": "Base",
+"index": 52,
+"bytes": 6492,
+"seconds": 0.294
+},
+{
+"file": "Base_53.wav",
+"bank": "Base",
+"index": 53,
+"bytes": 2508,
+"seconds": 0.114
+},
+{
+"file": "Base_54.wav",
+"bank": "Base",
+"index": 54,
+"bytes": 8432,
+"seconds": 0.382
+},
+{
+"file": "Base_55.wav",
+"bank": "Base",
+"index": 55,
+"bytes": 6176,
+"seconds": 0.28
+},
+{
+"file": "Base_56.wav",
+"bank": "Base",
+"index": 56,
+"bytes": 8152,
+"seconds": 0.37
+},
+{
+"file": "Base_57.wav",
+"bank": "Base",
+"index": 57,
+"bytes": 2436,
+"seconds": 0.11
+},
+{
+"file": "Base_58.wav",
+"bank": "Base",
+"index": 58,
+"bytes": 1308,
+"seconds": 0.059
+},
+{
+"file": "Base_59.wav",
+"bank": "Base",
+"index": 59,
+"bytes": 1896,
+"seconds": 0.086
+},
+{
+"file": "Q00_00_00.wav",
+"bank": "Q00_00",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q00_00_01.wav",
+"bank": "Q00_00",
+"index": 1,
+"bytes": 7340,
+"seconds": 0.333
+},
+{
+"file": "Q00_00_02.wav",
+"bank": "Q00_00",
+"index": 2,
+"bytes": 25404,
+"seconds": 1.152
+},
+{
+"file": "Q00_00_03.wav",
+"bank": "Q00_00",
+"index": 3,
+"bytes": 38128,
+"seconds": 1.729
+},
+{
+"file": "Q01_00_00.wav",
+"bank": "Q01_00",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q01_00_01.wav",
+"bank": "Q01_00",
+"index": 1,
+"bytes": 16652,
+"seconds": 0.755
+},
+{
+"file": "Q01_00_02.wav",
+"bank": "Q01_00",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q01_00_03.wav",
+"bank": "Q01_00",
+"index": 3,
+"bytes": 1728,
+"seconds": 0.078
+},
+{
+"file": "Q01_00_04.wav",
+"bank": "Q01_00",
+"index": 4,
+"bytes": 11476,
+"seconds": 0.52
+},
+{
+"file": "Q01_01_00.wav",
+"bank": "Q01_01",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q01_01_01.wav",
+"bank": "Q01_01",
+"index": 1,
+"bytes": 72464,
+"seconds": 3.286
+},
+{
+"file": "Q01_01_02.wav",
+"bank": "Q01_01",
+"index": 2,
+"bytes": 11496,
+"seconds": 0.521
+},
+{
+"file": "Q01_02_00.wav",
+"bank": "Q01_02",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q01_02_01.wav",
+"bank": "Q01_02",
+"index": 1,
+"bytes": 3848,
+"seconds": 0.175
+},
+{
+"file": "Q01_02_02.wav",
+"bank": "Q01_02",
+"index": 2,
+"bytes": 16652,
+"seconds": 0.755
+},
+{
+"file": "Q01_02_03.wav",
+"bank": "Q01_02",
+"index": 3,
+"bytes": 5328,
+"seconds": 0.242
+},
+{
+"file": "Q01_02_04.wav",
+"bank": "Q01_02",
+"index": 4,
+"bytes": 20320,
+"seconds": 0.922
+},
+{
+"file": "Q01_02_05.wav",
+"bank": "Q01_02",
+"index": 5,
+"bytes": 84248,
+"seconds": 3.821
+},
+{
+"file": "Q01_02_06.wav",
+"bank": "Q01_02",
+"index": 6,
+"bytes": 11488,
+"seconds": 0.521
+},
+{
+"file": "Q01_03_00.wav",
+"bank": "Q01_03",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q01_03_01.wav",
+"bank": "Q01_03",
+"index": 1,
+"bytes": 13656,
+"seconds": 0.619
+},
+{
+"file": "Q01_03_02.wav",
+"bank": "Q01_03",
+"index": 2,
+"bytes": 5188,
+"seconds": 0.235
+},
+{
+"file": "Q01_03_03.wav",
+"bank": "Q01_03",
+"index": 3,
+"bytes": 8716,
+"seconds": 0.395
+},
+{
+"file": "Q01_03_04.wav",
+"bank": "Q01_03",
+"index": 4,
+"bytes": 6244,
+"seconds": 0.283
+},
+{
+"file": "Q01_03_05.wav",
+"bank": "Q01_03",
+"index": 5,
+"bytes": 1728,
+"seconds": 0.078
+},
+{
+"file": "Q01_03_06.wav",
+"bank": "Q01_03",
+"index": 6,
+"bytes": 11468,
+"seconds": 0.52
+},
+{
+"file": "Q01_04_00.wav",
+"bank": "Q01_04",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q01_04_01.wav",
+"bank": "Q01_04",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q01_04_02.wav",
+"bank": "Q01_04",
+"index": 2,
+"bytes": 1728,
+"seconds": 0.078
+},
+{
+"file": "Q01_04_03.wav",
+"bank": "Q01_04",
+"index": 3,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q01_04_04.wav",
+"bank": "Q01_04",
+"index": 4,
+"bytes": 17076,
+"seconds": 0.774
+},
+{
+"file": "Q01_04_05.wav",
+"bank": "Q01_04",
+"index": 5,
+"bytes": 26028,
+"seconds": 1.18
+},
+{
+"file": "Q01_05_00.wav",
+"bank": "Q01_05",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q01_05_01.wav",
+"bank": "Q01_05",
+"index": 1,
+"bytes": 84248,
+"seconds": 3.821
+},
+{
+"file": "Q01_05_02.wav",
+"bank": "Q01_05",
+"index": 2,
+"bytes": 11460,
+"seconds": 0.52
+},
+{
+"file": "Q01_06_00.wav",
+"bank": "Q01_06",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q01_06_01.wav",
+"bank": "Q01_06",
+"index": 1,
+"bytes": 10372,
+"seconds": 0.47
+},
+{
+"file": "Q01_06_02.wav",
+"bank": "Q01_06",
+"index": 2,
+"bytes": 12068,
+"seconds": 0.547
+},
+{
+"file": "Q01_06_03.wav",
+"bank": "Q01_06",
+"index": 3,
+"bytes": 8680,
+"seconds": 0.394
+},
+{
+"file": "Q01_06_04.wav",
+"bank": "Q01_06",
+"index": 4,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q01_06_05.wav",
+"bank": "Q01_06",
+"index": 5,
+"bytes": 3896,
+"seconds": 0.177
+},
+{
+"file": "Q01_07_00.wav",
+"bank": "Q01_07",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q01_07_01.wav",
+"bank": "Q01_07",
+"index": 1,
+"bytes": 11820,
+"seconds": 0.536
+},
+{
+"file": "Q01_07_02.wav",
+"bank": "Q01_07",
+"index": 2,
+"bytes": 31504,
+"seconds": 1.429
+},
+{
+"file": "Q01_07_03.wav",
+"bank": "Q01_07",
+"index": 3,
+"bytes": 10656,
+"seconds": 0.483
+},
+{
+"file": "Q01_07_04.wav",
+"bank": "Q01_07",
+"index": 4,
+"bytes": 5540,
+"seconds": 0.251
+},
+{
+"file": "Q01_07_05.wav",
+"bank": "Q01_07",
+"index": 5,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q01_07_06.wav",
+"bank": "Q01_07",
+"index": 6,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q01_07_07.wav",
+"bank": "Q01_07",
+"index": 7,
+"bytes": 3892,
+"seconds": 0.177
+},
+{
+"file": "Q01_08_00.wav",
+"bank": "Q01_08",
+"index": 0,
+"bytes": 6032,
+"seconds": 0.274
+},
+{
+"file": "Q01_08_01.wav",
+"bank": "Q01_08",
+"index": 1,
+"bytes": 7832,
+"seconds": 0.355
+},
+{
+"file": "Q01_08_02.wav",
+"bank": "Q01_08",
+"index": 2,
+"bytes": 5788,
+"seconds": 0.262
+},
+{
+"file": "Q01_08_03.wav",
+"bank": "Q01_08",
+"index": 3,
+"bytes": 18592,
+"seconds": 0.843
+},
+{
+"file": "Q01_08_04.wav",
+"bank": "Q01_08",
+"index": 4,
+"bytes": 12068,
+"seconds": 0.547
+},
+{
+"file": "Q01_08_05.wav",
+"bank": "Q01_08",
+"index": 5,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q01_08_06.wav",
+"bank": "Q01_08",
+"index": 6,
+"bytes": 3916,
+"seconds": 0.178
+},
+{
+"file": "Q01_08_07.wav",
+"bank": "Q01_08",
+"index": 7,
+"bytes": 5064,
+"seconds": 0.23
+},
+{
+"file": "Q01_09_00.wav",
+"bank": "Q01_09",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q01_09_01.wav",
+"bank": "Q01_09",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q01_09_02.wav",
+"bank": "Q01_09",
+"index": 2,
+"bytes": 84248,
+"seconds": 3.821
+},
+{
+"file": "Q01_09_03.wav",
+"bank": "Q01_09",
+"index": 3,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q01_09_04.wav",
+"bank": "Q01_09",
+"index": 4,
+"bytes": 14208,
+"seconds": 0.644
+},
+{
+"file": "Q02_00_00.wav",
+"bank": "Q02_00",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q02_00_01.wav",
+"bank": "Q02_00",
+"index": 1,
+"bytes": 27344,
+"seconds": 1.24
+},
+{
+"file": "Q02_00_02.wav",
+"bank": "Q02_00",
+"index": 2,
+"bytes": 31648,
+"seconds": 1.435
+},
+{
+"file": "Q02_00_03.wav",
+"bank": "Q02_00",
+"index": 3,
+"bytes": 12244,
+"seconds": 0.555
+},
+{
+"file": "Q02_00_04.wav",
+"bank": "Q02_00",
+"index": 4,
+"bytes": 28436,
+"seconds": 1.29
+},
+{
+"file": "Q02_00_05.wav",
+"bank": "Q02_00",
+"index": 5,
+"bytes": 18452,
+"seconds": 0.837
+},
+{
+"file": "Q02_00_06.wav",
+"bank": "Q02_00",
+"index": 6,
+"bytes": 9596,
+"seconds": 0.435
+},
+{
+"file": "Q02_00_07.wav",
+"bank": "Q02_00",
+"index": 7,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q02_00_08.wav",
+"bank": "Q02_00",
+"index": 8,
+"bytes": 23848,
+"seconds": 1.082
+},
+{
+"file": "Q02_00_09.wav",
+"bank": "Q02_00",
+"index": 9,
+"bytes": 7064,
+"seconds": 0.32
+},
+{
+"file": "Q03_00_00.wav",
+"bank": "Q03_00",
+"index": 0,
+"bytes": 7340,
+"seconds": 0.333
+},
+{
+"file": "Q03_00_01.wav",
+"bank": "Q03_00",
+"index": 1,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q03_00_02.wav",
+"bank": "Q03_00",
+"index": 2,
+"bytes": 11200,
+"seconds": 0.508
+},
+{
+"file": "Q03_01_00.wav",
+"bank": "Q03_01",
+"index": 0,
+"bytes": 7340,
+"seconds": 0.333
+},
+{
+"file": "Q03_01_01.wav",
+"bank": "Q03_01",
+"index": 1,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q03_01_02.wav",
+"bank": "Q03_01",
+"index": 2,
+"bytes": 7020,
+"seconds": 0.318
+},
+{
+"file": "Q03_01_03.wav",
+"bank": "Q03_01",
+"index": 3,
+"bytes": 10196,
+"seconds": 0.462
+},
+{
+"file": "Q03_01_04.wav",
+"bank": "Q03_01",
+"index": 4,
+"bytes": 11712,
+"seconds": 0.531
+},
+{
+"file": "Q03_01_05.wav",
+"bank": "Q03_01",
+"index": 5,
+"bytes": 3016,
+"seconds": 0.137
+},
+{
+"file": "Q03_02_00.wav",
+"bank": "Q03_02",
+"index": 0,
+"bytes": 7340,
+"seconds": 0.333
+},
+{
+"file": "Q03_02_01.wav",
+"bank": "Q03_02",
+"index": 1,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q03_02_02.wav",
+"bank": "Q03_02",
+"index": 2,
+"bytes": 42160,
+"seconds": 1.912
+},
+{
+"file": "Q03_02_03.wav",
+"bank": "Q03_02",
+"index": 3,
+"bytes": 42160,
+"seconds": 1.912
+},
+{
+"file": "Q03_02_04.wav",
+"bank": "Q03_02",
+"index": 4,
+"bytes": 3988,
+"seconds": 0.181
+},
+{
+"file": "Q03_02_05.wav",
+"bank": "Q03_02",
+"index": 5,
+"bytes": 9420,
+"seconds": 0.427
+},
+{
+"file": "Q03_02_06.wav",
+"bank": "Q03_02",
+"index": 6,
+"bytes": 6984,
+"seconds": 0.317
+},
+{
+"file": "Q03_03_00.wav",
+"bank": "Q03_03",
+"index": 0,
+"bytes": 7340,
+"seconds": 0.333
+},
+{
+"file": "Q03_03_01.wav",
+"bank": "Q03_03",
+"index": 1,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q03_03_02.wav",
+"bank": "Q03_03",
+"index": 2,
+"bytes": 20144,
+"seconds": 0.914
+},
+{
+"file": "Q03_03_03.wav",
+"bank": "Q03_03",
+"index": 3,
+"bytes": 10128,
+"seconds": 0.459
+},
+{
+"file": "Q03_04_00.wav",
+"bank": "Q03_04",
+"index": 0,
+"bytes": 7340,
+"seconds": 0.333
+},
+{
+"file": "Q03_04_01.wav",
+"bank": "Q03_04",
+"index": 1,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q03_04_02.wav",
+"bank": "Q03_04",
+"index": 2,
+"bytes": 7056,
+"seconds": 0.32
+},
+{
+"file": "Q03_04_03.wav",
+"bank": "Q03_04",
+"index": 3,
+"bytes": 13232,
+"seconds": 0.6
+},
+{
+"file": "Q03_04_04.wav",
+"bank": "Q03_04",
+"index": 4,
+"bytes": 5788,
+"seconds": 0.262
+},
+{
+"file": "Q03_04_05.wav",
+"bank": "Q03_04",
+"index": 5,
+"bytes": 3024,
+"seconds": 0.137
+},
+{
+"file": "Q03_05_00.wav",
+"bank": "Q03_05",
+"index": 0,
+"bytes": 7340,
+"seconds": 0.333
+},
+{
+"file": "Q03_05_01.wav",
+"bank": "Q03_05",
+"index": 1,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q03_05_02.wav",
+"bank": "Q03_05",
+"index": 2,
+"bytes": 9596,
+"seconds": 0.435
+},
+{
+"file": "Q03_05_03.wav",
+"bank": "Q03_05",
+"index": 3,
+"bytes": 16004,
+"seconds": 0.726
+},
+{
+"file": "Q03_06_00.wav",
+"bank": "Q03_06",
+"index": 0,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q03_06_01.wav",
+"bank": "Q03_06",
+"index": 1,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q03_06_02.wav",
+"bank": "Q03_06",
+"index": 2,
+"bytes": 5224,
+"seconds": 0.237
+},
+{
+"file": "Q03_06_03.wav",
+"bank": "Q03_06",
+"index": 3,
+"bytes": 10196,
+"seconds": 0.462
+},
+{
+"file": "Q03_06_04.wav",
+"bank": "Q03_06",
+"index": 4,
+"bytes": 8044,
+"seconds": 0.365
+},
+{
+"file": "Q03_06_05.wav",
+"bank": "Q03_06",
+"index": 5,
+"bytes": 11652,
+"seconds": 0.528
+},
+{
+"file": "Q03_07_00.wav",
+"bank": "Q03_07",
+"index": 0,
+"bytes": 7340,
+"seconds": 0.333
+},
+{
+"file": "Q03_07_01.wav",
+"bank": "Q03_07",
+"index": 1,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q03_07_02.wav",
+"bank": "Q03_07",
+"index": 2,
+"bytes": 19228,
+"seconds": 0.872
+},
+{
+"file": "Q03_07_03.wav",
+"bank": "Q03_07",
+"index": 3,
+"bytes": 6032,
+"seconds": 0.274
+},
+{
+"file": "Q03_07_04.wav",
+"bank": "Q03_07",
+"index": 4,
+"bytes": 42160,
+"seconds": 1.912
+},
+{
+"file": "Q03_07_05.wav",
+"bank": "Q03_07",
+"index": 5,
+"bytes": 42024,
+"seconds": 1.906
+},
+{
+"file": "Q03_08_00.wav",
+"bank": "Q03_08",
+"index": 0,
+"bytes": 7340,
+"seconds": 0.333
+},
+{
+"file": "Q03_08_01.wav",
+"bank": "Q03_08",
+"index": 1,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q03_08_02.wav",
+"bank": "Q03_08",
+"index": 2,
+"bytes": 9772,
+"seconds": 0.443
+},
+{
+"file": "Q03_08_03.wav",
+"bank": "Q03_08",
+"index": 3,
+"bytes": 9808,
+"seconds": 0.445
+},
+{
+"file": "Q03_08_04.wav",
+"bank": "Q03_08",
+"index": 4,
+"bytes": 9772,
+"seconds": 0.443
+},
+{
+"file": "Q03_08_05.wav",
+"bank": "Q03_08",
+"index": 5,
+"bytes": 9772,
+"seconds": 0.443
+},
+{
+"file": "Q03_08_06.wav",
+"bank": "Q03_08",
+"index": 6,
+"bytes": 29072,
+"seconds": 1.318
+},
+{
+"file": "Q03_08_07.wav",
+"bank": "Q03_08",
+"index": 7,
+"bytes": 13656,
+"seconds": 0.619
+},
+{
+"file": "Q03_08_08.wav",
+"bank": "Q03_08",
+"index": 8,
+"bytes": 22132,
+"seconds": 1.004
+},
+{
+"file": "Q03_09_00.wav",
+"bank": "Q03_09",
+"index": 0,
+"bytes": 7340,
+"seconds": 0.333
+},
+{
+"file": "Q03_09_01.wav",
+"bank": "Q03_09",
+"index": 1,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q03_09_02.wav",
+"bank": "Q03_09",
+"index": 2,
+"bytes": 21168,
+"seconds": 0.96
+},
+{
+"file": "Q03_09_03.wav",
+"bank": "Q03_09",
+"index": 3,
+"bytes": 21868,
+"seconds": 0.992
+},
+{
+"file": "Q04_00_00.wav",
+"bank": "Q04_00",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_00_01.wav",
+"bank": "Q04_00",
+"index": 1,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_00_02.wav",
+"bank": "Q04_00",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_00_03.wav",
+"bank": "Q04_00",
+"index": 3,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_00_04.wav",
+"bank": "Q04_00",
+"index": 4,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_00_05.wav",
+"bank": "Q04_00",
+"index": 5,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q04_00_06.wav",
+"bank": "Q04_00",
+"index": 6,
+"bytes": 10372,
+"seconds": 0.47
+},
+{
+"file": "Q04_00_07.wav",
+"bank": "Q04_00",
+"index": 7,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_00_08.wav",
+"bank": "Q04_00",
+"index": 8,
+"bytes": 8008,
+"seconds": 0.363
+},
+{
+"file": "Q04_00_09.wav",
+"bank": "Q04_00",
+"index": 9,
+"bytes": 8356,
+"seconds": 0.379
+},
+{
+"file": "Q04_01_00.wav",
+"bank": "Q04_01",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_01_01.wav",
+"bank": "Q04_01",
+"index": 1,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_01_02.wav",
+"bank": "Q04_01",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_01_03.wav",
+"bank": "Q04_01",
+"index": 3,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_01_04.wav",
+"bank": "Q04_01",
+"index": 4,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_01_05.wav",
+"bank": "Q04_01",
+"index": 5,
+"bytes": 13548,
+"seconds": 0.614
+},
+{
+"file": "Q04_01_06.wav",
+"bank": "Q04_01",
+"index": 6,
+"bytes": 14008,
+"seconds": 0.635
+},
+{
+"file": "Q04_01_07.wav",
+"bank": "Q04_01",
+"index": 7,
+"bytes": 31504,
+"seconds": 1.429
+},
+{
+"file": "Q04_01_08.wav",
+"bank": "Q04_01",
+"index": 8,
+"bytes": 2788,
+"seconds": 0.126
+},
+{
+"file": "Q04_01_09.wav",
+"bank": "Q04_01",
+"index": 9,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q04_01_10.wav",
+"bank": "Q04_01",
+"index": 10,
+"bytes": 6032,
+"seconds": 0.274
+},
+{
+"file": "Q04_01_11.wav",
+"bank": "Q04_01",
+"index": 11,
+"bytes": 15032,
+"seconds": 0.682
+},
+{
+"file": "Q04_01_12.wav",
+"bank": "Q04_01",
+"index": 12,
+"bytes": 3880,
+"seconds": 0.176
+},
+{
+"file": "Q04_02_00.wav",
+"bank": "Q04_02",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_02_01.wav",
+"bank": "Q04_02",
+"index": 1,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_02_02.wav",
+"bank": "Q04_02",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_02_03.wav",
+"bank": "Q04_02",
+"index": 3,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_02_04.wav",
+"bank": "Q04_02",
+"index": 4,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_02_05.wav",
+"bank": "Q04_02",
+"index": 5,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q04_02_06.wav",
+"bank": "Q04_02",
+"index": 6,
+"bytes": 8608,
+"seconds": 0.39
+},
+{
+"file": "Q04_02_07.wav",
+"bank": "Q04_02",
+"index": 7,
+"bytes": 20708,
+"seconds": 0.939
+},
+{
+"file": "Q04_02_08.wav",
+"bank": "Q04_02",
+"index": 8,
+"bytes": 13056,
+"seconds": 0.592
+},
+{
+"file": "Q04_02_09.wav",
+"bank": "Q04_02",
+"index": 9,
+"bytes": 19864,
+"seconds": 0.901
+},
+{
+"file": "Q04_02_10.wav",
+"bank": "Q04_02",
+"index": 10,
+"bytes": 28940,
+"seconds": 1.312
+},
+{
+"file": "Q04_03_00.wav",
+"bank": "Q04_03",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_03_01.wav",
+"bank": "Q04_03",
+"index": 1,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_03_02.wav",
+"bank": "Q04_03",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_03_03.wav",
+"bank": "Q04_03",
+"index": 3,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_03_04.wav",
+"bank": "Q04_03",
+"index": 4,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_03_05.wav",
+"bank": "Q04_03",
+"index": 5,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q04_03_06.wav",
+"bank": "Q04_03",
+"index": 6,
+"bytes": 11468,
+"seconds": 0.52
+},
+{
+"file": "Q04_04_00.wav",
+"bank": "Q04_04",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_04_01.wav",
+"bank": "Q04_04",
+"index": 1,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_04_02.wav",
+"bank": "Q04_04",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_04_03.wav",
+"bank": "Q04_04",
+"index": 3,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_04_04.wav",
+"bank": "Q04_04",
+"index": 4,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_04_05.wav",
+"bank": "Q04_04",
+"index": 5,
+"bytes": 41736,
+"seconds": 1.893
+},
+{
+"file": "Q04_04_06.wav",
+"bank": "Q04_04",
+"index": 6,
+"bytes": 27624,
+"seconds": 1.253
+},
+{
+"file": "Q04_04_07.wav",
+"bank": "Q04_04",
+"index": 7,
+"bytes": 28224,
+"seconds": 1.28
+},
+{
+"file": "Q04_04_08.wav",
+"bank": "Q04_04",
+"index": 8,
+"bytes": 34364,
+"seconds": 1.558
+},
+{
+"file": "Q04_04_09.wav",
+"bank": "Q04_04",
+"index": 9,
+"bytes": 10372,
+"seconds": 0.47
+},
+{
+"file": "Q04_04_10.wav",
+"bank": "Q04_04",
+"index": 10,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q04_04_11.wav",
+"bank": "Q04_04",
+"index": 11,
+"bytes": 3908,
+"seconds": 0.177
+},
+{
+"file": "Q04_05_00.wav",
+"bank": "Q04_05",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_05_01.wav",
+"bank": "Q04_05",
+"index": 1,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_05_02.wav",
+"bank": "Q04_05",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_05_03.wav",
+"bank": "Q04_05",
+"index": 3,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_05_04.wav",
+"bank": "Q04_05",
+"index": 4,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_05_05.wav",
+"bank": "Q04_05",
+"index": 5,
+"bytes": 10372,
+"seconds": 0.47
+},
+{
+"file": "Q04_05_06.wav",
+"bank": "Q04_05",
+"index": 6,
+"bytes": 8516,
+"seconds": 0.386
+},
+{
+"file": "Q04_06_00.wav",
+"bank": "Q04_06",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_06_01.wav",
+"bank": "Q04_06",
+"index": 1,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_06_02.wav",
+"bank": "Q04_06",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_06_03.wav",
+"bank": "Q04_06",
+"index": 3,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_06_04.wav",
+"bank": "Q04_06",
+"index": 4,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_06_05.wav",
+"bank": "Q04_06",
+"index": 5,
+"bytes": 10372,
+"seconds": 0.47
+},
+{
+"file": "Q04_06_06.wav",
+"bank": "Q04_06",
+"index": 6,
+"bytes": 10372,
+"seconds": 0.47
+},
+{
+"file": "Q04_06_07.wav",
+"bank": "Q04_06",
+"index": 7,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q04_06_08.wav",
+"bank": "Q04_06",
+"index": 8,
+"bytes": 15032,
+"seconds": 0.682
+},
+{
+"file": "Q04_06_09.wav",
+"bank": "Q04_06",
+"index": 9,
+"bytes": 11360,
+"seconds": 0.515
+},
+{
+"file": "Q04_06_10.wav",
+"bank": "Q04_06",
+"index": 10,
+"bytes": 4188,
+"seconds": 0.19
+},
+{
+"file": "Q04_07_00.wav",
+"bank": "Q04_07",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_07_01.wav",
+"bank": "Q04_07",
+"index": 1,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_07_02.wav",
+"bank": "Q04_07",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_07_03.wav",
+"bank": "Q04_07",
+"index": 3,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_07_04.wav",
+"bank": "Q04_07",
+"index": 4,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_07_05.wav",
+"bank": "Q04_07",
+"index": 5,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q04_07_06.wav",
+"bank": "Q04_07",
+"index": 6,
+"bytes": 21872,
+"seconds": 0.992
+},
+{
+"file": "Q04_07_07.wav",
+"bank": "Q04_07",
+"index": 7,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q04_07_08.wav",
+"bank": "Q04_07",
+"index": 8,
+"bytes": 10372,
+"seconds": 0.47
+},
+{
+"file": "Q04_07_09.wav",
+"bank": "Q04_07",
+"index": 9,
+"bytes": 29072,
+"seconds": 1.318
+},
+{
+"file": "Q04_07_10.wav",
+"bank": "Q04_07",
+"index": 10,
+"bytes": 10656,
+"seconds": 0.483
+},
+{
+"file": "Q04_07_11.wav",
+"bank": "Q04_07",
+"index": 11,
+"bytes": 7100,
+"seconds": 0.322
+},
+{
+"file": "Q04_08_00.wav",
+"bank": "Q04_08",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_08_01.wav",
+"bank": "Q04_08",
+"index": 1,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_08_02.wav",
+"bank": "Q04_08",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_08_03.wav",
+"bank": "Q04_08",
+"index": 3,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_08_04.wav",
+"bank": "Q04_08",
+"index": 4,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_08_05.wav",
+"bank": "Q04_08",
+"index": 5,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q04_08_06.wav",
+"bank": "Q04_08",
+"index": 6,
+"bytes": 13864,
+"seconds": 0.629
+},
+{
+"file": "Q04_08_07.wav",
+"bank": "Q04_08",
+"index": 7,
+"bytes": 8752,
+"seconds": 0.397
+},
+{
+"file": "Q04_08_08.wav",
+"bank": "Q04_08",
+"index": 8,
+"bytes": 6988,
+"seconds": 0.317
+},
+{
+"file": "Q04_08_09.wav",
+"bank": "Q04_08",
+"index": 9,
+"bytes": 7304,
+"seconds": 0.331
+},
+{
+"file": "Q04_08_10.wav",
+"bank": "Q04_08",
+"index": 10,
+"bytes": 14076,
+"seconds": 0.638
+},
+{
+"file": "Q04_08_11.wav",
+"bank": "Q04_08",
+"index": 11,
+"bytes": 12308,
+"seconds": 0.558
+},
+{
+"file": "Q04_09_00.wav",
+"bank": "Q04_09",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_09_01.wav",
+"bank": "Q04_09",
+"index": 1,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_09_02.wav",
+"bank": "Q04_09",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_09_03.wav",
+"bank": "Q04_09",
+"index": 3,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_09_04.wav",
+"bank": "Q04_09",
+"index": 4,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_09_05.wav",
+"bank": "Q04_09",
+"index": 5,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q04_09_06.wav",
+"bank": "Q04_09",
+"index": 6,
+"bytes": 32000,
+"seconds": 1.451
+},
+{
+"file": "Q04_09_07.wav",
+"bank": "Q04_09",
+"index": 7,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q04_09_08.wav",
+"bank": "Q04_09",
+"index": 8,
+"bytes": 10196,
+"seconds": 0.462
+},
+{
+"file": "Q04_10_00.wav",
+"bank": "Q04_10",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q04_10_01.wav",
+"bank": "Q04_10",
+"index": 1,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_10_02.wav",
+"bank": "Q04_10",
+"index": 2,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_10_03.wav",
+"bank": "Q04_10",
+"index": 3,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_10_04.wav",
+"bank": "Q04_10",
+"index": 4,
+"bytes": 23108,
+"seconds": 1.048
+},
+{
+"file": "Q04_10_05.wav",
+"bank": "Q04_10",
+"index": 5,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q04_10_06.wav",
+"bank": "Q04_10",
+"index": 6,
+"bytes": 13864,
+"seconds": 0.629
+},
+{
+"file": "Q04_10_07.wav",
+"bank": "Q04_10",
+"index": 7,
+"bytes": 8752,
+"seconds": 0.397
+},
+{
+"file": "Q04_10_08.wav",
+"bank": "Q04_10",
+"index": 8,
+"bytes": 6988,
+"seconds": 0.317
+},
+{
+"file": "Q04_10_09.wav",
+"bank": "Q04_10",
+"index": 9,
+"bytes": 7304,
+"seconds": 0.331
+},
+{
+"file": "Q04_10_10.wav",
+"bank": "Q04_10",
+"index": 10,
+"bytes": 14076,
+"seconds": 0.638
+},
+{
+"file": "Q04_10_11.wav",
+"bank": "Q04_10",
+"index": 11,
+"bytes": 12200,
+"seconds": 0.553
+},
+{
+"file": "Q05_00_00.wav",
+"bank": "Q05_00",
+"index": 0,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q05_00_01.wav",
+"bank": "Q05_00",
+"index": 1,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_00_02.wav",
+"bank": "Q05_00",
+"index": 2,
+"bytes": 7340,
+"seconds": 0.333
+},
+{
+"file": "Q05_00_03.wav",
+"bank": "Q05_00",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_00_04.wav",
+"bank": "Q05_00",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_00_05.wav",
+"bank": "Q05_00",
+"index": 5,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_00_06.wav",
+"bank": "Q05_00",
+"index": 6,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q05_00_07.wav",
+"bank": "Q05_00",
+"index": 7,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q05_00_08.wav",
+"bank": "Q05_00",
+"index": 8,
+"bytes": 10056,
+"seconds": 0.456
+},
+{
+"file": "Q05_00_09.wav",
+"bank": "Q05_00",
+"index": 9,
+"bytes": 7056,
+"seconds": 0.32
+},
+{
+"file": "Q05_00_10.wav",
+"bank": "Q05_00",
+"index": 10,
+"bytes": 2860,
+"seconds": 0.13
+},
+{
+"file": "Q05_00_11.wav",
+"bank": "Q05_00",
+"index": 11,
+"bytes": 10160,
+"seconds": 0.461
+},
+{
+"file": "Q05_00_12.wav",
+"bank": "Q05_00",
+"index": 12,
+"bytes": 3012,
+"seconds": 0.137
+},
+{
+"file": "Q05_01_00.wav",
+"bank": "Q05_01",
+"index": 0,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q05_01_01.wav",
+"bank": "Q05_01",
+"index": 1,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_01_02.wav",
+"bank": "Q05_01",
+"index": 2,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_01_03.wav",
+"bank": "Q05_01",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_01_04.wav",
+"bank": "Q05_01",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_01_05.wav",
+"bank": "Q05_01",
+"index": 5,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_01_06.wav",
+"bank": "Q05_01",
+"index": 6,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q05_01_07.wav",
+"bank": "Q05_01",
+"index": 7,
+"bytes": 7020,
+"seconds": 0.318
+},
+{
+"file": "Q05_01_08.wav",
+"bank": "Q05_01",
+"index": 8,
+"bytes": 10160,
+"seconds": 0.461
+},
+{
+"file": "Q05_01_09.wav",
+"bank": "Q05_01",
+"index": 9,
+"bytes": 11044,
+"seconds": 0.501
+},
+{
+"file": "Q05_01_10.wav",
+"bank": "Q05_01",
+"index": 10,
+"bytes": 14868,
+"seconds": 0.674
+},
+{
+"file": "Q05_02_00.wav",
+"bank": "Q05_02",
+"index": 0,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q05_02_01.wav",
+"bank": "Q05_02",
+"index": 1,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_02_02.wav",
+"bank": "Q05_02",
+"index": 2,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_02_03.wav",
+"bank": "Q05_02",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_02_04.wav",
+"bank": "Q05_02",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_02_05.wav",
+"bank": "Q05_02",
+"index": 5,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_02_06.wav",
+"bank": "Q05_02",
+"index": 6,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q05_02_07.wav",
+"bank": "Q05_02",
+"index": 7,
+"bytes": 2224,
+"seconds": 0.101
+},
+{
+"file": "Q05_02_08.wav",
+"bank": "Q05_02",
+"index": 8,
+"bytes": 41736,
+"seconds": 1.893
+},
+{
+"file": "Q05_02_09.wav",
+"bank": "Q05_02",
+"index": 9,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q05_02_10.wav",
+"bank": "Q05_02",
+"index": 10,
+"bytes": 20144,
+"seconds": 0.914
+},
+{
+"file": "Q05_02_11.wav",
+"bank": "Q05_02",
+"index": 11,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q05_02_12.wav",
+"bank": "Q05_02",
+"index": 12,
+"bytes": 3024,
+"seconds": 0.137
+},
+{
+"file": "Q05_03_00.wav",
+"bank": "Q05_03",
+"index": 0,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q05_03_01.wav",
+"bank": "Q05_03",
+"index": 1,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_03_02.wav",
+"bank": "Q05_03",
+"index": 2,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_03_03.wav",
+"bank": "Q05_03",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_03_04.wav",
+"bank": "Q05_03",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_03_05.wav",
+"bank": "Q05_03",
+"index": 5,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_03_06.wav",
+"bank": "Q05_03",
+"index": 6,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q05_03_07.wav",
+"bank": "Q05_03",
+"index": 7,
+"bytes": 28084,
+"seconds": 1.274
+},
+{
+"file": "Q05_03_08.wav",
+"bank": "Q05_03",
+"index": 8,
+"bytes": 3916,
+"seconds": 0.178
+},
+{
+"file": "Q05_03_09.wav",
+"bank": "Q05_03",
+"index": 9,
+"bytes": 9560,
+"seconds": 0.434
+},
+{
+"file": "Q05_03_10.wav",
+"bank": "Q05_03",
+"index": 10,
+"bytes": 20320,
+"seconds": 0.922
+},
+{
+"file": "Q05_03_11.wav",
+"bank": "Q05_03",
+"index": 11,
+"bytes": 83732,
+"seconds": 3.797
+},
+{
+"file": "Q05_04_00.wav",
+"bank": "Q05_04",
+"index": 0,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q05_04_01.wav",
+"bank": "Q05_04",
+"index": 1,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_04_02.wav",
+"bank": "Q05_04",
+"index": 2,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_04_03.wav",
+"bank": "Q05_04",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_04_04.wav",
+"bank": "Q05_04",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_04_05.wav",
+"bank": "Q05_04",
+"index": 5,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_04_06.wav",
+"bank": "Q05_04",
+"index": 6,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q05_04_07.wav",
+"bank": "Q05_04",
+"index": 7,
+"bytes": 21592,
+"seconds": 0.979
+},
+{
+"file": "Q05_04_08.wav",
+"bank": "Q05_04",
+"index": 8,
+"bytes": 11044,
+"seconds": 0.501
+},
+{
+"file": "Q05_04_09.wav",
+"bank": "Q05_04",
+"index": 9,
+"bytes": 15032,
+"seconds": 0.682
+},
+{
+"file": "Q05_04_10.wav",
+"bank": "Q05_04",
+"index": 10,
+"bytes": 8892,
+"seconds": 0.403
+},
+{
+"file": "Q05_04_11.wav",
+"bank": "Q05_04",
+"index": 11,
+"bytes": 6940,
+"seconds": 0.315
+},
+{
+"file": "Q05_05_00.wav",
+"bank": "Q05_05",
+"index": 0,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q05_05_01.wav",
+"bank": "Q05_05",
+"index": 1,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_05_02.wav",
+"bank": "Q05_05",
+"index": 2,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_05_03.wav",
+"bank": "Q05_05",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_05_04.wav",
+"bank": "Q05_05",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_05_05.wav",
+"bank": "Q05_05",
+"index": 5,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_05_06.wav",
+"bank": "Q05_05",
+"index": 6,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q05_05_07.wav",
+"bank": "Q05_05",
+"index": 7,
+"bytes": 45864,
+"seconds": 2.08
+},
+{
+"file": "Q05_05_08.wav",
+"bank": "Q05_05",
+"index": 8,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q05_05_09.wav",
+"bank": "Q05_05",
+"index": 9,
+"bytes": 21168,
+"seconds": 0.96
+},
+{
+"file": "Q05_05_10.wav",
+"bank": "Q05_05",
+"index": 10,
+"bytes": 3888,
+"seconds": 0.176
+},
+{
+"file": "Q05_06_00.wav",
+"bank": "Q05_06",
+"index": 0,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q05_06_01.wav",
+"bank": "Q05_06",
+"index": 1,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_06_02.wav",
+"bank": "Q05_06",
+"index": 2,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_06_03.wav",
+"bank": "Q05_06",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_06_04.wav",
+"bank": "Q05_06",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_06_05.wav",
+"bank": "Q05_06",
+"index": 5,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_06_06.wav",
+"bank": "Q05_06",
+"index": 6,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q05_06_07.wav",
+"bank": "Q05_06",
+"index": 7,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q05_06_08.wav",
+"bank": "Q05_06",
+"index": 8,
+"bytes": 9560,
+"seconds": 0.434
+},
+{
+"file": "Q05_06_09.wav",
+"bank": "Q05_06",
+"index": 9,
+"bytes": 18524,
+"seconds": 0.84
+},
+{
+"file": "Q05_06_10.wav",
+"bank": "Q05_06",
+"index": 10,
+"bytes": 39832,
+"seconds": 1.806
+},
+{
+"file": "Q05_06_11.wav",
+"bank": "Q05_06",
+"index": 11,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q05_06_12.wav",
+"bank": "Q05_06",
+"index": 12,
+"bytes": 20856,
+"seconds": 0.946
+},
+{
+"file": "Q05_07_00.wav",
+"bank": "Q05_07",
+"index": 0,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q05_07_01.wav",
+"bank": "Q05_07",
+"index": 1,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_07_02.wav",
+"bank": "Q05_07",
+"index": 2,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_07_03.wav",
+"bank": "Q05_07",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_07_04.wav",
+"bank": "Q05_07",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_07_05.wav",
+"bank": "Q05_07",
+"index": 5,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_07_06.wav",
+"bank": "Q05_07",
+"index": 6,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q05_07_07.wav",
+"bank": "Q05_07",
+"index": 7,
+"bytes": 22508,
+"seconds": 1.021
+},
+{
+"file": "Q05_07_08.wav",
+"bank": "Q05_07",
+"index": 8,
+"bytes": 20144,
+"seconds": 0.914
+},
+{
+"file": "Q05_07_09.wav",
+"bank": "Q05_07",
+"index": 9,
+"bytes": 41736,
+"seconds": 1.893
+},
+{
+"file": "Q05_07_10.wav",
+"bank": "Q05_07",
+"index": 10,
+"bytes": 20596,
+"seconds": 0.934
+},
+{
+"file": "Q05_08_00.wav",
+"bank": "Q05_08",
+"index": 0,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q05_08_01.wav",
+"bank": "Q05_08",
+"index": 1,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_08_02.wav",
+"bank": "Q05_08",
+"index": 2,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_08_03.wav",
+"bank": "Q05_08",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_08_04.wav",
+"bank": "Q05_08",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_08_05.wav",
+"bank": "Q05_08",
+"index": 5,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_08_06.wav",
+"bank": "Q05_08",
+"index": 6,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q05_08_07.wav",
+"bank": "Q05_08",
+"index": 7,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q05_08_08.wav",
+"bank": "Q05_08",
+"index": 8,
+"bytes": 39832,
+"seconds": 1.806
+},
+{
+"file": "Q05_08_09.wav",
+"bank": "Q05_08",
+"index": 9,
+"bytes": 11536,
+"seconds": 0.523
+},
+{
+"file": "Q05_08_10.wav",
+"bank": "Q05_08",
+"index": 10,
+"bytes": 13476,
+"seconds": 0.611
+},
+{
+"file": "Q05_08_11.wav",
+"bank": "Q05_08",
+"index": 11,
+"bytes": 7620,
+"seconds": 0.346
+},
+{
+"file": "Q05_08_12.wav",
+"bank": "Q05_08",
+"index": 12,
+"bytes": 3916,
+"seconds": 0.178
+},
+{
+"file": "Q05_08_13.wav",
+"bank": "Q05_08",
+"index": 13,
+"bytes": 20824,
+"seconds": 0.944
+},
+{
+"file": "Q05_09_00.wav",
+"bank": "Q05_09",
+"index": 0,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q05_09_01.wav",
+"bank": "Q05_09",
+"index": 1,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_09_02.wav",
+"bank": "Q05_09",
+"index": 2,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_09_03.wav",
+"bank": "Q05_09",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_09_04.wav",
+"bank": "Q05_09",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_09_05.wav",
+"bank": "Q05_09",
+"index": 5,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q05_09_06.wav",
+"bank": "Q05_09",
+"index": 6,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q05_09_07.wav",
+"bank": "Q05_09",
+"index": 7,
+"bytes": 1272,
+"seconds": 0.058
+},
+{
+"file": "Q05_09_08.wav",
+"bank": "Q05_09",
+"index": 8,
+"bytes": 4764,
+"seconds": 0.216
+},
+{
+"file": "Q05_09_09.wav",
+"bank": "Q05_09",
+"index": 9,
+"bytes": 16656,
+"seconds": 0.755
+},
+{
+"file": "Q06_00_00.wav",
+"bank": "Q06_00",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_00_01.wav",
+"bank": "Q06_00",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_00_02.wav",
+"bank": "Q06_00",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_00_03.wav",
+"bank": "Q06_00",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_00_04.wav",
+"bank": "Q06_00",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_00_05.wav",
+"bank": "Q06_00",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_00_06.wav",
+"bank": "Q06_00",
+"index": 6,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_00_07.wav",
+"bank": "Q06_00",
+"index": 7,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_00_08.wav",
+"bank": "Q06_00",
+"index": 8,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q06_00_09.wav",
+"bank": "Q06_00",
+"index": 9,
+"bytes": 1728,
+"seconds": 0.078
+},
+{
+"file": "Q06_00_10.wav",
+"bank": "Q06_00",
+"index": 10,
+"bytes": 4376,
+"seconds": 0.198
+},
+{
+"file": "Q06_00_11.wav",
+"bank": "Q06_00",
+"index": 11,
+"bytes": 11396,
+"seconds": 0.517
+},
+{
+"file": "Q06_00_12.wav",
+"bank": "Q06_00",
+"index": 12,
+"bytes": 29336,
+"seconds": 1.33
+},
+{
+"file": "Q06_01_00.wav",
+"bank": "Q06_01",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_01_01.wav",
+"bank": "Q06_01",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_01_02.wav",
+"bank": "Q06_01",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_01_03.wav",
+"bank": "Q06_01",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_01_04.wav",
+"bank": "Q06_01",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_01_05.wav",
+"bank": "Q06_01",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_01_06.wav",
+"bank": "Q06_01",
+"index": 6,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_01_07.wav",
+"bank": "Q06_01",
+"index": 7,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_01_08.wav",
+"bank": "Q06_01",
+"index": 8,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_01_09.wav",
+"bank": "Q06_01",
+"index": 9,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q06_01_10.wav",
+"bank": "Q06_01",
+"index": 10,
+"bytes": 10304,
+"seconds": 0.467
+},
+{
+"file": "Q06_01_11.wav",
+"bank": "Q06_01",
+"index": 11,
+"bytes": 41736,
+"seconds": 1.893
+},
+{
+"file": "Q06_01_12.wav",
+"bank": "Q06_01",
+"index": 12,
+"bytes": 42160,
+"seconds": 1.912
+},
+{
+"file": "Q06_01_13.wav",
+"bank": "Q06_01",
+"index": 13,
+"bytes": 13548,
+"seconds": 0.614
+},
+{
+"file": "Q06_01_14.wav",
+"bank": "Q06_01",
+"index": 14,
+"bytes": 4376,
+"seconds": 0.198
+},
+{
+"file": "Q06_01_15.wav",
+"bank": "Q06_01",
+"index": 15,
+"bytes": 1860,
+"seconds": 0.084
+},
+{
+"file": "Q06_02_00.wav",
+"bank": "Q06_02",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_02_01.wav",
+"bank": "Q06_02",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_02_02.wav",
+"bank": "Q06_02",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_02_03.wav",
+"bank": "Q06_02",
+"index": 3,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_02_04.wav",
+"bank": "Q06_02",
+"index": 4,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_02_05.wav",
+"bank": "Q06_02",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_02_06.wav",
+"bank": "Q06_02",
+"index": 6,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_02_07.wav",
+"bank": "Q06_02",
+"index": 7,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_02_08.wav",
+"bank": "Q06_02",
+"index": 8,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_02_09.wav",
+"bank": "Q06_02",
+"index": 9,
+"bytes": 4376,
+"seconds": 0.198
+},
+{
+"file": "Q06_02_10.wav",
+"bank": "Q06_02",
+"index": 10,
+"bytes": 1872,
+"seconds": 0.085
+},
+{
+"file": "Q06_02_11.wav",
+"bank": "Q06_02",
+"index": 11,
+"bytes": 28892,
+"seconds": 1.31
+},
+{
+"file": "Q06_03_00.wav",
+"bank": "Q06_03",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_03_01.wav",
+"bank": "Q06_03",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_03_02.wav",
+"bank": "Q06_03",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_03_03.wav",
+"bank": "Q06_03",
+"index": 3,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_03_04.wav",
+"bank": "Q06_03",
+"index": 4,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_03_05.wav",
+"bank": "Q06_03",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_03_06.wav",
+"bank": "Q06_03",
+"index": 6,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_03_07.wav",
+"bank": "Q06_03",
+"index": 7,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_03_08.wav",
+"bank": "Q06_03",
+"index": 8,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_03_09.wav",
+"bank": "Q06_03",
+"index": 9,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q06_03_10.wav",
+"bank": "Q06_03",
+"index": 10,
+"bytes": 4376,
+"seconds": 0.198
+},
+{
+"file": "Q06_03_11.wav",
+"bank": "Q06_03",
+"index": 11,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_03_12.wav",
+"bank": "Q06_03",
+"index": 12,
+"bytes": 11044,
+"seconds": 0.501
+},
+{
+"file": "Q06_03_13.wav",
+"bank": "Q06_03",
+"index": 13,
+"bytes": 29312,
+"seconds": 1.329
+},
+{
+"file": "Q06_04_00.wav",
+"bank": "Q06_04",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_04_01.wav",
+"bank": "Q06_04",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_04_02.wav",
+"bank": "Q06_04",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_04_03.wav",
+"bank": "Q06_04",
+"index": 3,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_04_04.wav",
+"bank": "Q06_04",
+"index": 4,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_04_05.wav",
+"bank": "Q06_04",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_04_06.wav",
+"bank": "Q06_04",
+"index": 6,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_04_07.wav",
+"bank": "Q06_04",
+"index": 7,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_04_08.wav",
+"bank": "Q06_04",
+"index": 8,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_04_09.wav",
+"bank": "Q06_04",
+"index": 9,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q06_04_10.wav",
+"bank": "Q06_04",
+"index": 10,
+"bytes": 4376,
+"seconds": 0.198
+},
+{
+"file": "Q06_04_11.wav",
+"bank": "Q06_04",
+"index": 11,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_04_12.wav",
+"bank": "Q06_04",
+"index": 12,
+"bytes": 29336,
+"seconds": 1.33
+},
+{
+"file": "Q06_05_00.wav",
+"bank": "Q06_05",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_05_01.wav",
+"bank": "Q06_05",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_05_02.wav",
+"bank": "Q06_05",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_05_03.wav",
+"bank": "Q06_05",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_05_04.wav",
+"bank": "Q06_05",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_05_05.wav",
+"bank": "Q06_05",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_05_06.wav",
+"bank": "Q06_05",
+"index": 6,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_05_07.wav",
+"bank": "Q06_05",
+"index": 7,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_05_08.wav",
+"bank": "Q06_05",
+"index": 8,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_05_09.wav",
+"bank": "Q06_05",
+"index": 9,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q06_05_10.wav",
+"bank": "Q06_05",
+"index": 10,
+"bytes": 36444,
+"seconds": 1.653
+},
+{
+"file": "Q06_05_11.wav",
+"bank": "Q06_05",
+"index": 11,
+"bytes": 4376,
+"seconds": 0.198
+},
+{
+"file": "Q06_05_12.wav",
+"bank": "Q06_05",
+"index": 12,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_05_13.wav",
+"bank": "Q06_05",
+"index": 13,
+"bytes": 22864,
+"seconds": 1.037
+},
+{
+"file": "Q06_05_14.wav",
+"bank": "Q06_05",
+"index": 14,
+"bytes": 29564,
+"seconds": 1.341
+},
+{
+"file": "Q06_05_15.wav",
+"bank": "Q06_05",
+"index": 15,
+"bytes": 20788,
+"seconds": 0.943
+},
+{
+"file": "Q06_06_00.wav",
+"bank": "Q06_06",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_06_01.wav",
+"bank": "Q06_06",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_06_02.wav",
+"bank": "Q06_06",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_06_03.wav",
+"bank": "Q06_06",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_06_04.wav",
+"bank": "Q06_06",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_06_05.wav",
+"bank": "Q06_06",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_06_06.wav",
+"bank": "Q06_06",
+"index": 6,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_06_07.wav",
+"bank": "Q06_06",
+"index": 7,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_06_08.wav",
+"bank": "Q06_06",
+"index": 8,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_06_09.wav",
+"bank": "Q06_06",
+"index": 9,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q06_06_10.wav",
+"bank": "Q06_06",
+"index": 10,
+"bytes": 41736,
+"seconds": 1.893
+},
+{
+"file": "Q06_06_11.wav",
+"bank": "Q06_06",
+"index": 11,
+"bytes": 42160,
+"seconds": 1.912
+},
+{
+"file": "Q06_06_12.wav",
+"bank": "Q06_06",
+"index": 12,
+"bytes": 13548,
+"seconds": 0.614
+},
+{
+"file": "Q06_06_13.wav",
+"bank": "Q06_06",
+"index": 13,
+"bytes": 9420,
+"seconds": 0.427
+},
+{
+"file": "Q06_06_14.wav",
+"bank": "Q06_06",
+"index": 14,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_06_15.wav",
+"bank": "Q06_06",
+"index": 15,
+"bytes": 1872,
+"seconds": 0.085
+},
+{
+"file": "Q06_06_16.wav",
+"bank": "Q06_06",
+"index": 16,
+"bytes": 14828,
+"seconds": 0.672
+},
+{
+"file": "Q06_07_00.wav",
+"bank": "Q06_07",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_07_01.wav",
+"bank": "Q06_07",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_07_02.wav",
+"bank": "Q06_07",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_07_03.wav",
+"bank": "Q06_07",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_07_04.wav",
+"bank": "Q06_07",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_07_05.wav",
+"bank": "Q06_07",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_07_06.wav",
+"bank": "Q06_07",
+"index": 6,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_07_07.wav",
+"bank": "Q06_07",
+"index": 7,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_07_08.wav",
+"bank": "Q06_07",
+"index": 8,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_07_09.wav",
+"bank": "Q06_07",
+"index": 9,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q06_07_10.wav",
+"bank": "Q06_07",
+"index": 10,
+"bytes": 41736,
+"seconds": 1.893
+},
+{
+"file": "Q06_07_11.wav",
+"bank": "Q06_07",
+"index": 11,
+"bytes": 42160,
+"seconds": 1.912
+},
+{
+"file": "Q06_07_12.wav",
+"bank": "Q06_07",
+"index": 12,
+"bytes": 4376,
+"seconds": 0.198
+},
+{
+"file": "Q06_07_13.wav",
+"bank": "Q06_07",
+"index": 13,
+"bytes": 1856,
+"seconds": 0.084
+},
+{
+"file": "Q06_08_00.wav",
+"bank": "Q06_08",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_08_01.wav",
+"bank": "Q06_08",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_08_02.wav",
+"bank": "Q06_08",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_08_03.wav",
+"bank": "Q06_08",
+"index": 3,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_08_04.wav",
+"bank": "Q06_08",
+"index": 4,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_08_05.wav",
+"bank": "Q06_08",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_08_06.wav",
+"bank": "Q06_08",
+"index": 6,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_08_07.wav",
+"bank": "Q06_08",
+"index": 7,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_08_08.wav",
+"bank": "Q06_08",
+"index": 8,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_08_09.wav",
+"bank": "Q06_08",
+"index": 9,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q06_08_10.wav",
+"bank": "Q06_08",
+"index": 10,
+"bytes": 4376,
+"seconds": 0.198
+},
+{
+"file": "Q06_08_11.wav",
+"bank": "Q06_08",
+"index": 11,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_08_12.wav",
+"bank": "Q06_08",
+"index": 12,
+"bytes": 5964,
+"seconds": 0.27
+},
+{
+"file": "Q06_08_13.wav",
+"bank": "Q06_08",
+"index": 13,
+"bytes": 41532,
+"seconds": 1.884
+},
+{
+"file": "Q06_09_00.wav",
+"bank": "Q06_09",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_09_01.wav",
+"bank": "Q06_09",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_09_02.wav",
+"bank": "Q06_09",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_09_03.wav",
+"bank": "Q06_09",
+"index": 3,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_09_04.wav",
+"bank": "Q06_09",
+"index": 4,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_09_05.wav",
+"bank": "Q06_09",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_09_06.wav",
+"bank": "Q06_09",
+"index": 6,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_09_07.wav",
+"bank": "Q06_09",
+"index": 7,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_09_08.wav",
+"bank": "Q06_09",
+"index": 8,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_09_09.wav",
+"bank": "Q06_09",
+"index": 9,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q06_09_10.wav",
+"bank": "Q06_09",
+"index": 10,
+"bytes": 4376,
+"seconds": 0.198
+},
+{
+"file": "Q06_09_11.wav",
+"bank": "Q06_09",
+"index": 11,
+"bytes": 64,
+"seconds": 0.003
+},
+{
+"file": "Q06_10_00.wav",
+"bank": "Q06_10",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_10_01.wav",
+"bank": "Q06_10",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_10_02.wav",
+"bank": "Q06_10",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_10_03.wav",
+"bank": "Q06_10",
+"index": 3,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_10_04.wav",
+"bank": "Q06_10",
+"index": 4,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_10_05.wav",
+"bank": "Q06_10",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_10_06.wav",
+"bank": "Q06_10",
+"index": 6,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_10_07.wav",
+"bank": "Q06_10",
+"index": 7,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_10_08.wav",
+"bank": "Q06_10",
+"index": 8,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_10_09.wav",
+"bank": "Q06_10",
+"index": 9,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q06_10_10.wav",
+"bank": "Q06_10",
+"index": 10,
+"bytes": 36444,
+"seconds": 1.653
+},
+{
+"file": "Q06_10_11.wav",
+"bank": "Q06_10",
+"index": 11,
+"bytes": 13548,
+"seconds": 0.614
+},
+{
+"file": "Q06_10_12.wav",
+"bank": "Q06_10",
+"index": 12,
+"bytes": 4376,
+"seconds": 0.198
+},
+{
+"file": "Q06_10_13.wav",
+"bank": "Q06_10",
+"index": 13,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q06_10_14.wav",
+"bank": "Q06_10",
+"index": 14,
+"bytes": 41736,
+"seconds": 1.893
+},
+{
+"file": "Q06_10_15.wav",
+"bank": "Q06_10",
+"index": 15,
+"bytes": 28940,
+"seconds": 1.312
+},
+{
+"file": "Q06_11_00.wav",
+"bank": "Q06_11",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q06_11_01.wav",
+"bank": "Q06_11",
+"index": 1,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_11_02.wav",
+"bank": "Q06_11",
+"index": 2,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_11_03.wav",
+"bank": "Q06_11",
+"index": 3,
+"bytes": 16016,
+"seconds": 0.726
+},
+{
+"file": "Q06_11_04.wav",
+"bank": "Q06_11",
+"index": 4,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_11_05.wav",
+"bank": "Q06_11",
+"index": 5,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_11_06.wav",
+"bank": "Q06_11",
+"index": 6,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_11_07.wav",
+"bank": "Q06_11",
+"index": 7,
+"bytes": 35704,
+"seconds": 1.619
+},
+{
+"file": "Q06_11_08.wav",
+"bank": "Q06_11",
+"index": 8,
+"bytes": 19724,
+"seconds": 0.895
+},
+{
+"file": "Q06_11_09.wav",
+"bank": "Q06_11",
+"index": 9,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q06_11_10.wav",
+"bank": "Q06_11",
+"index": 10,
+"bytes": 36444,
+"seconds": 1.653
+},
+{
+"file": "Q06_11_11.wav",
+"bank": "Q06_11",
+"index": 11,
+"bytes": 4376,
+"seconds": 0.198
+},
+{
+"file": "Q06_11_12.wav",
+"bank": "Q06_11",
+"index": 12,
+"bytes": 64,
+"seconds": 0.003
+},
+{
+"file": "Q07_00_00.wav",
+"bank": "Q07_00",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q07_00_01.wav",
+"bank": "Q07_00",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q07_00_02.wav",
+"bank": "Q07_00",
+"index": 2,
+"bytes": 27668,
+"seconds": 1.255
+},
+{
+"file": "Q07_01_00.wav",
+"bank": "Q07_01",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q07_01_01.wav",
+"bank": "Q07_01",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q07_01_02.wav",
+"bank": "Q07_01",
+"index": 2,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q07_01_03.wav",
+"bank": "Q07_01",
+"index": 3,
+"bytes": 22052,
+"seconds": 1.0
+},
+{
+"file": "Q07_01_04.wav",
+"bank": "Q07_01",
+"index": 4,
+"bytes": 3896,
+"seconds": 0.177
+},
+{
+"file": "Q07_02_00.wav",
+"bank": "Q07_02",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q07_02_01.wav",
+"bank": "Q07_02",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q07_02_02.wav",
+"bank": "Q07_02",
+"index": 2,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q07_02_03.wav",
+"bank": "Q07_02",
+"index": 3,
+"bytes": 21904,
+"seconds": 0.993
+},
+{
+"file": "Q08_00_00.wav",
+"bank": "Q08_00",
+"index": 0,
+"bytes": 29072,
+"seconds": 1.318
+},
+{
+"file": "Q08_00_01.wav",
+"bank": "Q08_00",
+"index": 1,
+"bytes": 22156,
+"seconds": 1.005
+},
+{
+"file": "Q08_00_02.wav",
+"bank": "Q08_00",
+"index": 2,
+"bytes": 9208,
+"seconds": 0.418
+},
+{
+"file": "Q08_00_03.wav",
+"bank": "Q08_00",
+"index": 3,
+"bytes": 41736,
+"seconds": 1.893
+},
+{
+"file": "Q08_00_04.wav",
+"bank": "Q08_00",
+"index": 4,
+"bytes": 8716,
+"seconds": 0.395
+},
+{
+"file": "Q08_00_05.wav",
+"bank": "Q08_00",
+"index": 5,
+"bytes": 8364,
+"seconds": 0.379
+},
+{
+"file": "Q08_00_06.wav",
+"bank": "Q08_00",
+"index": 6,
+"bytes": 42024,
+"seconds": 1.906
+},
+{
+"file": "Q08_01_00.wav",
+"bank": "Q08_01",
+"index": 0,
+"bytes": 29072,
+"seconds": 1.318
+},
+{
+"file": "Q08_01_01.wav",
+"bank": "Q08_01",
+"index": 1,
+"bytes": 22156,
+"seconds": 1.005
+},
+{
+"file": "Q08_01_02.wav",
+"bank": "Q08_01",
+"index": 2,
+"bytes": 9208,
+"seconds": 0.418
+},
+{
+"file": "Q08_01_03.wav",
+"bank": "Q08_01",
+"index": 3,
+"bytes": 41736,
+"seconds": 1.893
+},
+{
+"file": "Q08_01_04.wav",
+"bank": "Q08_01",
+"index": 4,
+"bytes": 8716,
+"seconds": 0.395
+},
+{
+"file": "Q08_01_05.wav",
+"bank": "Q08_01",
+"index": 5,
+"bytes": 8364,
+"seconds": 0.379
+},
+{
+"file": "Q08_01_06.wav",
+"bank": "Q08_01",
+"index": 6,
+"bytes": 42160,
+"seconds": 1.912
+},
+{
+"file": "Q08_01_07.wav",
+"bank": "Q08_01",
+"index": 7,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q08_01_08.wav",
+"bank": "Q08_01",
+"index": 8,
+"bytes": 7088,
+"seconds": 0.321
+},
+{
+"file": "Q09_00_00.wav",
+"bank": "Q09_00",
+"index": 0,
+"bytes": 11748,
+"seconds": 0.533
+},
+{
+"file": "Q09_00_01.wav",
+"bank": "Q09_00",
+"index": 1,
+"bytes": 29072,
+"seconds": 1.318
+},
+{
+"file": "Q09_00_02.wav",
+"bank": "Q09_00",
+"index": 2,
+"bytes": 19228,
+"seconds": 0.872
+},
+{
+"file": "Q09_00_03.wav",
+"bank": "Q09_00",
+"index": 3,
+"bytes": 12244,
+"seconds": 0.555
+},
+{
+"file": "Q09_00_04.wav",
+"bank": "Q09_00",
+"index": 4,
+"bytes": 9244,
+"seconds": 0.419
+},
+{
+"file": "Q09_00_05.wav",
+"bank": "Q09_00",
+"index": 5,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q09_00_06.wav",
+"bank": "Q09_00",
+"index": 6,
+"bytes": 13116,
+"seconds": 0.595
+},
+{
+"file": "Q09_01_00.wav",
+"bank": "Q09_01",
+"index": 0,
+"bytes": 11748,
+"seconds": 0.533
+},
+{
+"file": "Q09_01_01.wav",
+"bank": "Q09_01",
+"index": 1,
+"bytes": 29072,
+"seconds": 1.318
+},
+{
+"file": "Q09_01_02.wav",
+"bank": "Q09_01",
+"index": 2,
+"bytes": 19228,
+"seconds": 0.872
+},
+{
+"file": "Q09_01_03.wav",
+"bank": "Q09_01",
+"index": 3,
+"bytes": 12244,
+"seconds": 0.555
+},
+{
+"file": "Q09_01_04.wav",
+"bank": "Q09_01",
+"index": 4,
+"bytes": 9244,
+"seconds": 0.419
+},
+{
+"file": "Q09_01_05.wav",
+"bank": "Q09_01",
+"index": 5,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q09_01_06.wav",
+"bank": "Q09_01",
+"index": 6,
+"bytes": 5004,
+"seconds": 0.227
+},
+{
+"file": "Q10_00_00.wav",
+"bank": "Q10_00",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_00_01.wav",
+"bank": "Q10_00",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q10_00_02.wav",
+"bank": "Q10_00",
+"index": 2,
+"bytes": 27344,
+"seconds": 1.24
+},
+{
+"file": "Q10_00_03.wav",
+"bank": "Q10_00",
+"index": 3,
+"bytes": 6812,
+"seconds": 0.309
+},
+{
+"file": "Q10_00_04.wav",
+"bank": "Q10_00",
+"index": 4,
+"bytes": 6032,
+"seconds": 0.274
+},
+{
+"file": "Q10_00_05.wav",
+"bank": "Q10_00",
+"index": 5,
+"bytes": 1872,
+"seconds": 0.085
+},
+{
+"file": "Q10_00_06.wav",
+"bank": "Q10_00",
+"index": 6,
+"bytes": 5788,
+"seconds": 0.262
+},
+{
+"file": "Q10_00_07.wav",
+"bank": "Q10_00",
+"index": 7,
+"bytes": 6352,
+"seconds": 0.288
+},
+{
+"file": "Q10_00_08.wav",
+"bank": "Q10_00",
+"index": 8,
+"bytes": 11608,
+"seconds": 0.526
+},
+{
+"file": "Q10_00_09.wav",
+"bank": "Q10_00",
+"index": 9,
+"bytes": 11360,
+"seconds": 0.515
+},
+{
+"file": "Q10_00_10.wav",
+"bank": "Q10_00",
+"index": 10,
+"bytes": 26776,
+"seconds": 1.214
+},
+{
+"file": "Q10_00_11.wav",
+"bank": "Q10_00",
+"index": 11,
+"bytes": 5400,
+"seconds": 0.245
+},
+{
+"file": "Q10_00_12.wav",
+"bank": "Q10_00",
+"index": 12,
+"bytes": 13160,
+"seconds": 0.597
+},
+{
+"file": "Q10_00_13.wav",
+"bank": "Q10_00",
+"index": 13,
+"bytes": 11644,
+"seconds": 0.528
+},
+{
+"file": "Q10_00_14.wav",
+"bank": "Q10_00",
+"index": 14,
+"bytes": 8908,
+"seconds": 0.404
+},
+{
+"file": "Q10_01_00.wav",
+"bank": "Q10_01",
+"index": 0,
+"bytes": 6812,
+"seconds": 0.309
+},
+{
+"file": "Q10_01_01.wav",
+"bank": "Q10_01",
+"index": 1,
+"bytes": 8432,
+"seconds": 0.382
+},
+{
+"file": "Q10_01_02.wav",
+"bank": "Q10_01",
+"index": 2,
+"bytes": 6244,
+"seconds": 0.283
+},
+{
+"file": "Q10_01_03.wav",
+"bank": "Q10_01",
+"index": 3,
+"bytes": 10232,
+"seconds": 0.464
+},
+{
+"file": "Q10_01_04.wav",
+"bank": "Q10_01",
+"index": 4,
+"bytes": 6032,
+"seconds": 0.274
+},
+{
+"file": "Q10_01_05.wav",
+"bank": "Q10_01",
+"index": 5,
+"bytes": 8996,
+"seconds": 0.408
+},
+{
+"file": "Q10_01_06.wav",
+"bank": "Q10_01",
+"index": 6,
+"bytes": 29564,
+"seconds": 1.341
+},
+{
+"file": "Q10_01_07.wav",
+"bank": "Q10_01",
+"index": 7,
+"bytes": 13160,
+"seconds": 0.597
+},
+{
+"file": "Q10_01_08.wav",
+"bank": "Q10_01",
+"index": 8,
+"bytes": 11592,
+"seconds": 0.526
+},
+{
+"file": "Q10_02_00.wav",
+"bank": "Q10_02",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_02_01.wav",
+"bank": "Q10_02",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q10_02_02.wav",
+"bank": "Q10_02",
+"index": 2,
+"bytes": 3104,
+"seconds": 0.141
+},
+{
+"file": "Q10_02_03.wav",
+"bank": "Q10_02",
+"index": 3,
+"bytes": 6244,
+"seconds": 0.283
+},
+{
+"file": "Q10_02_04.wav",
+"bank": "Q10_02",
+"index": 4,
+"bytes": 1872,
+"seconds": 0.085
+},
+{
+"file": "Q10_02_05.wav",
+"bank": "Q10_02",
+"index": 5,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q10_02_06.wav",
+"bank": "Q10_02",
+"index": 6,
+"bytes": 5400,
+"seconds": 0.245
+},
+{
+"file": "Q10_02_07.wav",
+"bank": "Q10_02",
+"index": 7,
+"bytes": 41500,
+"seconds": 1.882
+},
+{
+"file": "Q10_03_00.wav",
+"bank": "Q10_03",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_03_01.wav",
+"bank": "Q10_03",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q10_03_02.wav",
+"bank": "Q10_03",
+"index": 2,
+"bytes": 4660,
+"seconds": 0.211
+},
+{
+"file": "Q10_03_03.wav",
+"bank": "Q10_03",
+"index": 3,
+"bytes": 19228,
+"seconds": 0.872
+},
+{
+"file": "Q10_03_04.wav",
+"bank": "Q10_03",
+"index": 4,
+"bytes": 20640,
+"seconds": 0.936
+},
+{
+"file": "Q10_03_05.wav",
+"bank": "Q10_03",
+"index": 5,
+"bytes": 6244,
+"seconds": 0.283
+},
+{
+"file": "Q10_03_06.wav",
+"bank": "Q10_03",
+"index": 6,
+"bytes": 1872,
+"seconds": 0.085
+},
+{
+"file": "Q10_03_07.wav",
+"bank": "Q10_03",
+"index": 7,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q10_03_08.wav",
+"bank": "Q10_03",
+"index": 8,
+"bytes": 5788,
+"seconds": 0.262
+},
+{
+"file": "Q10_03_09.wav",
+"bank": "Q10_03",
+"index": 9,
+"bytes": 5364,
+"seconds": 0.243
+},
+{
+"file": "Q10_04_00.wav",
+"bank": "Q10_04",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_04_01.wav",
+"bank": "Q10_04",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q10_04_02.wav",
+"bank": "Q10_04",
+"index": 2,
+"bytes": 3104,
+"seconds": 0.141
+},
+{
+"file": "Q10_04_03.wav",
+"bank": "Q10_04",
+"index": 3,
+"bytes": 27800,
+"seconds": 1.261
+},
+{
+"file": "Q10_04_04.wav",
+"bank": "Q10_04",
+"index": 4,
+"bytes": 5400,
+"seconds": 0.245
+},
+{
+"file": "Q10_04_05.wav",
+"bank": "Q10_04",
+"index": 5,
+"bytes": 21908,
+"seconds": 0.994
+},
+{
+"file": "Q10_04_06.wav",
+"bank": "Q10_04",
+"index": 6,
+"bytes": 10064,
+"seconds": 0.456
+},
+{
+"file": "Q10_05_00.wav",
+"bank": "Q10_05",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_05_01.wav",
+"bank": "Q10_05",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q10_05_02.wav",
+"bank": "Q10_05",
+"index": 2,
+"bytes": 4660,
+"seconds": 0.211
+},
+{
+"file": "Q10_05_03.wav",
+"bank": "Q10_05",
+"index": 3,
+"bytes": 6244,
+"seconds": 0.283
+},
+{
+"file": "Q10_05_04.wav",
+"bank": "Q10_05",
+"index": 4,
+"bytes": 1872,
+"seconds": 0.085
+},
+{
+"file": "Q10_05_05.wav",
+"bank": "Q10_05",
+"index": 5,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q10_05_06.wav",
+"bank": "Q10_05",
+"index": 6,
+"bytes": 5376,
+"seconds": 0.244
+},
+{
+"file": "Q10_06_00.wav",
+"bank": "Q10_06",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_06_01.wav",
+"bank": "Q10_06",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q10_06_02.wav",
+"bank": "Q10_06",
+"index": 2,
+"bytes": 19228,
+"seconds": 0.872
+},
+{
+"file": "Q10_06_03.wav",
+"bank": "Q10_06",
+"index": 3,
+"bytes": 23956,
+"seconds": 1.086
+},
+{
+"file": "Q10_06_04.wav",
+"bank": "Q10_06",
+"index": 4,
+"bytes": 5360,
+"seconds": 0.243
+},
+{
+"file": "Q10_07_00.wav",
+"bank": "Q10_07",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_07_01.wav",
+"bank": "Q10_07",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q10_07_02.wav",
+"bank": "Q10_07",
+"index": 2,
+"bytes": 72,
+"seconds": 0.003
+},
+{
+"file": "Q10_07_03.wav",
+"bank": "Q10_07",
+"index": 3,
+"bytes": 31648,
+"seconds": 1.435
+},
+{
+"file": "Q10_07_04.wav",
+"bank": "Q10_07",
+"index": 4,
+"bytes": 15100,
+"seconds": 0.685
+},
+{
+"file": "Q10_07_05.wav",
+"bank": "Q10_07",
+"index": 5,
+"bytes": 10092,
+"seconds": 0.458
+},
+{
+"file": "Q10_07_06.wav",
+"bank": "Q10_07",
+"index": 6,
+"bytes": 6244,
+"seconds": 0.283
+},
+{
+"file": "Q10_07_07.wav",
+"bank": "Q10_07",
+"index": 7,
+"bytes": 1872,
+"seconds": 0.085
+},
+{
+"file": "Q10_07_08.wav",
+"bank": "Q10_07",
+"index": 8,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q10_07_09.wav",
+"bank": "Q10_07",
+"index": 9,
+"bytes": 5788,
+"seconds": 0.262
+},
+{
+"file": "Q10_07_10.wav",
+"bank": "Q10_07",
+"index": 10,
+"bytes": 5364,
+"seconds": 0.243
+},
+{
+"file": "Q10_08_00.wav",
+"bank": "Q10_08",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_08_01.wav",
+"bank": "Q10_08",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q10_08_02.wav",
+"bank": "Q10_08",
+"index": 2,
+"bytes": 27624,
+"seconds": 1.253
+},
+{
+"file": "Q10_08_03.wav",
+"bank": "Q10_08",
+"index": 3,
+"bytes": 22156,
+"seconds": 1.005
+},
+{
+"file": "Q10_08_04.wav",
+"bank": "Q10_08",
+"index": 4,
+"bytes": 10092,
+"seconds": 0.458
+},
+{
+"file": "Q10_08_05.wav",
+"bank": "Q10_08",
+"index": 5,
+"bytes": 6244,
+"seconds": 0.283
+},
+{
+"file": "Q10_08_06.wav",
+"bank": "Q10_08",
+"index": 6,
+"bytes": 1872,
+"seconds": 0.085
+},
+{
+"file": "Q10_08_07.wav",
+"bank": "Q10_08",
+"index": 7,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q10_08_08.wav",
+"bank": "Q10_08",
+"index": 8,
+"bytes": 15488,
+"seconds": 0.702
+},
+{
+"file": "Q10_08_09.wav",
+"bank": "Q10_08",
+"index": 9,
+"bytes": 5400,
+"seconds": 0.245
+},
+{
+"file": "Q10_08_10.wav",
+"bank": "Q10_08",
+"index": 10,
+"bytes": 41676,
+"seconds": 1.89
+},
+{
+"file": "Q10_09_00.wav",
+"bank": "Q10_09",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_09_01.wav",
+"bank": "Q10_09",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q10_09_02.wav",
+"bank": "Q10_09",
+"index": 2,
+"bytes": 3104,
+"seconds": 0.141
+},
+{
+"file": "Q10_09_03.wav",
+"bank": "Q10_09",
+"index": 3,
+"bytes": 17652,
+"seconds": 0.801
+},
+{
+"file": "Q10_10_00.wav",
+"bank": "Q10_10",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_10_01.wav",
+"bank": "Q10_10",
+"index": 1,
+"bytes": 27836,
+"seconds": 1.262
+},
+{
+"file": "Q10_10_02.wav",
+"bank": "Q10_10",
+"index": 2,
+"bytes": 27624,
+"seconds": 1.253
+},
+{
+"file": "Q10_10_03.wav",
+"bank": "Q10_10",
+"index": 3,
+"bytes": 22156,
+"seconds": 1.005
+},
+{
+"file": "Q10_10_04.wav",
+"bank": "Q10_10",
+"index": 4,
+"bytes": 10092,
+"seconds": 0.458
+},
+{
+"file": "Q10_10_05.wav",
+"bank": "Q10_10",
+"index": 5,
+"bytes": 6244,
+"seconds": 0.283
+},
+{
+"file": "Q10_10_06.wav",
+"bank": "Q10_10",
+"index": 6,
+"bytes": 1872,
+"seconds": 0.085
+},
+{
+"file": "Q10_10_07.wav",
+"bank": "Q10_10",
+"index": 7,
+"bytes": 3036,
+"seconds": 0.138
+},
+{
+"file": "Q10_10_08.wav",
+"bank": "Q10_10",
+"index": 8,
+"bytes": 15488,
+"seconds": 0.702
+},
+{
+"file": "Q10_10_09.wav",
+"bank": "Q10_10",
+"index": 9,
+"bytes": 5376,
+"seconds": 0.244
+},
+{
+"file": "Q10_11_00.wav",
+"bank": "Q10_11",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_11_01.wav",
+"bank": "Q10_11",
+"index": 1,
+"bytes": 27736,
+"seconds": 1.258
+},
+{
+"file": "Q10_12_00.wav",
+"bank": "Q10_12",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_12_01.wav",
+"bank": "Q10_12",
+"index": 1,
+"bytes": 27736,
+"seconds": 1.258
+},
+{
+"file": "Q10_13_00.wav",
+"bank": "Q10_13",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_13_01.wav",
+"bank": "Q10_13",
+"index": 1,
+"bytes": 27736,
+"seconds": 1.258
+},
+{
+"file": "Q10_14_00.wav",
+"bank": "Q10_14",
+"index": 0,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_14_01.wav",
+"bank": "Q10_14",
+"index": 1,
+"bytes": 27736,
+"seconds": 1.258
+},
+{
+"file": "Q10_15_00.wav",
+"bank": "Q10_15",
+"index": 0,
+"bytes": 11924,
+"seconds": 0.541
+},
+{
+"file": "Q10_15_01.wav",
+"bank": "Q10_15",
+"index": 1,
+"bytes": 9704,
+"seconds": 0.44
+},
+{
+"file": "Q10_15_02.wav",
+"bank": "Q10_15",
+"index": 2,
+"bytes": 5080,
+"seconds": 0.23
+},
+{
+"file": "Q10_15_03.wav",
+"bank": "Q10_15",
+"index": 3,
+"bytes": 27644,
+"seconds": 1.254
+}
+]
+}

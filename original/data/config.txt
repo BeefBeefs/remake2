@@ -1,0 +1,51 @@
+O P T I O N S
+Display
+Sound
+Controls
+DISPLAY OPTIONS
+Screensize
+unused
+Brightness
+Texture-filtering: on
+Texture-filtering: off
+Text: small
+Text: big
+SOUND OPTIONS
+Music volume
+FX volume
+CONTROLS OPTIONS
+Quit Program
+Configure keyboard
+Joystick/Gamepad
+Player 1
+Player 2
+Player 3
+Player 4
+: Joystick off
+: Joystick 1
+: Joystick 2
+: Joystick 3
+: Joystick 4
+Configure Player 1
+Configure Player 2
+Configure Player 3
+Configure Player 4
+JOYSTICK OPTIONS
+CONFIGURE JOYSTICK
+CONFIGURE KEYBOARD
+Default settings
+Screen resolution
+Timing
+SCREEN RESOLUTION
+Music on
+Music off
+TIMING
+Automatic
+1 Frame
+320 x 240
+512 x 384
+640 x 480
+800 x 600
+1024 x 768
+2 Frames
+Off

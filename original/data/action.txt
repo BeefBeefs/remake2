@@ -1,0 +1,18 @@
+Up
+Down
+Left
+Right
+Attack/Action/
+Special/
+Jump/
+Icon/
+Turn left/Menu back
+Turn right/Menu forward
+Look down
+Look up
+Menu
+Cast spell
+Zoom in
+Zoom out
+AutoCamera
+Topview
