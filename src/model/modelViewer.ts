@@ -14,6 +14,7 @@ export interface HeroJson {
     partBone: number[]; // mesh part index -> bone
     poses: number[][]; // i16 rot[3] (4096 = 360deg), 0, trans[3], scale
     frames: number[][]; // per frame: pose index per bone
+    extra?: boolean; // hero only: the extra single-animation pack (sectors 3826-3853), role unknown; kept after the regular animations
   }[];
 }
 
@@ -115,7 +116,13 @@ export class AnimatedModel {
     for (const m of this.meshes) m.mesh.visible = !hide.includes(m.index);
   }
 
+  /** Regular animations (the game logic's slots); the hero's `extra` pack animation is not counted. */
   get animCount(): number {
+    return this.data.anims.filter((a) => !a.extra).length;
+  }
+
+  /** All animations including the extra one (viewer dropdown). */
+  get totalAnimCount(): number {
     return this.data.anims.length;
   }
 
@@ -125,7 +132,8 @@ export class AnimatedModel {
 
   /** Switch animation: animations may have a different bone count, so the bone tree is rebuilt. */
   setAnim(a: number): void {
-    this.anim = ((a % this.animCount) + this.animCount) % this.animCount;
+    const n = this.totalAnimCount;
+    this.anim = ((a % n) + n) % n;
     const an = this.data.anims[this.anim];
     for (const b of this.bones) b.removeFromParent();
     for (const m of this.meshes) m.mesh.removeFromParent();

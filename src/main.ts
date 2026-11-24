@@ -188,7 +188,7 @@ async function showHero(h: number): Promise<void> {
   // Guessed from frame-count patterns shared by all models (see PROGRESS.md Step J); "?" = unverified.
   const guess = h < 16 ? HERO_ANIMS : MONSTER_ANIMS;
   animSel.replaceChildren(
-    ...Array.from({ length: m.animCount }, (_, i) => new Option(`anim ${i}${guess[i] ? ` (${guess[i]}${h >= 16 ? '?' : ''})` : ''}`, String(i))),
+    ...Array.from({ length: m.totalAnimCount }, (_, i) => new Option(`anim ${i}${i >= m.animCount ? ' (extra pack, role unknown)' : guess[i] ? ` (${guess[i]}${h >= 16 ? '?' : ''})` : ''}`, String(i))),
   );
   palSel.value = '0';
   palSel.disabled = h >= 16;
