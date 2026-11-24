@@ -15,6 +15,8 @@ export interface StageJson {
   /** Monster/NPC model ids (0-96) whose textures the stage lists: models 16+id of data/model_table.json. */
   monsters?: number[];
   /** Monster definitions from the map module (name, level; raw stats not decoded). */
+  /** Per streamed monster model: solved name (null if ambiguous) and stats from its definition. */
+  monsterInfo?: { model: number; name: string | null; level?: number; hp?: number; attack?: number }[];
   monsterDefs?: { name: string; level: number; raw: number[] }[];
   /** Dialogue boxes / signs / menu strings found in the stage script stream, in file order (tools/export_stages.py). */
   texts?: string[];

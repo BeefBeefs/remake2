@@ -308,6 +308,32 @@ mtab = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '
 mon_by_tex = {sec: k - 16 for k, (sec, _) in enumerate(mtab['textures']) if k >= 16}
 for st in stages:
     st['monsters'] = [mon_by_tex[a] for a, z in st.get('texList', []) if a in mon_by_tex]
+# Monster model id -> definition. A stage lists the monster models it streams in (`monsters`) and has a list of definitions (`monsterDefs`) but the
+# link between them is not stored (found), so it is solved: a model's name must be in every stage that lists it, and two models of one stage differ.
+def base_name(n): return n.split('.', 1)[1] if n.startswith('Lv') and '.' in n else n
+cand = {}
+for st in stages:
+    names = {base_name(m['name']) for m in st['monsterDefs']}
+    if not names: continue
+    for mid in st['monsters']: cand[mid] = (cand[mid] & names) if mid in cand else set(names)
+changed = True
+while changed:
+    changed = False
+    for st in stages:
+        solved = {next(iter(cand[m])) for m in st['monsters'] if m in cand and len(cand[m]) == 1}
+        for m in st['monsters']:
+            if m in cand and len(cand[m]) > 1 and cand[m] - solved != cand[m]: cand[m] = cand[m] - solved; changed = True
+model_name = {m: next(iter(c)) for m, c in cand.items() if len(c) == 1}
+for st in stages:
+    info = []
+    for mid in st['monsters']:
+        e = {'model': mid, 'name': model_name.get(mid)}
+        defs = [m for m in st['monsterDefs'] if base_name(m['name']) == e['name']]
+        if defs:
+            df = next((m for m in defs if m['name'] == e['name']), defs[0])   # prefer the plain (non 'LvN.') variant
+            e.update({'level': df['level'], 'hp': df['raw'][2], 'attack': df['raw'][16]})
+        info.append(e)
+    st['monsterInfo'] = info
 atlas_index = {s: k for k, s in enumerate(atl)}
 # 8-bit pages (mode 9, 256-entry CLUT at +0x14, w/h halfword pair at +540, pixels at +544): exported as bSECTOR.png (RGBA, colour index 0 with
 # a zero CLUT entry transparent). Faces of a few stages (17, 23, 49, 72 ...) point at them through `pg` = position in the full texture list.

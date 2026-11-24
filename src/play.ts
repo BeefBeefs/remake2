@@ -17,6 +17,7 @@ interface Tri {
 interface Enemy {
   model: AnimatedModel;
   hp: number;
+  dmg: number; // damage per hit on the hero
   x: number;
   y: number;
   z: number;
@@ -237,7 +238,11 @@ export class PlayMode {
         const m = await loadMonster(sp.model);
         await m.setTexture(`assets/monsters/mon${String(sp.model).padStart(2, '0')}.png`);
         this.scene.add(m.root);
-        this.enemies.push({ model: m, hp: 60, x: sp.x, y: sp.y, z: sp.z, cooldown: 0, dying: 0, npc: sp.npc, anim: 0, lock: 0, vx: 0, vz: 0 });
+        const info = st.data.monsterInfo?.find((i) => i.model === sp.model);
+        // real stats from the map module when the model's name is known (HP clamped so bosses stay beatable with the 34-damage hero)
+        const hp = info?.hp && info.hp > 1 ? Math.min(300, Math.max(20, info.hp)) : 60;
+        const dmg = info?.attack ? Math.min(25, Math.max(3, Math.round(info.attack / 8))) : 8;
+        this.enemies.push({ model: m, hp, dmg, x: sp.x, y: sp.y, z: sp.z, cooldown: 0, dying: 0, npc: sp.npc, anim: 0, lock: 0, vx: 0, vz: 0 });
       } catch (err) {
         console.warn('monster load failed', sp.model, err);
       }
@@ -283,7 +288,7 @@ export class PlayMode {
         en.cooldown = 1.2;
         en.lock = 0.7;
         this.setEnemyAnim(en, 3);
-        this.hp = Math.max(0, this.hp - 8);
+        this.hp = Math.max(0, this.hp - en.dmg);
         this.act('hurt');
       }
       if (en.lock <= 0) this.setEnemyAnim(en, moving ? 1 : 0);
