@@ -5,6 +5,7 @@ import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 import { loadStage, StageView } from './model/stageViewer';
 import { PlayMode } from './play';
 import { questOf } from './quests';
+import { music } from './audio/music';
 import { initMenu } from './menu';
 
 // Placeholder scene: proves the build/asset pipeline. Real game systems land in later milestones
@@ -297,7 +298,8 @@ SndBanks.load()
 // Title splash (original title screen from BLAZE.ALL); click or any key dismisses it.
 {
   const t = document.getElementById('title');
-  const hide = () => { t?.remove(); window.removeEventListener('keydown', hide); };
+  music.play('title01');
+  const hide = () => { t?.remove(); window.removeEventListener('keydown', hide); music.play('menu'); };
   t?.addEventListener('click', hide);
   window.addEventListener('keydown', hide);
 }

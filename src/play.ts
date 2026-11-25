@@ -1,4 +1,5 @@
 import { questOf } from './quests';
+import { music } from './audio/music';
 import * as THREE from 'three';
 import { AnimatedModel, loadHero, loadMonster } from './model/modelViewer';
 import { loadStage, StageView } from './model/stageViewer';
@@ -400,6 +401,7 @@ export class PlayMode {
     this.active = true;
     this.hud.style.display = 'block';
     const qn = questOf(stageIndex);
+    if (qn) music.playArea(qn.quest, qn.area, qn.areas);
     this.info = `${qn ? `${qn.name} – area ${qn.area + 1}/${qn.areas} (stage ${stageIndex})` : `stage ${stageIndex}`}: ${this.tris.length} floor triangles — left stick/WASD move, right drag/Q E turn, ? = help`;
     this.updateHero(0);
   }
@@ -833,6 +835,7 @@ export class PlayMode {
         this.curAnim = -2;
         this.deadTime = 0;
         this.sfx?.play('heroDie');
+        music.play('gameover', false);
       }
       this.deadTime += dt;
       if (this.deadTime < this.hero.frameCount / this.hero.fps) this.hero.update(dt);

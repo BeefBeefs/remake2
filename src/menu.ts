@@ -1,4 +1,5 @@
 import { QUESTS } from './quests';
+import { music } from './audio/music';
 
 /** Main menu shown after the title splash: New game / Continue / Quest select / Controls / Viewer. */
 export interface MenuHooks {
@@ -82,7 +83,8 @@ export function initMenu(hooks: MenuHooks): void {
     v.autoplay = true;
     v.controls = true;
     v.style.cssText = 'max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;';
-    const close = (): void => { v.pause(); ov.remove(); removeEventListener('keydown', onKey); };
+    music.stop();
+    const close = (): void => { v.pause(); ov.remove(); removeEventListener('keydown', onKey, true); music.play('menu'); };
     const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
     addEventListener('keydown', onKey, true);
     v.onended = close;
@@ -91,6 +93,9 @@ export function initMenu(hooks: MenuHooks): void {
     ov.append(v, x);
     document.body.append(ov);
   });
+  const musicBtn = btn('', () => { musicBtn.textContent = music.toggleMute() ? 'Music: off (M)' : 'Music: on (M)'; });
+  musicBtn.textContent = music.muted ? 'Music: off (M)' : 'Music: on (M)';
+  addEventListener('keydown', (e) => { if ((e.key === 'm' || e.key === 'M') && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLSelectElement)) musicBtn.click(); });
   const movies = document.createElement('div');
   movies.className = 'row';
   movies.append('Movies:', movie('Publisher logos', 'teps.mp4'), movie('Ending & credits', 'ending.mp4'));
@@ -104,6 +109,7 @@ export function initMenu(hooks: MenuHooks): void {
     controls,
     viewerBtn,
     movies,
+    musicBtn,
   );
   document.body.append(root);
 
@@ -115,6 +121,7 @@ export function initMenu(hooks: MenuHooks): void {
     hooks.viewer(false);
     menuBtn.style.display = 'none';
     root.style.display = 'flex';
+    music.play('menu');
     cont.disabled = (() => { try { return localStorage.getItem('bb_prog') === null; } catch { return true; } })();
   };
   addEventListener('keydown', (e) => {
