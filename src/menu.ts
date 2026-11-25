@@ -98,7 +98,7 @@ export function initMenu(hooks: MenuHooks): void {
   addEventListener('keydown', (e) => { if ((e.key === 'm' || e.key === 'M') && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLSelectElement)) musicBtn.click(); });
   const movies = document.createElement('div');
   movies.className = 'row';
-  movies.append('Movies:', movie('Publisher logos', 'teps.mp4'), movie('Ending & credits', 'ending.mp4'));
+  movies.append('Movies:', movie('Publisher logos', 'teps.mp4'), movie('Opening', 'opening.mp4'), movie('Ending & credits', 'ending.mp4'));
   root.append(
     h1,
     hero,
