@@ -7,7 +7,7 @@ const KEY = 'bb_music_mute';
 
 class Music {
   private names: string[] | null = null;
-  private areas: Record<string, string[]> | null = null;
+  private areas: Record<string, { main: string; boss: string; alt: string }> | null = null;
   private audio: HTMLAudioElement | null = null;
   private current = '';
   private pending: { name: string; loop: boolean } | null = null;
@@ -19,18 +19,19 @@ class Music {
       .then((r) => r.json() as Promise<string[]>)
       .then((n) => { this.names = n; if (this.pending) { const p = this.pending; this.pending = null; this.play(p.name, p.loop); } })
       .catch(() => { this.names = []; });
-    fetch('assets/music/areas.json').then((r) => r.json() as Promise<Record<string, string[]>>).then((a) => { this.areas = a; }).catch(() => { this.areas = {}; });
+    fetch('assets/music/areas.json').then((r) => r.json() as Promise<Record<string, { main: string; boss: string; alt: string }>>).then((a) => { this.areas = a; }).catch(() => { this.areas = {}; });
     // browsers refuse to start audio before a user gesture: retry a refused track on the first one
     const retry = (): void => { if (this.pending && this.names) { const p = this.pending; this.pending = null; this.play(p.name, p.loop); } };
     addEventListener('pointerdown', retry, true);
     addEventListener('keydown', retry, true);
   }
 
-  /** Real tracks of an area (tools/export_music.py, from the area module's script table): one name per table entry, entry 0 = the area's normal theme. */
+  /** Real tracks of an area (tools/export_music.py): `main` = the area theme from the area module's script table, `boss` = the theme its boss-fight script starts (op 34). */
   areaTracks(quest: number, area: number): { main: string; boss: string } {
-    const l = this.areas?.[`${quest}_${area}`] ?? [];
-    const main = l.find((n) => n.startsWith('mel')) ?? l[0] ?? '';
-    return { main, boss: l.find((n) => n.startsWith('bos')) ?? '' };
+    const t = this.areas?.[`${quest}_${area}`];
+    // Mel10_03 (quest 10 area 1) is missing from the disc rip: fall back to the melody that area's script switches to
+    const main = t && this.names && !this.names.includes(t.main) && t.alt ? t.alt : t?.main ?? '';
+    return { main, boss: t?.boss ?? '' };
   }
 
   playArea(quest: number, area: number): void {
