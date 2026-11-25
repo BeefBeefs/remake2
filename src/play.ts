@@ -33,7 +33,10 @@ interface Enemy {
   breath?: { color: number; dmg: number } | null;
 }
 
-interface HeroClass { hero: number; class: string; weapon: string; attack: number; defense: number }
+interface Stats { str: number; int: number; wil: number; agl: number; con: number; pow: number; lck: number }
+interface HeroClass { hero: number; class: string; weapon: string; attack: number; defense: number; stats?: Stats }
+/** Real base attributes of the class (module 4633) with the neutral value 10 used where a class has none. */
+const NEUTRAL: Stats = { str: 10, int: 10, wil: 10, agl: 10, con: 10, pow: 10, lck: 10 };
 let classCache: Promise<HeroClass[]> | null = null;
 const heroClasses = (): Promise<HeroClass[]> => (classCache ??= fetch('assets/heroes/classes.json').then((r) => r.json() as Promise<HeroClass[]>).catch(() => []));
 
@@ -68,6 +71,8 @@ export class PlayMode {
   private xp = 0;
   private gold = 0;
   private maxHp = 100;
+  /** class attributes STR INT WIL AGL CON POW LCK (real values); how they feed the numbers below follows the game's own help texts, the formulas are guesses */
+  private stats: Stats = NEUTRAL;
   private maxMp = 50;
   private notice = '';
   private noticeT = 0;
@@ -199,10 +204,10 @@ export class PlayMode {
     if (!this.active || !this.hero || this.hp <= 0 || !sp || this.action || this.mp < sp.mp) return;
     this.mp -= sp.mp;
     if (sp.element === 8) {
-      this.hp = Math.min(this.maxHp, this.hp + sp.power);
+      this.hp = Math.min(this.maxHp, this.hp + Math.round(sp.power * this.stats.con / 10));
       this.sfx?.play('talk');
     } else {
-      this.shoot(ELEMENT_COLOR[sp.element] ?? 0xffffff, sp.power * 3);
+      this.shoot(ELEMENT_COLOR[sp.element] ?? 0xffffff, Math.round(sp.power * 3 * this.stats.int / 10));
       this.sfx?.play('swing');
     }
     this.act('attack2', true); // animation only
@@ -268,9 +273,11 @@ export class PlayMode {
     this.hero = h;
     const cls = (await heroClasses()).find((c) => c.hero === heroIndex);
     this.baseDamage = cls ? cls.attack * 5 : 34;
-    this.heroDamage = this.baseDamage + (this.level - 1) * 3;
-    this.heroGuardDef = cls ? Math.floor(cls.defense / 2) : 0;
-    this.className = cls ? `${cls.class} (${cls.weapon})` : '';
+    this.stats = cls?.stats ?? NEUTRAL;
+    this.recalc();
+    if (!this.travelling) this.hp = this.maxHp;
+    this.heroGuardDef = (cls ? Math.floor(cls.defense / 2) : 0) + Math.floor(this.stats.agl / 5);   // AGL: "important for defense"
+    this.className = cls ? `${cls.class} (${cls.weapon}) STR ${this.stats.str} INT ${this.stats.int} WIL ${this.stats.wil} AGL ${this.stats.agl} CON ${this.stats.con} POW ${this.stats.pow} LCK ${this.stats.lck}` : '';
     const table = await spellTable();
     this.spells = (CLASS_SPELLS[heroIndex % 8] ?? []).map((nm) => table.find((t) => t.name === nm)).filter((t): t is Spell => !!t);
     this.spellIdx = 0;
@@ -637,14 +644,20 @@ export class PlayMode {
     this.shots.push({ mesh, vx: dx * 900, vz: dz * 900, life: 1.0, dmg });
   }
 
+  /** HP from CON ("health and healing"), MP from POW ("recovery of magical energy"), damage from STR ("attacks"); level terms as before. */
+  private recalc(): void {
+    const st = this.stats;
+    this.maxHp = Math.round((100 + (this.level - 1) * 12) * st.con / 10);
+    this.maxMp = Math.round((50 + (this.level - 1) * 5) * st.pow / 10);
+    this.heroDamage = Math.round((this.baseDamage + (this.level - 1) * 3) * st.str / 10);
+  }
+
   private loadProgress(): void {
     try {
       const j = JSON.parse(localStorage.getItem('bb_prog') ?? 'null') as { level: number; xp: number; gold: number } | null;
       if (j && j.level >= 1) { this.level = j.level; this.xp = j.xp; this.gold = j.gold; }
     } catch { /* storage unavailable */ }
-    this.maxHp = 100 + (this.level - 1) * 12;
-    this.maxMp = 50 + (this.level - 1) * 5;
-    this.heroDamage = this.baseDamage + (this.level - 1) * 3;
+    this.recalc();
   }
 
   private gainKill(en: Enemy): void {
@@ -657,9 +670,7 @@ export class PlayMode {
       up = true;
     }
     if (up) {
-      this.maxHp = 100 + (this.level - 1) * 12;
-      this.maxMp = 50 + (this.level - 1) * 5;
-      this.heroDamage = this.baseDamage + (this.level - 1) * 3;
+      this.recalc();
       this.hp = this.maxHp;
       this.mp = this.maxMp;
       this.notice = `LEVEL UP! Lv ${this.level}`;
@@ -674,7 +685,9 @@ export class PlayMode {
       sh.mesh.position.z += sh.vz * dt;
       sh.life -= dt;
       if (Math.hypot(this.pos.x - sh.mesh.position.x, this.pos.z - sh.mesh.position.z) < 50 && Math.abs(this.pos.y + 90 - sh.mesh.position.y) < 120) {
-        this.hp = Math.max(0, this.hp - Math.max(1, (this.action?.anim === 5 ? Math.ceil(sh.dmg / 2) : sh.dmg) - this.heroGuardDef));
+        // monster magic: WIL ("resistance to magic") scales the damage, the physical defense (AGL) does not apply
+        const md = Math.round(sh.dmg * 10 / this.stats.wil);
+        this.hp = Math.max(0, this.hp - Math.max(1, this.action?.anim === 5 ? Math.ceil(md / 2) : md));
         this.sfx?.play('hurt');
         this.act('hurt');
         sh.life = 0;
@@ -864,7 +877,7 @@ export class PlayMode {
       }
       return;
     }
-    this.mp = Math.min(this.maxMp, this.mp + 2 * dt);
+    this.mp = Math.min(this.maxMp, this.mp + 2 * dt * this.stats.pow / 10);
     const k = this.keys;
     if (k.has('q')) this.camYaw += dt * 1.8;
     if (k.has('e')) this.camYaw -= dt * 1.8;
