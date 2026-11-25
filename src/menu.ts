@@ -73,6 +73,27 @@ export function initMenu(hooks: MenuHooks): void {
   const cont = btn('Continue (keeps level, xp, gold)', () => go(0));
   cont.disabled = !hasSave;
   const viewerBtn = btn('Model / stage viewer', () => { root.style.display = 'none'; menuBtn.style.display = 'block'; hooks.viewer(true); });
+  // Original full-motion videos (Indeo 4 AVI on the disc, re-encoded to MP4): publisher logos and the ending with the credits.
+  const movie = (label: string, file: string): HTMLButtonElement => btn(label, () => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:20;background:#000;display:flex;align-items:center;justify-content:center;';
+    const v = document.createElement('video');
+    v.src = `assets/movies/${file}`;
+    v.autoplay = true;
+    v.controls = true;
+    v.style.cssText = 'max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;';
+    const close = (): void => { v.pause(); ov.remove(); removeEventListener('keydown', onKey); };
+    const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+    addEventListener('keydown', onKey, true);
+    v.onended = close;
+    const x = btn('✕', close);
+    x.style.cssText = 'position:absolute;top:8px;right:8px;z-index:21;font:16px monospace;padding:6px 10px;';
+    ov.append(v, x);
+    document.body.append(ov);
+  });
+  const movies = document.createElement('div');
+  movies.className = 'row';
+  movies.append('Movies:', movie('Publisher logos', 'teps.mp4'), movie('Ending & credits', 'ending.mp4'));
   root.append(
     h1,
     hero,
@@ -82,6 +103,7 @@ export function initMenu(hooks: MenuHooks): void {
     btn('Controls', () => { controls.style.display = controls.style.display === 'none' ? 'block' : 'none'; }),
     controls,
     viewerBtn,
+    movies,
   );
   document.body.append(root);
 
