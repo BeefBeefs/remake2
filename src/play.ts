@@ -24,6 +24,8 @@ interface Enemy {
   cooldown: number;
   dying: number;
   npc: boolean;
+  /** the NPC entity's `link`: low 7 bits index the area's message table (messages.json) */
+  link?: number;
   anim: number;
   lock: number; // seconds a one-shot animation (hit/attack) keeps playing
   vx: number;
@@ -56,6 +58,8 @@ export class PlayMode {
   private enemies: Enemy[] = [];
   private areaMusic: { main: string; boss: string } | null = null;
   private stageIndex = 0;
+  /** message tables of all stages (tools/export_messages.py), loaded on first use */
+  private messages: Record<string, string[]> | null = null;
   private heroIndex = 0;
   private doorArmed = false;
   private lastRoom = 0;
@@ -267,6 +271,7 @@ export class PlayMode {
     this.doorArmed = false;
     this.doorData ??= await fetch('assets/stages/doors.json').then((r) => r.json()).catch(() => ({}));
     this.arrData ??= await fetch('assets/stages/arrivals.json').then((r) => r.json()).catch(() => ({}));
+    this.messages ??= await fetch('assets/stages/messages.json').then((r) => r.json()).catch(() => ({}));
     const st = await loadStage(stageIndex, false, variant);
     const h = await loadHero(heroIndex);
     this.stage = st;
@@ -428,11 +433,11 @@ export class PlayMode {
     const ents = st.data.entities ?? [];
     this.solids = st.propSolids.map((q) => ({ x: q.x, z: -q.z, r: q.r }));
     if (!models.length) return;
-    const spots: { x: number; z: number; y: number; model: number; npc: boolean }[] = [];
+    const spots: { x: number; z: number; y: number; model: number; npc: boolean; link?: number }[] = [];
     const isRoom = ents.some((e) => e.flag === -254);
     if (isRoom) {
       const n = ents.find((e) => e.flag === -254 && e.link !== -1 && e.kind >= 0 && e.kind < 256);
-      if (n) spots.push({ x: n.x, z: -n.z, y: n.y, model: models[0], npc: true });
+      if (n) spots.push({ x: n.x, z: -n.z, y: n.y, model: models[0], npc: true, link: n.link });
     } else {
       const counts = new Map<number, number>();
       for (const e of ents) if (e.kind >= 0 && e.kind < 256 && e.sub === 1) counts.set(e.kind, (counts.get(e.kind) ?? 0) + 1);
@@ -459,7 +464,7 @@ export class PlayMode {
         // ranged attackers (names guessed from the spell table's monster attacks): dragons breathe fire, frost things cold, casters throw magic
         const nm = info?.name ?? '';
         const breath = /dragon|wyvern|drake|salamander|hell ?hound|fire/i.test(nm) ? { color: 0xff6a1a, dmg: 20 } : /frost|ice|snow|yeti/i.test(nm) ? { color: 0x6ad0ff, dmg: 20 } : /shaman|wizard|mage|lich|sorcer|vampire|priest/i.test(nm) ? { color: 0xb060ff, dmg: 14 } : null;
-        this.enemies.push({ model: m, level: info?.level ?? 1, breath, hp, dmg, x: sp.x, y: sp.y, z: sp.z, cooldown: 0, dying: 0, npc: sp.npc, anim: 0, lock: 0, vx: 0, vz: 0 });
+        this.enemies.push({ model: m, level: info?.level ?? 1, breath, hp, dmg, x: sp.x, y: sp.y, z: sp.z, cooldown: 0, dying: 0, npc: sp.npc, link: sp.link, anim: 0, lock: 0, vx: 0, vz: 0 });
       } catch (err) {
         console.warn('monster load failed', sp.model, err);
       }
@@ -584,9 +589,13 @@ export class PlayMode {
   private talk(): boolean {
     const npc = this.enemies.find((e) => e.npc);
     const texts = this.stage?.data.texts ?? [];
-    if (!npc || !texts.length) return false;
+    if (!npc) return false;
+    // the NPC's own remark first (real message table, link & 0x7f), then the stage's other texts in file order
+    const own = npc.link !== undefined && npc.link >= 0 ? this.messages?.[String(this.stageIndex)]?.[npc.link & 0x7f] ?? '' : '';
+    const lines = own ? [own, ...texts] : texts;
+    if (!lines.length) return false;
     if (Math.hypot(npc.x - this.pos.x, npc.z - this.pos.z) > 200) return false;
-    this.talkBox.textContent = texts[this.talkIndex % texts.length] + `\n\n(${(this.talkIndex % texts.length) + 1}/${texts.length} — tap to close)`;
+    this.talkBox.textContent = lines[this.talkIndex % lines.length] + `\n\n(${(this.talkIndex % lines.length) + 1}/${lines.length} — tap to close)`;
     this.talkBox.style.display = 'block';
     this.sfx?.play('talk');
     this.talkIndex++;
