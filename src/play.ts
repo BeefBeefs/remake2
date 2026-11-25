@@ -58,6 +58,8 @@ export class PlayMode {
   private enemies: Enemy[] = [];
   private areaMusic: { main: string; boss: string } | null = null;
   private stageIndex = 0;
+  /** air steering only after a deliberate jump: walking off a ledge drops straight down (steering over the void made the hero fall out of the map) */
+  private airControl = false;
   /** message tables of all stages (tools/export_messages.py), loaded on first use */
   private messages: Record<string, string[]> | null = null;
   private heroIndex = 0;
@@ -282,7 +284,7 @@ export class PlayMode {
     this.recalc();
     if (!this.travelling) this.hp = this.maxHp;
     this.heroGuardDef = (cls ? Math.floor(cls.defense / 2) : 0) + Math.floor(this.stats.agl / 5);   // AGL: "important for defense"
-    this.className = cls ? `${cls.class} (${cls.weapon}) STR ${this.stats.str} INT ${this.stats.int} WIL ${this.stats.wil} AGL ${this.stats.agl} CON ${this.stats.con} POW ${this.stats.pow} LCK ${this.stats.lck}` : '';
+    this.className = cls ? `${cls.class} (${cls.weapon})\nSTR ${this.stats.str} INT ${this.stats.int} WIL ${this.stats.wil} AGL ${this.stats.agl} CON ${this.stats.con} POW ${this.stats.pow} LCK ${this.stats.lck}` : '';
     const table = await spellTable();
     this.spells = (CLASS_SPELLS[heroIndex % 8] ?? []).map((nm) => table.find((t) => t.name === nm)).filter((t): t is Spell => !!t);
     this.spellIdx = 0;
@@ -570,7 +572,7 @@ export class PlayMode {
       doorHint = `door → ${q ? `${q.name}, area ${q.area + 1}/${q.areas}` : `stage ${d.target.stage}`}\n`;
       break;
     }
-    this.hud.textContent = `${doorHint}${this.noticeT > 0 ? this.notice + '\n' : ''}${this.className ? this.className + ' ' : ''}Lv ${this.level} (xp ${this.xp}/${this.level * 40}, ${this.gold} gold)\nHP ${this.hp}/${this.maxHp}   ${this.spells.length ? `MP ${Math.floor(this.mp)} ${this.spells[this.spellIdx].name} (C cast, Z next)   ` : ''}potions ${this.potions} (P use, B buy 30g)   enemies ${alive}${here}`;
+    this.hud.textContent = `${doorHint}${this.noticeT > 0 ? this.notice + '\n' : ''}${this.className ? this.className + '\n' : ''}Lv ${this.level} (xp ${this.xp}/${this.level * 40}, ${this.gold} gold)\nHP ${this.hp}/${this.maxHp}   ${this.spells.length ? `MP ${Math.floor(this.mp)} ${this.spells[this.spellIdx].name} (C cast, Z next)` : ''}\npotions ${this.potions} (P use, B buy 30g)   enemies ${alive}${here}`;
   }
 
   /** Prop collision: props are circles (radius ~ 60) – enemies and the hero cannot walk through them. */
@@ -843,6 +845,7 @@ export class PlayMode {
   private jump(): void {
     if (this.airborne || this.hp <= 0 || this.action) return;
     this.airborne = true;
+    this.airControl = true;
     this.vy = moveCfg.jumpV;
     this.sfx?.play('jump');
   }
@@ -853,7 +856,9 @@ export class PlayMode {
     const b = this.toBody();
     const r = fallStep(this.world, b, dt);
     this.fromBody(b);
+    if (r === 'landed') this.airControl = false;
     if (r === 'out') {
+      this.airControl = false;
       this.pos.copy(this.safe);
       this.airborne = false;
       this.vy = 0;
@@ -909,8 +914,10 @@ export class PlayMode {
         if (ok) this.fromBody(b);
         return ok;
       };
-      if (!tryMove(this.pos.x + dx, this.pos.z + dz)) {
-        if (!tryMove(this.pos.x + dx, this.pos.z)) tryMove(this.pos.x, this.pos.z + dz);
+      if (!this.airborne || this.airControl) {
+        if (!tryMove(this.pos.x + dx, this.pos.z + dz)) {
+          if (!tryMove(this.pos.x + dx, this.pos.z)) tryMove(this.pos.x, this.pos.z + dz);
+        }
       }
       this.heading = Math.atan2(dx, dz);
     }
