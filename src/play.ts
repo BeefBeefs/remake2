@@ -51,6 +51,7 @@ const ELEMENT_COLOR: Record<number, number> = { 2: 0xff8a2a, 3: 0x4aa8ff, 4: 0xb
 
 export class PlayMode {
   private enemies: Enemy[] = [];
+  private areaMusic: { main: string; boss: string } | null = null;
   private stageIndex = 0;
   private heroIndex = 0;
   private doorArmed = false;
@@ -401,7 +402,11 @@ export class PlayMode {
     this.active = true;
     this.hud.style.display = 'block';
     const qn = questOf(stageIndex);
-    if (qn) music.playArea(qn.quest, qn.area, qn.areas);
+    if (qn) {
+      const t = music.areaTracks(qn.quest, qn.area);
+      this.areaMusic = t;
+      music.playArea(qn.quest, qn.area);
+    } else this.areaMusic = null;
     this.info = `${qn ? `${qn.name} – area ${qn.area + 1}/${qn.areas} (stage ${stageIndex})` : `stage ${stageIndex}`}: ${this.tris.length} floor triangles — left stick/WASD move, right drag/Q E turn, ? = help`;
     this.updateHero(0);
   }
@@ -464,7 +469,17 @@ export class PlayMode {
     }
   }
 
+  /** Boss theme (the real area table lists one for the last area of some quests): plays while the area's strongest living monster is near the hero. */
+  private updateBossMusic(): void {
+    const t = this.areaMusic;
+    if (!t || !t.boss) return;
+    let boss: Enemy | null = null;
+    for (const en of this.enemies) if (!en.npc && en.dying <= 0 && (!boss || en.hp > boss.hp)) boss = en;
+    music.play(boss && Math.hypot(this.pos.x - boss.x, this.pos.z - boss.z) < 2200 ? t.boss : t.main);
+  }
+
   private updateEnemies(dt: number): void {
+    this.updateBossMusic();
     for (const en of this.enemies) {
       const m = en.model;
       if (en.dying > 0) {
